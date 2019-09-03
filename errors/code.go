@@ -13,7 +13,7 @@ const (
 	ErrorCodeEmpty = Code("")
 )
 
-// GetErrorCode returns the error code. If the error doen't contains an error code, returns ErrorCodeEmpty.
+// GetErrorCode returns the error code. If the error doesn't contains an error code, returns ErrorCodeEmpty.
 func GetErrorCode(err error) Code {
 	for {
 		e, ok := err.(Error)

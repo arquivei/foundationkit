@@ -1,7 +1,7 @@
 package errors
 
-// Severity is the error severity. It's used to classify errors in groups to be easily handled by the code. For examle,
-// a retry layer should be only checking for Runtime erros to retry. Or in an HTTP layer, erros of input type are always
+// Severity is the error severity. It's used to classify errors in groups to be easily handled by the code. For example,
+// a retry layer should be only checking for Runtime errors to retry. Or in an HTTP layer, errors of input type are always
 // returned a 400 status.
 type Severity string
 

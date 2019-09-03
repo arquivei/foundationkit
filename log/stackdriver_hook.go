@@ -18,7 +18,7 @@ var LevelToSeverity = func(level zerolog.Level) logging.Severity {
 	switch level {
 	case zerolog.DebugLevel:
 		return logging.Debug
-	// Let info falls into the defualt
+	// Let info falls into the default
 	case zerolog.WarnLevel:
 		return logging.Warning
 	case zerolog.ErrorLevel:

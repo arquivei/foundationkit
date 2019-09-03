@@ -16,7 +16,7 @@ func TestGetSeverity(t *testing.T) {
 	assert.Equal(t, SeverityInput, GetSeverity(err))
 	assert.EqualError(t, err, "my error")
 
-	// Wraps error winth runtime severiry
+	// Wraps error with runtime severity
 	err = Error{
 		Severity: SeverityRuntime,
 		Err:      err,
@@ -26,7 +26,7 @@ func TestGetSeverity(t *testing.T) {
 	assert.EqualError(t, err, "my error")
 
 	// Wraps error with an error with without severity
-	// Keeps previous severiry
+	// Keeps previous severity
 	err = Error{
 		Err: err,
 	}
