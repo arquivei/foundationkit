@@ -72,7 +72,7 @@ func (e Error) String() string {
 	return e.Error()
 }
 
-// E is a helper hunction for builder errors
+// E is a helper function for builder errors
 func E(args ...interface{}) error {
 	e := Error{}
 	if len(args) == 0 {

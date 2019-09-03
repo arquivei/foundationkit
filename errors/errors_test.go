@@ -69,5 +69,5 @@ func TestErrorString_NoError(t *testing.T) {
 	}()
 	err := Error{}
 	stringError = err.Error()
-	assert.FailNow(t, "panic didn't occured")
+	assert.FailNow(t, "panic didn't occurred")
 }
