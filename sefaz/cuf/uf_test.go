@@ -43,8 +43,8 @@ func TestIsValidUFSuccess(t *testing.T) {
 	}
 }
 
-func TestCufString(t *testing.T) {
-	cuf := Cuf("35")
+func TestCUFString(t *testing.T) {
+	cuf := CUF("35")
 	assert.Equal(t, "35", cuf.String())
 }
 
@@ -52,25 +52,25 @@ func TestNew(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
-		expected Cuf
+		expected CUF
 		err      string
 	}{
 		{
 			name:     "Valid cUF",
 			input:    "35",
-			expected: Cuf("35"),
+			expected: CUF("35"),
 			err:      "",
 		},
 		{
 			name:     "Invalid cUF",
 			input:    "00",
-			expected: Cuf(""),
+			expected: CUF(""),
 			err:      "invalid cUF",
 		},
 		{
 			name:     "Missing cUF",
 			input:    "",
-			expected: Cuf(""),
+			expected: CUF(""),
 			err:      "missing cUF",
 		},
 	}

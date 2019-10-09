@@ -2,23 +2,23 @@ package cuf
 
 import "errors"
 
-// Cuf stands for "Codigo da unidade federativa" and it
+// CUF stands for "Codigo da unidade federativa" and it
 // is strongly associated with Stakeholder.
-type Cuf string
+type CUF string
 
-// New validate and returns either (Cuf, nil) if the given cUF
-// is valid or (empty Cuf, error).
-func New(cUF string) (Cuf, error) {
+// New validate and returns either (CUF, nil) if the given cUF
+// is valid or (empty CUF, error).
+func New(cUF string) (CUF, error) {
 	if cUF == "" {
-		return Cuf(""), errors.New("missing cUF")
+		return CUF(""), errors.New("missing cUF")
 	}
 	if isValidUF(cUF) {
-		return Cuf(cUF), nil
+		return CUF(cUF), nil
 	}
-	return Cuf(""), errors.New("invalid cUF")
+	return CUF(""), errors.New("invalid cUF")
 }
 
-func (c Cuf) String() string {
+func (c CUF) String() string {
 	return string(c)
 }
 
