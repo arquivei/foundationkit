@@ -51,6 +51,14 @@ func (nsu *NSU) UnmarshalJSON(b []byte) error {
 // Zero is a zero valued NSU.
 const Zero = NSU("000000000000000")
 
+// utility function to panics in case of error
+func must(nsu NSU, err error) NSU {
+	if err != nil {
+		panic(err)
+	}
+	return nsu
+}
+
 // Parse instantiates a new nsu from @nsu string
 func Parse(nsu string) (NSU, error) {
 	const op = errors.Op("nsu.Parse")
@@ -73,13 +81,17 @@ func Parse(nsu string) (NSU, error) {
 
 // MustParse calls Parse function and panics on error
 func MustParse(s string) NSU {
-	const op = errors.Op("nsu.MustParse")
+	return must(Parse(s))
+}
 
-	nsu, err := Parse(s)
-	if err != nil {
-		panic(errors.E(op, err))
-	}
-	return nsu
+// ParseInt parses an integer into an NSU
+func ParseInt(nsu int) (NSU, error) {
+	return Parse(strconv.Itoa(nsu))
+}
+
+// MustParseInt parses an integer into an NSU
+func MustParseInt(nsu int) NSU {
+	return must(ParseInt(nsu))
 }
 
 // AsInt converts a NSU into an Integer. This function panics if the NSU is not an integer
