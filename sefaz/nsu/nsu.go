@@ -3,6 +3,7 @@ package nsu
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/arquivei/foundationkit/errors"
@@ -52,7 +53,7 @@ const Zero = NSU("000000000000000")
 
 // Parse instantiates a new nsu from @nsu string
 func Parse(nsu string) (NSU, error) {
-	op := errors.Op("nsu.Parse")
+	const op = errors.Op("nsu.Parse")
 
 	if len(nsu) == 0 {
 		return "", errors.E(op, "nsu is empty")
@@ -68,6 +69,27 @@ func Parse(nsu string) (NSU, error) {
 	}
 
 	return NSU(fmt.Sprintf("%015s", nsu)), nil
+}
+
+// MustParse calls Parse function and panics on error
+func MustParse(s string) NSU {
+	const op = errors.Op("nsu.MustParse")
+
+	nsu, err := Parse(s)
+	if err != nil {
+		panic(errors.E(op, err))
+	}
+	return nsu
+}
+
+// AsInt converts a NSU into an Integer. This function panics if the NSU is not an integer
+func AsInt(nsu NSU) int {
+	const op = errors.Op("nsu.AsInt")
+	i, err := strconv.Atoi(string(nsu))
+	if err != nil {
+		panic(err)
+	}
+	return i
 }
 
 // Compare two NSU's by using this function. NSU's will be compared after

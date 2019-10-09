@@ -97,6 +97,7 @@ func TestParse(t *testing.T) {
 		assert.Equal(t, testcase.Expected, output, "[%s] Unexpected output", testcase.Test)
 		if testcase.Err != "" {
 			assert.EqualError(t, err, testcase.Err, "[%s] Unexpected error", testcase.Test)
+			assert.Panics(t, func() { MustParse(testcase.Input) })
 		} else {
 			assert.NoError(t, err, "[%s] Unexpected error", testcase.Test)
 		}
@@ -106,4 +107,41 @@ func TestParse(t *testing.T) {
 func TestCompare(t *testing.T) {
 	assert.Equal(t, 0, Compare(NSU("000000000000123"), NSU("000000000000123")))
 	assert.Equal(t, 1, Compare(NSU("000000000000123"), NSU("000000000000122")))
+}
+
+func TestAsInt(t *testing.T) {
+	testcases := []struct {
+		Test     string
+		Input    NSU
+		Expected int
+		Panics   bool
+	}{
+		{
+			Test:     "Valid NSU",
+			Input:    "00123",
+			Expected: 123,
+		},
+		{
+			Test:     "",
+			Input:    "",
+			Expected: 0,
+			Panics:   true,
+		},
+		{
+			Test:     "Invalid NSU",
+			Input:    "abc",
+			Expected: 0,
+			Panics:   true,
+		},
+	}
+
+	for _, testcase := range testcases {
+		var output int
+		if testcase.Panics {
+			assert.Panics(t, func() { output = AsInt(testcase.Input) })
+		} else {
+			output = AsInt(testcase.Input)
+		}
+		assert.Equal(t, testcase.Expected, output, "[%s] Unexpected output", testcase.Test)
+	}
 }
