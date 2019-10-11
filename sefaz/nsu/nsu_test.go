@@ -113,7 +113,7 @@ func TestAsInt(t *testing.T) {
 	testcases := []struct {
 		Test     string
 		Input    NSU
-		Expected int
+		Expected uint64
 		Panics   bool
 	}{
 		{
@@ -136,7 +136,7 @@ func TestAsInt(t *testing.T) {
 	}
 
 	for _, testcase := range testcases {
-		var output int
+		var output uint64
 		if testcase.Panics {
 			assert.Panics(t, func() { output = AsInt(testcase.Input) })
 		} else {
