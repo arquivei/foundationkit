@@ -84,19 +84,19 @@ func MustParse(s string) NSU {
 	return must(Parse(s))
 }
 
-// ParseInt parses an integer into an NSU
-func ParseInt(nsu uint64) (NSU, error) {
+// ParseUint64 parses an integer into an NSU
+func ParseUint64(nsu uint64) (NSU, error) {
 	return Parse(strconv.FormatInt(int64(nsu), 10))
 }
 
-// MustParseInt parses an integer into an NSU
-func MustParseInt(nsu uint64) NSU {
-	return must(ParseInt(nsu))
+// MustParseUint64 parses an integer into an NSU
+func MustParseUint64(nsu uint64) NSU {
+	return must(ParseUint64(nsu))
 }
 
-// AsInt converts a NSU into an Integer. This function panics if the NSU is not an integer
-func AsInt(nsu NSU) uint64 {
-	const op = errors.Op("nsu.AsInt")
+// AsUint64 converts a NSU into an Integer. This function panics if the NSU is not an integer
+func AsUint64(nsu NSU) uint64 {
+	const op = errors.Op("nsu.AsUint64")
 	i, err := strconv.ParseUint(string(nsu), 10, 64)
 	if err != nil {
 		panic(err)

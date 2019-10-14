@@ -138,9 +138,9 @@ func TestAsInt(t *testing.T) {
 	for _, testcase := range testcases {
 		var output uint64
 		if testcase.Panics {
-			assert.Panics(t, func() { output = AsInt(testcase.Input) })
+			assert.Panics(t, func() { output = AsUint64(testcase.Input) })
 		} else {
-			output = AsInt(testcase.Input)
+			output = AsUint64(testcase.Input)
 		}
 		assert.Equal(t, testcase.Expected, output, "[%s] Unexpected output", testcase.Test)
 	}
