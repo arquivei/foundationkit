@@ -96,7 +96,6 @@ func MustParseUint64(nsu uint64) NSU {
 
 // AsUint64 converts a NSU into an Integer. This function panics if the NSU is not an integer
 func AsUint64(nsu NSU) uint64 {
-	const op = errors.Op("nsu.AsUint64")
 	i, err := strconv.ParseUint(string(nsu), 10, 64)
 	if err != nil {
 		panic(err)
