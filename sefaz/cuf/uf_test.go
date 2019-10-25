@@ -85,3 +85,42 @@ func TestNew(t *testing.T) {
 		assert.Equal(t, test.expected, cuf, "[%s] cUF mismatch", test.name)
 	}
 }
+
+func TestCUF_UnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		data       []byte
+		isValid    bool
+		expectedUF CUF
+	}{
+		{
+			data:       []byte(`"31"`),
+			expectedUF: CUF("31"),
+			isValid:    true,
+		},
+		{
+			data:       []byte(`"banana"`),
+			expectedUF: CUF(""),
+			isValid:    false,
+		},
+		{
+			data:       []byte(`"30"`),
+			expectedUF: CUF(""),
+			isValid:    false,
+		},
+		{
+			data:       []byte(`""`),
+			expectedUF: CUF(""),
+			isValid:    false,
+		},
+	}
+	for _, test := range tests {
+		var actual CUF
+		err := actual.UnmarshalJSON(test.data)
+		if test.isValid {
+			assert.NoError(t, err, "Valid cUF produced error")
+		} else {
+			assert.Error(t, err, "Invalid cUF didnt produce error")
+		}
+		assert.Equal(t, actual, test.expectedUF, "Expected UF mismatch")
+	}
+}
