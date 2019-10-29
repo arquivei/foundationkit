@@ -15,7 +15,7 @@ var ConfigFilename = "config.json"
 func SetupConfig(config interface{}) {
 	files := make(uconfig.Files)
 	if fileExists(ConfigFilename) {
-		files[ConfigFilename ] = json.Unmarshal
+		files[ConfigFilename] = json.Unmarshal
 	}
 
 	c, err := uconfig.Classic(config, files)
