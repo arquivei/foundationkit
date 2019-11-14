@@ -37,7 +37,7 @@ func MustNew(uf string) CUF {
 
 func (c CUF) String() string {
 	if !c.initialized {
-		panic("CUF not initialized")
+		return ""
 	}
 	return strconv.Itoa(int(c.value))
 }

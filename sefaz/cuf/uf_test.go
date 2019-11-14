@@ -156,10 +156,9 @@ func TestMustNew(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	assert.Panics(t, func() {
-		d := CUF{}
-		_ = d.String()
-	}, "CUF not initialized")
+	assert.Equal(t, "", CUF{}.String())
+	assert.Equal(t, "35", MustNew("35").String())
+
 }
 
 func TestMarshalJSON_WithError(t *testing.T) {
