@@ -43,13 +43,12 @@ func (id ID) String() string {
 // 32 hexadecimal characters string. This operation is case-insensitive.
 func (id *ID) UnmarshalJSON(b []byte) error {
 	b = bytes.Trim(b, `"`)
-	*id = Decode(b)
+	*id = decode(b)
 
 	return nil
 }
 
-// Decode turns a set of byte values into a trace ID
-func Decode(b []byte) ID {
+func decode(b []byte) ID {
 	size := 32
 	if len(b) < size {
 		size = len(b)
