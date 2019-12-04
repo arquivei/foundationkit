@@ -1,12 +1,56 @@
 package trace
 
-import "context"
+import (
+	"context"
+
+	"github.com/rs/zerolog/log"
+)
 
 type contextKeyType int
 
 const (
-	contextKeyTraceID contextKeyType = iota
+	contextKeyTrace contextKeyType = iota
+	contextKeyLabels
+	// [DEPRECATED]
+	contextKeyTraceID
 )
+
+// WithTrace returns the @parent context with the Trace @trace
+func WithTrace(parent context.Context, trace Trace) context.Context {
+	return context.WithValue(parent, contextKeyTrace, trace)
+}
+
+// GetTraceFromContext returns the Trace saved in @ctx
+func GetTraceFromContext(ctx context.Context) Trace {
+	if t, ok := ctx.Value(contextKeyTrace).(Trace); ok {
+		return t
+	}
+	log.Warn().
+		Str("method", "trace.GetTraceFromContext").
+		Msg("[FoundationKit] There is no Trace in context. Use trace.WithTrace(context.Context, trace.Trace)")
+	return Trace{}
+}
+
+func withLabels(parent context.Context, labels map[string]string) context.Context {
+	return context.WithValue(parent, contextKeyLabels, labels)
+}
+
+func getLabelsFromContext(ctx context.Context) map[string]string {
+	if l, ok := ctx.Value(contextKeyLabels).(map[string]string); ok {
+		return l
+	}
+	return nil
+}
+
+// GetIDFromContext returns the Trace ID in the context.
+// Will return a empty ID if a Trace is not set in context
+func GetIDFromContext(ctx context.Context) ID {
+	return GetTraceFromContext(ctx).ID
+}
+
+//
+// [DEPRECATED]
+//
 
 // WithTraceID instantiates a new child context from @parent with the
 // given @traceID value set

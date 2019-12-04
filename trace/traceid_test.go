@@ -75,7 +75,7 @@ func TestDecode(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		id := Decode(test.input)
+		id := decode(test.input)
 		assert.Equal(t, test.expectedID, id, "[%s] id differs", test.description)
 	}
 }
