@@ -46,7 +46,7 @@ Use the method `request.GetRequestIDFromContext` to log the Request ID
 ```golang
 func (l *logging) Do(ctx ontext.Context, req Request) (response Response, err error) {
 	logger := log.Logger.With().
-		Str("request_id", request.GetRequestIDFromContext(ctx)).
+		EmbedObject(request.GetRequestIDFromContext(ctx)).
 		Logger()
     // (...)
 }
@@ -188,7 +188,7 @@ Use the method `trace.GetIDFromContext` to log the Trace ID
 ```golang
 func (l *logging) Do(ctx ontext.Context, req Request) (response Response, err error) {
 	logger := log.Logger.With().
-		Str("trace_id", trace.GetIDFromContext(ctx)).
+		EmbedObject(trace.GetIDFromContext(ctx)).
 		Logger()
     // (...)
 }
