@@ -8,13 +8,19 @@ import (
 )
 
 // ID is an identifier to uniquely identify a request
-type ID string
+type ID struct {
+	timestamp uint64
+	randomID  string
+}
 
 func (i ID) String() string {
-	return string(i)
+	return fmt.Sprintf("%d-%s", i.timestamp, i.randomID)
 }
 
 func newID() ID {
 	now := ulid.Now()
-	return ID(fmt.Sprintf("%d-%s", now, ulid.MustNew(now, rand.Reader).String()))
+	return ID{
+		timestamp: now,
+		randomID:  ulid.MustNew(now, rand.Reader).String(),
+	}
 }
