@@ -48,6 +48,13 @@ func GetIDFromContext(ctx context.Context) ID {
 	return GetTraceFromContext(ctx).ID
 }
 
+// WithTraceAndLabels returns the @parent context with the Trace @trace
+// and the labels @labels
+func WithTraceAndLabels(parent context.Context, trace Trace, labels map[string]string) context.Context {
+	parent = WithTrace(parent, trace)
+	return withLabels(parent, labels)
+}
+
 //
 // [DEPRECATED]
 //

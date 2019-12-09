@@ -31,6 +31,50 @@ func TestTraceOperations(t *testing.T) {
 	assert.Equal(t, *trace.ProbabilitySample, ps)
 }
 
+func TestTraceAndLabelsOperations(t *testing.T) {
+	ctx := context.Background()
+	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
+	assert.Nil(t, nil, getLabelsFromContext(ctx))
+
+	ps := 0.5
+	ctx = WithTraceAndLabels(ctx, newTrace(ps), map[string]string{
+		"k1": "v1",
+		"k2": "v2",
+	})
+
+	trace := GetTraceFromContext(ctx)
+	assert.False(t, IDIsEmpty(trace.ID))
+	assert.Equal(t, *trace.ProbabilitySample, ps)
+
+	labels := getLabelsFromContext(ctx)
+	for key, value := range labels {
+		switch key {
+		case "k1":
+			assert.Equal(t, "v1", value)
+		case "k2":
+			assert.Equal(t, "v2", value)
+		default:
+			assert.FailNow(t, "none key is valid")
+		}
+	}
+}
+
+func TestTraceAndLabelsOperations_LabelsNil(t *testing.T) {
+	ctx := context.Background()
+	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
+	assert.Nil(t, nil, getLabelsFromContext(ctx))
+
+	ps := 0.5
+	ctx = WithTraceAndLabels(ctx, newTrace(ps), nil)
+
+	trace := GetTraceFromContext(ctx)
+	assert.False(t, IDIsEmpty(trace.ID))
+	assert.Equal(t, *trace.ProbabilitySample, ps)
+
+	labels := getLabelsFromContext(ctx)
+	assert.Nil(t, labels)
+}
+
 func TestLabelsOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.Nil(t, nil, getLabelsFromContext(ctx))
