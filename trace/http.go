@@ -14,19 +14,9 @@ const (
 	headerProbabilitySample = "X-PROBABILITYSAMPLE"
 )
 
-// WithTraceFromHTTPRequest returns a context with a Trace using the
-// trace ID and the probability sample get from the header of @r.
-// This method also put @labels in the returned context.
-func WithTraceFromHTTPRequest(ctx context.Context, r *http.Request, labels map[string]string) context.Context {
-	trace := getTraceFromHTTRequest(r)
-	ctx = WithTrace(ctx, trace)
-	if labels != nil {
-		ctx = withLabels(ctx, labels)
-	}
-	return ctx
-}
-
-func getTraceFromHTTRequest(r *http.Request) Trace {
+// GetTraceFromHTTRequest returns a Trace using the trace
+// ID and the probability sample get from the header of @r
+func GetTraceFromHTTRequest(r *http.Request) Trace {
 	idStr := r.Header.Get(headerTraceID)
 	id := decode([]byte(idStr))
 

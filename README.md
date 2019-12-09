@@ -49,6 +49,11 @@ type Service interface {
     Do(context.Context, Request) (Response, error)
 }
 
+type Request struct {
+    // (...)
+    trace.Trace
+}
+
 type Response struct {
     // (...)
     trace.Trace
@@ -67,11 +72,22 @@ type Job interface {
 #### HTTP Layer
 
 ```golang
+
+func decodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
+    var req Request
+
+    // (...)
+    req.Trace = trace.GetTraceFromHTTRequest(r)
+
+    return req, nil
+}
+
+
 func MakeEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, r interface{}) (interface{}, error) {
 		req := r.(Request)
 
-		ctx = trace.WithTraceFromHTTPRequest(ctx, req, getLabelsFromRequest(req))
+		ctx = trace.WithTraceAndLabels(ctx, req.Trace, getLabelsFromRequest(req))
 
 		response, err := s.Do(ctx, req)
 
