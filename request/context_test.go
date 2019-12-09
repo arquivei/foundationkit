@@ -9,7 +9,7 @@ import (
 
 func TestIDContextOperations(t *testing.T) {
 	ctx := context.Background()
-	assert.Equal(t, ID(""), GetRequestIDFromContext(ctx))
+	assert.Empty(t, GetRequestIDFromContext(ctx))
 
 	ctx = WithRequestID(ctx)
 	assert.NotEmpty(t, GetRequestIDFromContext(ctx))
