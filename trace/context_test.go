@@ -28,13 +28,13 @@ func TestTraceOperations(t *testing.T) {
 	trace := GetTraceFromContext(ctx)
 
 	assert.False(t, IDIsEmpty(trace.ID))
-	assert.Equal(t, *trace.ProbabilitySample, ps)
+	assert.Equal(t, ps, *trace.ProbabilitySample)
 }
 
 func TestTraceAndLabelsOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
-	assert.Nil(t, nil, getLabelsFromContext(ctx))
+	assert.Nil(t, getLabelsFromContext(ctx))
 
 	ps := 0.5
 	ctx = WithTraceAndLabels(ctx, newTrace(ps), map[string]string{
@@ -44,7 +44,7 @@ func TestTraceAndLabelsOperations(t *testing.T) {
 
 	trace := GetTraceFromContext(ctx)
 	assert.False(t, IDIsEmpty(trace.ID))
-	assert.Equal(t, *trace.ProbabilitySample, ps)
+	assert.Equal(t, ps, *trace.ProbabilitySample)
 
 	labels := getLabelsFromContext(ctx)
 	for key, value := range labels {
@@ -62,14 +62,14 @@ func TestTraceAndLabelsOperations(t *testing.T) {
 func TestTraceAndLabelsOperations_LabelsNil(t *testing.T) {
 	ctx := context.Background()
 	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
-	assert.Nil(t, nil, getLabelsFromContext(ctx))
+	assert.Nil(t, getLabelsFromContext(ctx))
 
 	ps := 0.5
 	ctx = WithTraceAndLabels(ctx, newTrace(ps), nil)
 
 	trace := GetTraceFromContext(ctx)
 	assert.False(t, IDIsEmpty(trace.ID))
-	assert.Equal(t, *trace.ProbabilitySample, ps)
+	assert.Equal(t, ps, *trace.ProbabilitySample)
 
 	labels := getLabelsFromContext(ctx)
 	assert.Nil(t, labels)
@@ -77,7 +77,7 @@ func TestTraceAndLabelsOperations_LabelsNil(t *testing.T) {
 
 func TestLabelsOperations(t *testing.T) {
 	ctx := context.Background()
-	assert.Nil(t, nil, getLabelsFromContext(ctx))
+	assert.Nil(t, getLabelsFromContext(ctx))
 
 	ctx = withLabels(ctx, map[string]string{
 		"k1": "v1",
@@ -85,22 +85,11 @@ func TestLabelsOperations(t *testing.T) {
 	})
 
 	labels := getLabelsFromContext(ctx)
-	for key, value := range labels {
-		switch key {
-		case "k1":
-			assert.Equal(t, "v1", value)
-		case "k2":
-			assert.Equal(t, "v2", value)
-		default:
-			assert.FailNow(t, "none key is valid")
-		}
-	}
+	assert.Equal(t, "v1", labels["k1"])
+	assert.Equal(t, "v2", labels["k2"])
 }
 
-//
-// [DEPRECATED]
-//
-
+// [DEPRECATED] Testing a Deprecated Methods
 func TestTraceIDContextOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.True(t, IDIsEmpty(GetTraceIDFromContext(ctx)))
