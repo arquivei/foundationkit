@@ -11,8 +11,7 @@ type contextKeyType int
 const (
 	contextKeyTrace contextKeyType = iota
 	contextKeyLabels
-	// [DEPRECATED]
-	contextKeyTraceID
+	contextKeyTraceID // [DEPRECATED] Only used in Deprecated Methods
 )
 
 // WithTrace returns the @parent context with the Trace @trace
@@ -55,18 +54,16 @@ func WithTraceAndLabels(parent context.Context, trace Trace, labels map[string]s
 	return withLabels(parent, labels)
 }
 
-//
-// [DEPRECATED]
-//
-
 // WithTraceID instantiates a new child context from @parent with the
 // given @traceID value set
+// [DEPRECATED] Should use WithTrace instead
 func WithTraceID(parent context.Context, traceID ID) context.Context {
 	return context.WithValue(parent, contextKeyTraceID, traceID)
 }
 
 // GetTraceIDFromContext returns the trace ID set in the context, if any,
 // or an empty trace id if none is set
+// [DEPRECATED] Should use GetTraceFromContext instead
 func GetTraceIDFromContext(ctx context.Context) ID {
 	if id, ok := ctx.Value(contextKeyTraceID).(ID); ok {
 		return id

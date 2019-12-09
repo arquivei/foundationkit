@@ -167,10 +167,7 @@ func TestSetTraceInHTTPRequest_EmptyTraceID(t *testing.T) {
 	assert.Equal(t, "", r.Header.Get(headerProbabilitySample))
 }
 
-//
-// [DEPRECATED]
-//
-
+// [DEPRECATED] Testing a Deprecated Methods
 func TestGetTraceIDFromHTTRequest(t *testing.T) {
 	r, err := http.NewRequest("POST", "URL", nil)
 	assert.NoError(t, err)
