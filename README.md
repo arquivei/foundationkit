@@ -4,6 +4,54 @@
 
 This project contains very opinionated packages for common operations.
 
+## Request
+
+### Usage
+
+It will be used the following service as example:
+
+```golang
+type Service interface {
+    Do(context.Context, Request) (Response, error)
+}
+
+type Response struct {
+    //(...)
+    RequestID request.ID
+}
+```
+
+#### HTTP Layer
+
+Use the method `request.WithRequestID` to create and put a Request ID in context
+
+```golang
+func MakeEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, r interface{}) (interface{}, error) {
+		req := r.(Request)
+
+		ctx = request.WithRequestID(ctx)
+
+		response, err := s.Do(ctx, req)
+
+		return response, err
+	}
+}
+```
+
+#### Logging
+
+Use the method `request.GetRequestIDFromContext` to log the Request ID
+
+```golang
+func (l *logging) Do(ctx ontext.Context, req Request) (response Response, err error) {
+	logger := log.Logger.With().
+		Str("request_id", request.GetRequestIDFromContext(ctx)).
+		Logger()
+    // (...)
+}
+```
+
 ## Trace
 
 ### Config and Initialization
@@ -40,7 +88,7 @@ Now, inicialize your trace exporter using `trace.SetupTrace`
 trace.SetupTrace(config.Trace)
 ```
 
-### Service Running
+### Service
 
 It will be used the following service as example:
 
