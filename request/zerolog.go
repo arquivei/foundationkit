@@ -1,4 +1,4 @@
-package request 
+package request
 
 import "github.com/rs/zerolog"
 

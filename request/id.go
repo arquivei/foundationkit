@@ -14,7 +14,17 @@ type ID struct {
 }
 
 func (i ID) String() string {
-	return fmt.Sprintf("%d-%s", i.timestamp, i.randomID)
+	var id string
+	if !i.IsEmpty() {
+		id = fmt.Sprintf("%d-%s", i.timestamp, i.randomID)
+	}
+	return id
+}
+
+// IsEmpty returns true if there is no
+// timestamp or randomID in Request ID @i
+func (i ID) IsEmpty() bool {
+	return i.timestamp == 0 && i.randomID == ""
 }
 
 func newID() ID {
