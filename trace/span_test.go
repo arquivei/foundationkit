@@ -152,6 +152,6 @@ func TestEnd(t *testing.T) {
 		"key": "value",
 	})
 	var s Span
-	ctx, s = StartSpan(ctx, "test")
+	_, s = StartSpan(ctx, "test")
 	assert.NotPanics(t, func() { s.End(errors.New("error label")) })
 }
