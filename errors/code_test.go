@@ -20,5 +20,7 @@ func TestErrorCode_WithoutErrorCode(t *testing.T) {
 	err = Error{
 		Err: New("my error"),
 	}
+	assert.Equal(t, ErrorCodeEmpty, GetErrorCode(err))
+
 	assert.Equal(t, ErrorCodeEmpty, GetErrorCode(nil))
 }

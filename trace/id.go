@@ -23,7 +23,9 @@ func init() {
 	for _, p := range []interface{}{
 		&rngSeed, &gen.traceIDAdd,
 	} {
-		binary.Read(crand.Reader, binary.LittleEndian, p)
+		if err := binary.Read(crand.Reader, binary.LittleEndian, p); err != nil {
+			panic(err)
+		}
 	}
 	gen.traceIDRand = rand.New(rand.NewSource(rngSeed))
 	traceIDGen = gen

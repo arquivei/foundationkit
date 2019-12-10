@@ -48,8 +48,6 @@ func SetTraceInHTTPRequest(ctx context.Context, request *http.Request) {
 
 	request.Header.Set(headerTraceID, trace.ID.String())
 	request.Header.Set(headerProbabilitySample, fmt.Sprintf("%f", *trace.ProbabilitySample))
-
-	return
 }
 
 // SetTraceInHTTPResponse sets the header of @response using @trace.
@@ -64,8 +62,6 @@ func SetTraceInHTTPResponse(trace Trace, response http.ResponseWriter) {
 
 	response.Header().Set(headerTraceID, trace.ID.String())
 	response.Header().Set(headerProbabilitySample, fmt.Sprintf("%f", *trace.ProbabilitySample))
-
-	return
 }
 
 // GetTraceIDFromHTTPRequest attempts to return a trace ID read from the @r
