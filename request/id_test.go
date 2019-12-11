@@ -1,6 +1,7 @@
 package request
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -73,5 +74,56 @@ func TestIsEmpty(t *testing.T) {
 	for _, test := range tests {
 		id := ID{test.timestamp, test.randomID}
 		assert.Equal(t, test.expected, id.IsEmpty(), test.name)
+	}
+}
+
+func TestIDMarshall(t *testing.T) {
+	id := ID{timestamp: 1576072698019, randomID: "01DVTM1P53ZVBRCCM4F9SCRK09"}
+
+	var serializedMessage struct {
+		ID *ID
+	}
+	serializedMessage.ID = &id
+
+	buffer, err := json.Marshal(&serializedMessage)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"ID":"1576072698019-01DVTM1P53ZVBRCCM4F9SCRK09"}`, string(buffer))
+}
+
+func TestIDUnmarshall(t *testing.T) {
+	tests := []struct {
+		name          string
+		json          string
+		expected      ID
+		expectedError string
+	}{
+		{
+			name:     "Success",
+			json:     `{"ID":"1576072698019-01DVTM1P53ZVBRCCM4F9SCRK09"}`,
+			expected: ID{timestamp: 1576072698019, randomID: "01DVTM1P53ZVBRCCM4F9SCRK09"},
+		},
+		{
+			name:          "Wrong format",
+			json:          `{"ID":"1-2-3"}`,
+			expectedError: "wrong format for request id",
+		},
+		{
+			name:          "Atoi failed",
+			json:          `{"ID":"a-01DVTM1P53ZVBRCCM4F9SCRK09"}`,
+			expectedError: `strconv.Atoi: parsing "a": invalid syntax`,
+		},
+	}
+
+	for _, test := range tests {
+		var serializedMessage struct {
+			ID *ID
+		}
+		err := json.Unmarshal([]byte(test.json), &serializedMessage)
+		if test.expectedError != "" {
+			assert.EqualError(t, err, test.expectedError, test.name)
+		} else {
+			assert.NoError(t, err, test.name)
+			assert.Equal(t, test.expected, *serializedMessage.ID, test.name)
+		}
 	}
 }
