@@ -37,15 +37,14 @@ func GetTraceFromHTTRequest(r *http.Request) Trace {
 // SetTraceInHTTPRequest sets the header of @request using the
 // trace in the @ctx. If @trace is empty or @request is nil, nothing will happen
 func SetTraceInHTTPRequest(ctx context.Context, request *http.Request) {
-	trace := GetTraceFromContext(ctx)
-
-	if request == nil || trace.ProbabilitySample == nil || IDIsEmpty(trace.ID) {
+	if request == nil {
 		log.Warn().
 			Str("method", "trace.SetTraceInHTTPRequest").
-			Msg("[FoundationKit] Trace is empty or request is nil. Nothing will happen")
+			Msg("[FoundationKit] Request is nil. Nothing will happen")
 		return
 	}
 
+	trace := GetTraceFromContext(ctx)
 	request.Header.Set(headerTraceID, trace.ID.String())
 	request.Header.Set(headerProbabilitySample, fmt.Sprintf("%f", *trace.ProbabilitySample))
 }
@@ -53,13 +52,17 @@ func SetTraceInHTTPRequest(ctx context.Context, request *http.Request) {
 // SetTraceInHTTPResponse sets the header of @response using @trace.
 // If @trace is empty or @response is nil, nothing will happen
 func SetTraceInHTTPResponse(trace Trace, response http.ResponseWriter) {
-	if response == nil || trace.ProbabilitySample == nil || IDIsEmpty(trace.ID) {
+	if response == nil {
 		log.Warn().
 			Str("method", "trace.SetTraceInHTTPResponse").
-			Msg("[FoundationKit] Trace is empty or response is nil. Nothing will happen")
+			Msg("[FoundationKit] Response is nil. Nothing will happen")
 		return
 	}
 
+	if trace.isEmpty() {
+		log.Warn().Msg("[FoundationKit] Trace has some empty field. Creating a new one...")
+	}
+	trace = ensureTraceNotEmpty(trace)
 	response.Header().Set(headerTraceID, trace.ID.String())
 	response.Header().Set(headerProbabilitySample, fmt.Sprintf("%f", *trace.ProbabilitySample))
 }

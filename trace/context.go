@@ -16,6 +16,7 @@ const (
 
 // WithTrace returns the @parent context with the Trace @trace
 func WithTrace(parent context.Context, trace Trace) context.Context {
+	trace = ensureTraceNotEmpty(trace)
 	return context.WithValue(parent, contextKeyTrace, trace)
 }
 
