@@ -28,7 +28,6 @@ func (s *Span) End(err error) {
 // Otherwise, the method will create a new span and return it
 func StartSpanWithParent(ctx context.Context, spanNameArgs ...string) (newCtx context.Context, s Span) {
 	t := GetTraceFromContext(ctx)
-	ctx = createTraceIfEmpty(ctx, &t, defaultProbabilitySample)
 
 	parent := createSpanContext(t.ID.String(), *t.ProbabilitySample)
 

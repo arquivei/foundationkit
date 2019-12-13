@@ -16,7 +16,7 @@ type traceTest struct {
 	expectedID                *ID
 }
 
-func TestCreateTraceIfEmpty(t *testing.T) {
+func TestEnsureTraceNotEmpty(t *testing.T) {
 	ps := 1.9
 	newID := NewTraceID()
 
@@ -33,7 +33,7 @@ func TestCreateTraceIfEmpty(t *testing.T) {
 				ProbabilitySample: &ps,
 			},
 			defaultProbabilitySample:  0.5,
-			expectedProbabilitySample: 0.5,
+			expectedProbabilitySample: ps,
 		},
 		{
 			name: "Probability Sample Empty",
@@ -56,7 +56,9 @@ func TestCreateTraceIfEmpty(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		ctx := createTraceIfEmpty(context.Background(), &test.trace, test.defaultProbabilitySample)
+		defaultProbabilitySample = test.defaultProbabilitySample
+		test.trace = ensureTraceNotEmpty(test.trace)
+		ctx := WithTrace(context.Background(), test.trace)
 		assertTrace(t, test, "Trace from Test")
 
 		traceFromCtx := GetTraceFromContext(ctx)

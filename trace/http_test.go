@@ -84,14 +84,16 @@ func TestSetTraceInHTTPResponse(t *testing.T) {
 }
 
 func TestSetTraceInHTTPResponse_EmptyTrace(t *testing.T) {
+	defaultProbabilitySample = 0.5
 	r := httptest.NewRecorder()
 	SetTraceInHTTPResponse(Trace{}, r)
 
-	assert.Equal(t, "", r.Header().Get(headerTraceID))
-	assert.Equal(t, "", r.Header().Get(headerProbabilitySample))
+	assert.NotEmpty(t, r.Header().Get(headerTraceID))
+	assert.Equal(t, "0.500000", r.Header().Get(headerProbabilitySample))
 }
 
 func TestSetTraceInHTTPResponse_EmptyProbabilitySample(t *testing.T) {
+	defaultProbabilitySample = 0.5
 	trace := Trace{
 		ID: decode([]byte("00000000000000000000000000000019")),
 	}
@@ -99,8 +101,8 @@ func TestSetTraceInHTTPResponse_EmptyProbabilitySample(t *testing.T) {
 	r := httptest.NewRecorder()
 	SetTraceInHTTPResponse(trace, r)
 
-	assert.Equal(t, "", r.Header().Get(headerTraceID))
-	assert.Equal(t, "", r.Header().Get(headerProbabilitySample))
+	assert.Equal(t, "00000000000000000000000000000019", r.Header().Get(headerTraceID))
+	assert.Equal(t, "0.500000", r.Header().Get(headerProbabilitySample))
 }
 
 func TestSetTraceInHTTPResponse_EmptyTraceID(t *testing.T) {
@@ -112,8 +114,8 @@ func TestSetTraceInHTTPResponse_EmptyTraceID(t *testing.T) {
 	r := httptest.NewRecorder()
 	SetTraceInHTTPResponse(trace, r)
 
-	assert.Equal(t, "", r.Header().Get(headerTraceID))
-	assert.Equal(t, "", r.Header().Get(headerProbabilitySample))
+	assert.NotEmpty(t, r.Header().Get(headerTraceID))
+	assert.Equal(t, "0.500000", r.Header().Get(headerProbabilitySample))
 }
 
 func TestSetTraceInHTTPRequest(t *testing.T) {
@@ -132,15 +134,17 @@ func TestSetTraceInHTTPRequest(t *testing.T) {
 }
 
 func TestSetTraceInHTTPRequest_EmptyTrace(t *testing.T) {
+	defaultProbabilitySample = 0.5
 	r, err := http.NewRequest("POST", "URL", nil)
 	assert.NoError(t, err)
 	SetTraceInHTTPRequest(WithTrace(context.Background(), Trace{}), r)
 
-	assert.Equal(t, "", r.Header.Get(headerTraceID))
-	assert.Equal(t, "", r.Header.Get(headerProbabilitySample))
+	assert.NotEmpty(t, r.Header.Get(headerTraceID))
+	assert.Equal(t, "0.500000", r.Header.Get(headerProbabilitySample))
 }
 
 func TestSetTraceInHTTPRequest_EmptyProbabilitySample(t *testing.T) {
+	defaultProbabilitySample = 0.5
 	trace := Trace{
 		ID: decode([]byte("00000000000000000000000000000019")),
 	}
@@ -149,8 +153,8 @@ func TestSetTraceInHTTPRequest_EmptyProbabilitySample(t *testing.T) {
 	assert.NoError(t, err)
 	SetTraceInHTTPRequest(WithTrace(context.Background(), trace), r)
 
-	assert.Equal(t, "", r.Header.Get(headerTraceID))
-	assert.Equal(t, "", r.Header.Get(headerProbabilitySample))
+	assert.Equal(t, "00000000000000000000000000000019", r.Header.Get(headerTraceID))
+	assert.Equal(t, "0.500000", r.Header.Get(headerProbabilitySample))
 }
 
 func TestSetTraceInHTTPRequest_EmptyTraceID(t *testing.T) {
@@ -163,8 +167,8 @@ func TestSetTraceInHTTPRequest_EmptyTraceID(t *testing.T) {
 	assert.NoError(t, err)
 	SetTraceInHTTPRequest(WithTrace(context.Background(), trace), r)
 
-	assert.Equal(t, "", r.Header.Get(headerTraceID))
-	assert.Equal(t, "", r.Header.Get(headerProbabilitySample))
+	assert.NotEmpty(t, r.Header.Get(headerTraceID))
+	assert.Equal(t, "0.500000", r.Header.Get(headerProbabilitySample))
 }
 
 // [DEPRECATED] Testing a Deprecated Methods

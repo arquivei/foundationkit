@@ -11,7 +11,8 @@ func TestIDOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.True(t, IDIsEmpty(GetIDFromContext(ctx)))
 
-	trace := newTrace(0)
+	defaultProbabilitySample = 0
+	trace := newTrace()
 	ctx = WithTrace(ctx, trace)
 
 	assert.False(t, IDIsEmpty(GetIDFromContext(ctx)))
@@ -22,13 +23,13 @@ func TestTraceOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
 
-	ps := 0.5
-	ctx = WithTrace(ctx, newTrace(ps))
+	defaultProbabilitySample = 0.5
+	ctx = WithTrace(ctx, newTrace())
 
 	trace := GetTraceFromContext(ctx)
 
 	assert.False(t, IDIsEmpty(trace.ID))
-	assert.Equal(t, ps, *trace.ProbabilitySample)
+	assert.Equal(t, defaultProbabilitySample, *trace.ProbabilitySample)
 }
 
 func TestTraceAndLabelsOperations(t *testing.T) {
@@ -36,15 +37,15 @@ func TestTraceAndLabelsOperations(t *testing.T) {
 	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
 	assert.Nil(t, getLabelsFromContext(ctx))
 
-	ps := 0.5
-	ctx = WithTraceAndLabels(ctx, newTrace(ps), map[string]string{
+	defaultProbabilitySample = 0.5
+	ctx = WithTraceAndLabels(ctx, newTrace(), map[string]string{
 		"k1": "v1",
 		"k2": "v2",
 	})
 
 	trace := GetTraceFromContext(ctx)
 	assert.False(t, IDIsEmpty(trace.ID))
-	assert.Equal(t, ps, *trace.ProbabilitySample)
+	assert.Equal(t, defaultProbabilitySample, *trace.ProbabilitySample)
 
 	labels := getLabelsFromContext(ctx)
 	for key, value := range labels {
@@ -64,12 +65,12 @@ func TestTraceAndLabelsOperations_LabelsNil(t *testing.T) {
 	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
 	assert.Nil(t, getLabelsFromContext(ctx))
 
-	ps := 0.5
-	ctx = WithTraceAndLabels(ctx, newTrace(ps), nil)
+	defaultProbabilitySample = 0.5
+	ctx = WithTraceAndLabels(ctx, newTrace(), nil)
 
 	trace := GetTraceFromContext(ctx)
 	assert.False(t, IDIsEmpty(trace.ID))
-	assert.Equal(t, ps, *trace.ProbabilitySample)
+	assert.Equal(t, defaultProbabilitySample, *trace.ProbabilitySample)
 
 	labels := getLabelsFromContext(ctx)
 	assert.Nil(t, labels)

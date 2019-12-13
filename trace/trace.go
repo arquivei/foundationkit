@@ -1,9 +1,5 @@
 package trace
 
-import (
-	"context"
-)
-
 // Trace represents the informations that should be
 // passed through systems
 type Trace struct {
@@ -16,17 +12,23 @@ type Trace struct {
 	ProbabilitySample *float64
 }
 
-func newTrace(defaultProbabilitySample float64) Trace {
+func newTrace() Trace {
 	return Trace{
 		ID:                NewTraceID(),
 		ProbabilitySample: &defaultProbabilitySample,
 	}
 }
 
-func createTraceIfEmpty(ctx context.Context, t *Trace, defaultProbabilitySample float64) context.Context {
-	if t == nil || IDIsEmpty(t.ID) || t.ProbabilitySample == nil {
-		*t = newTrace(defaultProbabilitySample)
+func (t Trace) isEmpty() bool {
+	return IDIsEmpty(t.ID) || t.ProbabilitySample == nil
+}
+
+func ensureTraceNotEmpty(t Trace) Trace {
+	if IDIsEmpty(t.ID) {
+		t.ID = NewTraceID()
 	}
-	ctx = WithTrace(ctx, *t)
-	return ctx
+	if t.ProbabilitySample == nil {
+		t.ProbabilitySample = &defaultProbabilitySample
+	}
+	return t
 }
