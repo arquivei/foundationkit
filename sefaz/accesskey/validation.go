@@ -36,12 +36,6 @@ func validate(accessKey Key) error {
 		return errors.E(op, ErrInvalidModel, ErrCodeInvalidAccessKey)
 	}
 
-	// EmissionType is not present in Accesskeys from V1.
-	// Because of this, the field should not be validated
-	// if !isValidEmissionType(accessKey[34]) {
-	// 	return errors.E(op, ErrInvalidEmissionType, ErrCodeInvalidAccessKey)
-	// }
-
 	if !isValidationDigitCorrect(accessKey) {
 		return errors.E(op, ErrInvalidDigit, ErrCodeInvalidAccessKey)
 	}
@@ -129,25 +123,6 @@ func isValidMonth(month Key) bool {
 
 func isValidModel(model Key) bool {
 	return model == "55"
-}
-
-/* isValidEmissionType
-This value comes from the field: tpEmis
-According to "Manual de Orientação do Contribuinte":
-
-Tipo de Emissão da NF-e
-1 - Emissão normal (não em contingência);
-2 - Contingência FS-IA, com impressão do DANFE em formulário de segurança;
-3 - Contingência SCAN (Sistema de Contingência do Ambiente Nacional);
-4 - Contingência DPEC (Declaração Prévia da Emissão em Contingência);
-5 - Contingência FS-DA, com impressão do DANFE em formulário de segurança;
-6 - Contingência SVC-AN (SEFAZ Virtual de Contingência do AN);
-7 - Contingência SVC-RS (SEFAZ Virtual de Contingência do RS);
-9 - Contingência off-line da NFC-e (as demais opções de contingência são válidas também para a NFC-e). Para a NFC-e somente estão disponíveis e são válidas as opções de contingência 5 e 9.
-*/
-func isValidEmissionType(emtype byte) bool {
-	// The type 9 will be considered invalid because it's defined for NFC-e
-	return (emtype >= '1') && (emtype <= '7')
 }
 
 var validationDigitMultipliers = []int{
@@ -273,3 +248,21 @@ func isValidCNPJ(cnpj string) bool {
 
 	return true
 }
+
+/* isValidEmissionType
+This value comes from the field: tpEmis
+According to "Manual de Orientação do Contribuinte":
+
+Tipo de Emissão da NF-e
+1 - Emissão normal (não em contingência);
+2 - Contingência FS-IA, com impressão do DANFE em formulário de segurança;
+3 - Contingência SCAN (Sistema de Contingência do Ambiente Nacional);
+4 - Contingência DPEC (Declaração Prévia da Emissão em Contingência);
+5 - Contingência FS-DA, com impressão do DANFE em formulário de segurança;
+6 - Contingência SVC-AN (SEFAZ Virtual de Contingência do AN);
+7 - Contingência SVC-RS (SEFAZ Virtual de Contingência do RS);
+9 - Contingência off-line da NFC-e (as demais opções de contingência são válidas também para a NFC-e). Para a NFC-e somente estão disponíveis e são válidas as opções de contingência 5 e 9.
+
+ps: this validation is only valid for accesskeys of
+V2 or more, as this field does not appear on V1 access keys.
+*/
