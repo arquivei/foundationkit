@@ -68,7 +68,7 @@ func Parse(s string) (Stakeholder, error) {
 
 // NewCPF creates a new stakeholder with TypePerson
 func NewCPF(cpf string) (Stakeholder, error) {
-	if err := checkCPF(cpf); err != nil {
+	if err := CheckCPF(cpf); err != nil {
 		return "", err
 	}
 	return Stakeholder(cpf), nil
@@ -76,7 +76,7 @@ func NewCPF(cpf string) (Stakeholder, error) {
 
 // NewCNPJ creates a new stakeholder with TypeCompany
 func NewCNPJ(cnpj string) (Stakeholder, error) {
-	if err := checkCNPJ(cnpj); err != nil {
+	if err := CheckCNPJ(cnpj); err != nil {
 		return "", err
 	}
 	return Stakeholder(cnpj), nil

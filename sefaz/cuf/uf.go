@@ -68,6 +68,7 @@ func (c *CUF) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// IsValid returns whether the provided cUF is valid or not
 func IsValid(cUF CUF) bool {
 	return cUF.initialized
 }

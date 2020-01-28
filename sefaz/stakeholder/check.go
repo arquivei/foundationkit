@@ -11,7 +11,8 @@ func isDigitOnly(accesskey string) bool {
 	return true
 }
 
-func checkCPF(cpf string) error {
+// CheckCPF validates the given CPF
+func CheckCPF(cpf string) error {
 	if cpf == "" {
 		return ErrCPFEmpty
 	}
@@ -83,7 +84,8 @@ func checkCPF(cpf string) error {
 	return nil
 }
 
-func checkCNPJ(cnpj string) error {
+// CheckCNPJ validates the given CNPJ
+func CheckCNPJ(cnpj string) error {
 	if len(cnpj) == 0 {
 		return ErrCNPJEmpty
 	}
