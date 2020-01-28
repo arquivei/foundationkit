@@ -20,12 +20,10 @@ var (
 	ErrInvalidUF = errors.New("access key has invalid UF value")
 	// ErrInvalidMonth month not between 01-12
 	ErrInvalidMonth = errors.New("access key has invalid month value")
-	// ErrInvalidCNPJ the access key does not contain a valid CNPJ
+	// ErrInvalidCPFCNPJ the access key does not contain a valid CNPJ
 	ErrInvalidCPFCNPJ = errors.New("access key has invalid CPF or CNPJ")
-	// ErrInvalidModel model is not NFe (55)
+	// ErrInvalidModel is returned when the model is not a valid SEFAZ model
 	ErrInvalidModel = errors.New("access key has invalid model")
-	// ErrInvalidEmissionType the access key does not contain a valid Emission Type value
-	ErrInvalidEmissionType = errors.New("access key has invalid emission type")
 	// ErrInvalidDigit verification digit mismatch
 	ErrInvalidDigit = errors.New("access key has invalid validation digit")
 )

@@ -68,7 +68,7 @@ func TestCheckCPF(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		err := checkCPF(test.cpf)
+		err := CheckCPF(test.cpf)
 		assert.Equalf(t, test.expectedError, err, "Test [%s] failed.", test.name)
 	}
 }
@@ -114,6 +114,6 @@ func TestCheckCNPJ(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		assert.Equal(t, test.expectedError, checkCNPJ(test.cnpj), "Test failed for input case [%s]", test.cnpj)
+		assert.Equal(t, test.expectedError, CheckCNPJ(test.cnpj), "Test failed for input case [%s]", test.cnpj)
 	}
 }
