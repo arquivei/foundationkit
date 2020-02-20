@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"io"
 	stdlog "log"
 	"os"
@@ -8,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/arquivei/foundationkit/errors"
-
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -53,6 +53,15 @@ func SetupLogger(config Config, version string, extraLogWriters ...io.Writer) {
 	stdlog.SetOutput(hooked)
 }
 
+// SetupLoggerWithContext returns a context enriched with a logger. The logger
+// is created using SetupLogger, what implies that it will be also available
+// globally.
+func SetupLoggerWithContext(ctx context.Context, config Config, version string,
+	extraLogWriters ...io.Writer) context.Context {
+	SetupLogger(config, version, extraLogWriters...)
+	return log.Logger.WithContext(ctx)
+}
+
 // ParseLevel transforms a string in a zerolog level
 func ParseLevel(l string) (zerolog.Level, error) {
 	switch strings.ToLower(l) {
@@ -75,5 +84,6 @@ func MustParseLevel(l string) zerolog.Level {
 	if err != nil {
 		panic(err)
 	}
+
 	return zl
 }
