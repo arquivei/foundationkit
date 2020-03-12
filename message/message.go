@@ -1,7 +1,6 @@
 package message
 
 import (
-	"context"
 	"encoding/json"
 
 	"github.com/rs/zerolog"
@@ -29,7 +28,7 @@ type SchemaVersion int
 
 const (
 	// SchemaVersion3 is the only schema version available right now.
-	// All messages are produced with whis as default.
+	// All messages are produced with this as default.
 	SchemaVersion3 SchemaVersion = 3
 )
 
@@ -42,11 +41,6 @@ type Message struct {
 	CreatedAt     string
 	DataVersion   DataVersion
 	Data          json.RawMessage
-
-	// A context should be given to the message when it is created. If this context
-	// is overwritten (i.e context.WithValue), be sure of possible racing
-	// conditions.
-	Context context.Context `json:"-"`
 }
 
 // MarshalZerologObject implements the zerolog marshaler so it can be logged using:

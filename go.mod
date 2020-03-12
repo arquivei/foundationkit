@@ -7,6 +7,7 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.12.8
 	github.com/go-kit/kit v0.9.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
+	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/omeid/uconfig v0.0.0-20191124031631-f52a35b0fc4f
 	github.com/rs/zerolog v1.14.3

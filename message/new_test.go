@@ -175,16 +175,16 @@ func TestNewWithAutoType(t *testing.T) {
 		{
 			name:        "Unmarshable message",
 			input:       myMessageMockV1{Msg: "hello", err: errors.New("my err")},
-			expectedErr: "message.NewWithAutoType: json: error calling MarshalJSON for type message.myMessageMockV1: my err",
+			expectedErr: "message.New: json: error calling MarshalJSON for type message.myMessageMockV1: my err",
 		},
 		{
 			name:        "With bad message type",
 			input:       myBadType{},
-			expectedErr: "message.NewWithAutoType: message.ParseTypeAndDataVersion: invalid type name, expected '<type>V<version>' but got 'myBadType'",
+			expectedErr: "message.New: message.ParseTypeAndDataVersion: invalid type name, expected '<type>V<version>' but got 'myBadType'",
 		},
 	}
 
-	ctx := context.Background()
+	ctx := context.TODO()
 	for _, test := range tests {
 		actual, err := New(ctx, Source("foundationkit-test"), test.input)
 		if test.expectedErr != "" {
