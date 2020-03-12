@@ -28,7 +28,7 @@ func getTypeName(data interface{}) string {
 // The data should be a struct whose name is like (all those results in the same type):
 // MyMessageV1 -> "my-message", 1
 // myMessageV1 -> "my-message", 1
-// MYVersionV1 -> "my-message", 1
+// MYMessageV1 -> "my-message", 1
 func ParseTypeAndDataVersion(data interface{}) (Type, DataVersion, error) {
 	const op = errors.Op("message.ParseTypeAndDataVersion")
 
@@ -90,6 +90,5 @@ func New(ctx context.Context, source Source, data interface{}) (Message, error) 
 		CreatedAt:     time.Now().Format(time.RFC3339),
 		DataVersion:   messageDataVersion,
 		Data:          json.RawMessage(d),
-		Context:       ctx,
 	}, nil
 }
