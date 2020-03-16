@@ -41,6 +41,11 @@ func (id ID) String() string {
 	return hex.EncodeToString(id[:])
 }
 
+// Parse returns an ID instance from a serialized traceID
+func Parse(input string) ID {
+	return decode([]byte(input))
+}
+
 // UnmarshalJSON parses an ID from a json. The ID is expected to a
 // 32 hexadecimal characters string. This operation is case-insensitive.
 func (id *ID) UnmarshalJSON(b []byte) error {
