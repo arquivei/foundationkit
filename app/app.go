@@ -2,12 +2,14 @@ package app
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/arquivei/foundationkit/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 )
 
@@ -40,7 +42,11 @@ type shutdownHandler struct {
 
 // App represents an application with a main loop and a shutdown routine
 type App struct {
-	ctx              context.Context
+	ctx context.Context
+
+	Ready   bool
+	Healthy bool
+
 	mainLoop         MainLoopFunc
 	shutdownHandlers []shutdownHandler
 	GracePeriod      time.Duration
@@ -48,19 +54,54 @@ type App struct {
 }
 
 // New returns a new App.
-func New(ctx context.Context, mainLoop MainLoopFunc) (*App, error) {
+func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, error) {
 	if mainLoop == nil {
 		return nil, errors.New("main loop is nil")
 	}
-	return &App{
+
+	app := &App{
 		ctx:      ctx,
 		mainLoop: mainLoop,
-	}, nil
+		Ready:    false,
+		Healthy:  true,
+	}
+
+	{ // This spwans an admin HTTP server for this
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.Handler())
+		mux.HandleFunc("/healthy", func(w http.ResponseWriter, _ *http.Request) {
+			if app.Healthy {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte("OK"))
+			} else {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte("NOT OK"))
+			}
+		})
+
+		mux.HandleFunc("/ready", func(w http.ResponseWriter, _ *http.Request) {
+			if app.Ready {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte("OK"))
+			} else {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				w.Write([]byte("NOT OK"))
+			}
+		})
+
+		server := http.Server{
+			Addr:    ":" + adminPort,
+			Handler: mux,
+		}
+		go server.ListenAndServe()
+	}
+
+	return app, nil
 }
 
 // MustNew returns a new App, but panics if there is an error.
-func MustNew(ctx context.Context, mainLoop MainLoopFunc) *App {
-	app, err := New(ctx, mainLoop)
+func MustNew(ctx context.Context, adminPort string, mainLoop MainLoopFunc) *App {
+	app, err := New(ctx, adminPort, mainLoop)
 	if err != nil {
 		panic(err)
 	}
@@ -136,11 +177,12 @@ func (a *App) executeHandlerShutdown(ctx context.Context, h shutdownHandler) err
 }
 
 // RunAndWait executes the main loop on a go-routine and listens to SIGINT and SIGKILL to start the shutdown
-func (a *App) RunAndWait() error {
+func (a *App) RunAndWait() {
 	errs := make(chan error)
 
 	go func() {
 		log.Ctx(a.ctx).Info().Msg("Application main loop starting now!")
+		a.Ready = true
 		errs <- a.mainLoop()
 	}()
 
@@ -150,9 +192,11 @@ func (a *App) RunAndWait() error {
 	ctx := log.Ctx(a.ctx).WithContext(context.Background())
 	select {
 	case <-a.ctx.Done():
+		a.Ready = false
 		log.Ctx(a.ctx).Info().Msg("App context canceled, initialing shutdown procedures...")
 		err = a.Shutdown(ctx)
 	case s := <-signals:
+		a.Ready = false
 		log.Ctx(a.ctx).Info().
 			Str("signal", s.String()).
 			Dur("grace_period", a.GracePeriod).
@@ -161,13 +205,15 @@ func (a *App) RunAndWait() error {
 		log.Ctx(a.ctx).Info().Msg("Grace period is over, initiating shutdown procedures...")
 		err = a.Shutdown(ctx)
 	case err = <-errs: // App finished by itself
+		a.Ready = false
 	}
 	if err == nil {
 		log.Ctx(a.ctx).Info().Msg("App exited")
 	} else {
 		log.Ctx(a.ctx).Error().Err(err).Msg("App exited with error")
 	}
-	return err
+	// This forces kubernetes kills the pod if some other code is holding the main func.
+	a.Healthy = false
 }
 
 // RegisterShutdownHandler adds a handler in the end of the list. During shutdown all handlers are executed in the order they were added

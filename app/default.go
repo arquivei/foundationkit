@@ -12,6 +12,8 @@ var (
 	DefaultGracePeriod = 3 * time.Second
 	// DefaultShutdownTimeout is the defualt value for the timeout during shutdown.
 	DefaultShutdownTimeout = 5 * time.Second
+	// DefaultAdminPort is the default port the app will bind the admin HTTP interface.
+	DefaultAdminPort = "9000"
 	// This is the default app.
 	defaultApp *App
 )
@@ -19,7 +21,7 @@ var (
 // NewDefaultApp creates and sets the defualt app. The default app is controlled by
 // public functions in app package
 func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error) {
-	defaultApp, err = New(ctx, mainLoop)
+	defaultApp, err = New(ctx, DefaultAdminPort, mainLoop)
 	if err != nil {
 		return err
 	}
@@ -29,11 +31,11 @@ func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error) {
 }
 
 // RunAndWait calls the RunAndWait of the default app
-func RunAndWait() error {
+func RunAndWait() {
 	if defaultApp == nil {
 		panic("default app not initialized")
 	}
-	return defaultApp.RunAndWait()
+	defaultApp.RunAndWait()
 }
 
 // Shutdown calls the Shutdown of the default app
@@ -50,4 +52,34 @@ func RegisterShutdownHandler(name string, fn ShutdownFunc, options ...interface{
 		panic("default app not initialized")
 	}
 	defaultApp.RegisterShutdownHandler(name, fn, options...)
+}
+
+// IsReady returns if the default app is ready (to be used by kubernetes readyness probe)
+func IsReady() bool {
+	return defaultApp.Ready
+}
+
+// SetReady sets the app to ready state
+func SetReady() {
+	defaultApp.Ready = true
+}
+
+// SetUnready sets the app to unready state
+func SetUnready() {
+	defaultApp.Ready = false
+}
+
+// IsHealthy returns if the app is healthy. Unhealthy apps are killed by the kubernetes.
+func IsHealthy() bool {
+	return defaultApp.Healthy
+}
+
+// SetHealthy sets the app to an healthy state
+func SetHealthy() {
+	defaultApp.Healthy = true
+}
+
+// SetUnhealthy sets the app to an unhealthy state
+func SetUnhealthy() {
+	defaultApp.Healthy = false
 }
