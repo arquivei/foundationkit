@@ -72,9 +72,11 @@ func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, er
 		mux.HandleFunc("/healthy", func(w http.ResponseWriter, _ *http.Request) {
 			if app.Healthy {
 				w.WriteHeader(http.StatusOK)
+				//nolint:errcheck
 				w.Write([]byte("OK"))
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)
+				//nolint:errcheck
 				w.Write([]byte("NOT OK"))
 			}
 		})
@@ -82,9 +84,11 @@ func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, er
 		mux.HandleFunc("/ready", func(w http.ResponseWriter, _ *http.Request) {
 			if app.Ready {
 				w.WriteHeader(http.StatusOK)
+				//nolint:errcheck
 				w.Write([]byte("OK"))
 			} else {
 				w.WriteHeader(http.StatusServiceUnavailable)
+				//nolint:errcheck
 				w.Write([]byte("NOT OK"))
 			}
 		})
@@ -93,6 +97,7 @@ func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, er
 			Addr:    ":" + adminPort,
 			Handler: mux,
 		}
+		//nolint:errcheck
 		go server.ListenAndServe()
 	}
 
