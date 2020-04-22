@@ -1,8 +1,9 @@
 package log
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Due to the non-determinism nature functions , it is really hard to produce
@@ -39,4 +40,14 @@ func TestFlatten(t *testing.T) {
 	}
 	expectedFlattenD := `FooD: '5'`
 	assert.Equal(t, expectedFlattenD, Flatten(structD), "test failed for struct D")
+
+	structE := struct {
+		FooE1 interface{}
+		FooE2 interface{} `secret:"true"`
+	}{
+		FooE1: "5",
+		FooE2: "q1w2e3",
+	}
+	expectedFlattenE := `FooE1: '5'`
+	assert.Equal(t, expectedFlattenE, Flatten(structE), "test failed for struct E")
 }
