@@ -60,6 +60,11 @@ func flattenPrefixedToResult(value interface{}, prefix string, m map[string]inte
 		}
 	case reflect.Struct:
 		for i := 0; i < original.NumField(); i++ {
+			isSecretStr, hasTag := t.Field(i).Tag.Lookup("secret")
+			if hasTag && isSecretStr == "true" {
+				continue
+			}
+
 			childValue := original.Field(i)
 			childKey := t.Field(i).Name
 			flattenPrefixedToResult(childValue.Interface(), base+childKey, m)
