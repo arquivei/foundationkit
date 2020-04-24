@@ -1,6 +1,7 @@
 package app
 
 import (
+	"container/heap"
 	"context"
 	"net/http"
 	"os"
@@ -13,32 +14,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// ErrorPolicy specifies what should be done when a handler fails
-type ErrorPolicy int
-
-const (
-	// ErrorPolicyWarn prints the error as a warning and continues to the next handler. This is the default.
-	ErrorPolicyWarn ErrorPolicy = iota
-	// ErrorPolicyAbort stops the shutdown process and returns an error
-	ErrorPolicyAbort
-	// ErrorPolicyFatal logs the error as Fatal, it means the application will close immediately
-	ErrorPolicyFatal
-	// ErrorPolicyPanic panics if there is an error
-	ErrorPolicyPanic
-)
-
 // MainLoopFunc is the functions runned by app. If it finishes, it will trigger a shutdown
 type MainLoopFunc func() error
-
-// ShutdownFunc is a shutdown function that will be executed when the app is shutting down.
-type ShutdownFunc func(context.Context) error
-
-type shutdownHandler struct {
-	Name     string
-	Shutdown ShutdownFunc
-	Timeout  time.Duration
-	Policy   ErrorPolicy
-}
 
 // App represents an application with a main loop and a shutdown routine
 type App struct {
@@ -48,7 +25,7 @@ type App struct {
 	Healthy bool
 
 	mainLoop         MainLoopFunc
-	shutdownHandlers []shutdownHandler
+	shutdownHandlers shutdownHeap
 	GracePeriod      time.Duration
 	ShutdownTimeout  time.Duration
 }
@@ -138,47 +115,17 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 	done := make(chan error)
 	go func() {
 		defer close(done)
-		for _, h := range a.shutdownHandlers {
+		for a.shutdownHandlers.Len() > 0 {
+			h := heap.Pop(&a.shutdownHandlers).(*shutdownHandler)
 			if ctx.Err() != nil {
 				done <- errors.E(op, ctx.Err())
 			}
-			err := a.executeHandlerShutdown(ctx, h)
-			if err != nil {
+			if err := h.Execute(ctx); err != nil {
 				done <- errors.E(op, err)
 			}
 		}
 	}()
 	return done
-}
-
-func (a *App) executeHandlerShutdown(ctx context.Context, h shutdownHandler) error {
-	const op = errors.Op("executeHandlerShutdown")
-
-	if h.Timeout > 0 {
-		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, h.Timeout)
-		defer cancel()
-	}
-
-	err := h.Shutdown(ctx)
-	if err != nil {
-		err = errors.E(op, errors.E(errors.Op(h.Name), err))
-		switch h.Policy {
-		case ErrorPolicyWarn:
-			log.Ctx(a.ctx).Warn().Err(err).Msg("Shutdown handler failed")
-		case ErrorPolicyAbort:
-			// No need for logging here, this will happen latter
-			return err
-		case ErrorPolicyFatal:
-			log.Ctx(a.ctx).Fatal().Err(err).Msg("Shutdown handler failed")
-		case ErrorPolicyPanic:
-			panic(err)
-		default:
-			panic(errors.Errorf("invalid error policy: %v", h.Policy))
-		}
-	}
-	log.Ctx(a.ctx).Info().Str("handler", h.Name).Msg("Shutdown successfull")
-	return nil
 }
 
 // RunAndWait executes the main loop on a go-routine and listens to SIGINT and SIGKILL to start the shutdown
@@ -223,19 +170,8 @@ func (a *App) RunAndWait() {
 
 // RegisterShutdownHandler adds a handler in the end of the list. During shutdown all handlers are executed in the order they were added
 func (a *App) RegisterShutdownHandler(name string, fn ShutdownFunc, options ...interface{}) {
-	h := shutdownHandler{
-		Name:     name,
-		Shutdown: fn,
+	if len(a.shutdownHandlers) == 0 {
+		heap.Init(&a.shutdownHandlers)
 	}
-	for _, o := range options {
-		switch opt := o.(type) {
-		case time.Duration:
-			h.Timeout = opt
-		case ErrorPolicy:
-			h.Policy = opt
-		default:
-			panic(errors.Errorf("invalid shutdown handler option: [%T]%v", o, o))
-		}
-	}
-	a.shutdownHandlers = append(a.shutdownHandlers, h)
+	heap.Push(&a.shutdownHandlers, NewShutdownHandler(name, fn, options...))
 }
