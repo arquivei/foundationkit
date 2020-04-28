@@ -44,6 +44,17 @@ type shutdownHandler struct {
 	index    int
 }
 
+// Used to set priority automatically by insertion order
+// This is to maintain consistency with the previous queue behavior
+var nextErrorPriority = 0
+var errorPriorityMode = errorPriorityModeUnset
+
+const (
+	errorPriorityModeUnset = iota
+	errorPriorityModeInsertion
+	errorPriorityModeOption
+)
+
 // NewShutdownHandler returns a new
 func NewShutdownHandler(name string, fn ShutdownFunc, options ...interface{}) *shutdownHandler {
 	if name == "" {
@@ -60,10 +71,31 @@ func NewShutdownHandler(name string, fn ShutdownFunc, options ...interface{}) *s
 		case ErrorPolicy:
 			sh.Policy = opt
 		case ShutdownPriority:
+			if errorPriorityMode == errorPriorityModeUnset {
+				errorPriorityMode = errorPriorityModeOption
+			}
+			if errorPriorityMode != errorPriorityModeOption {
+				panic("shutdown handler with priority mixed with shutdown hanlder without priority")
+			}
+
 			sh.Priority = opt
 		default:
 			panic(errors.Errorf("invalid shutdown handler option: [%T]%v", o, o))
 		}
+	}
+
+	// Ensure that we don't mixud settings with and without priority
+	// If no priority is given, the insertion order will be used as priority
+	if sh.Priority == 0 {
+		if errorPriorityMode == errorPriorityModeUnset {
+			errorPriorityMode = errorPriorityModeInsertion
+		}
+		if errorPriorityMode != errorPriorityModeInsertion {
+			panic("shutdown handler with priority mixed with shutdown hanlder without priority")
+		}
+
+		sh.Priority = ShutdownPriority(nextErrorPriority)
+		nextErrorPriority--
 	}
 	return sh
 }
