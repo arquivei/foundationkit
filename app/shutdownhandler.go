@@ -15,7 +15,7 @@ type ErrorPolicy int
 // ShutdownPriority is used to guide the execution of the shutdown handlers
 // during a graceful shutdown. The shutdown is performed from the higher to the lowest
 // priority
-type ShutdownPriority int
+type ShutdownPriority uint8
 
 const (
 	// ErrorPolicyWarn prints the error as a warning and continues to the next handler. This is the default.
@@ -31,77 +31,22 @@ const (
 // ShutdownFunc is a shutdown function that will be executed when the app is shutting down.
 type ShutdownFunc func(context.Context) error
 
-type shutdownHandler struct {
+type ShutdownHandler struct {
 	Name     string
 	Timeout  time.Duration
 	Policy   ErrorPolicy
 	Priority ShutdownPriority
+	Handler  ShutdownFunc
 
-	Shutdown ShutdownFunc
 	executed bool
 	err      error
 	mu       sync.Mutex
 	index    int
-}
-
-// Used to set priority automatically by insertion order
-// This is to maintain consistency with the previous queue behavior
-var nextErrorPriority = 0
-var errorPriorityMode = errorPriorityModeUnset
-
-const (
-	errorPriorityModeUnset = iota
-	errorPriorityModeInsertion
-	errorPriorityModeOption
-)
-
-// NewShutdownHandler returns a new
-func NewShutdownHandler(name string, fn ShutdownFunc, options ...interface{}) *shutdownHandler {
-	if name == "" {
-		panic("shutdown handler must have a name")
-	}
-	sh := &shutdownHandler{
-		Name:     name,
-		Shutdown: fn,
-	}
-	for _, o := range options {
-		switch opt := o.(type) {
-		case time.Duration:
-			sh.Timeout = opt
-		case ErrorPolicy:
-			sh.Policy = opt
-		case ShutdownPriority:
-			if errorPriorityMode == errorPriorityModeUnset {
-				errorPriorityMode = errorPriorityModeOption
-			}
-			if errorPriorityMode != errorPriorityModeOption {
-				panic("shutdown handler with priority mixed with shutdown hanlder without priority")
-			}
-
-			sh.Priority = opt
-		default:
-			panic(errors.Errorf("invalid shutdown handler option: [%T]%v", o, o))
-		}
-	}
-
-	// Ensure that we don't mixud settings with and without priority
-	// If no priority is given, the insertion order will be used as priority
-	if sh.Priority == 0 {
-		if errorPriorityMode == errorPriorityModeUnset {
-			errorPriorityMode = errorPriorityModeInsertion
-		}
-		if errorPriorityMode != errorPriorityModeInsertion {
-			panic("shutdown handler with priority mixed with shutdown hanlder without priority")
-		}
-
-		sh.Priority = ShutdownPriority(nextErrorPriority)
-		nextErrorPriority--
-	}
-	return sh
+	order    int
 }
 
 // Execute runs the shutdown functions and handles timeout and error policy
-func (sh *shutdownHandler) Execute(ctx context.Context) error {
+func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 	const op = errors.Op("app.shutdownHandler.Execute")
 
 	sh.mu.Lock()
@@ -128,17 +73,25 @@ func (sh *shutdownHandler) Execute(ctx context.Context) error {
 	}
 
 	// Execute the shutdown function and process the result
-	err := sh.Shutdown(ctx)
+	err := sh.Handler(ctx)
 	if err != nil {
 		err = errors.E(op, errors.E(errors.Op(sh.Name), err))
 		switch sh.Policy {
 		case ErrorPolicyWarn:
-			log.Ctx(ctx).Warn().Err(err).Msg("Shutdown handler failed")
+			log.Ctx(ctx).Warn().
+				Err(err).
+				Str("handler", sh.Name).
+				Uint8("shutdown_priority", uint8(sh.Priority)).
+				Msg("Shutdown handler failed")
 		case ErrorPolicyAbort:
 			sh.err = err
 			// No need for logging here, this will happen latter
 		case ErrorPolicyFatal:
-			log.Ctx(ctx).Fatal().Err(err).Msg("Shutdown handler failed")
+			log.Ctx(ctx).Fatal().
+				Err(err).
+				Str("handler", sh.Name).
+				Uint8("shutdown_priority", uint8(sh.Priority)).
+				Msg("Shutdown handler failed")
 		case ErrorPolicyPanic:
 			panic(err)
 		default:
@@ -148,20 +101,24 @@ func (sh *shutdownHandler) Execute(ctx context.Context) error {
 
 	log.Ctx(ctx).Info().
 		Str("handler", sh.Name).
-		Int("shutdown_priority", int(sh.Priority)).
+		Uint8("shutdown_priority", uint8(sh.Priority)).
 		Msg("Shutdown successfull")
 
 	return sh.err
 }
 
 // shutdownHeap is a heap implementation for the *shutdownHandler type
-type shutdownHeap []*shutdownHandler
+type shutdownHeap []*ShutdownHandler
 
 func (sq shutdownHeap) Len() int {
 	return len(sq)
 }
 
 func (sq shutdownHeap) Less(i, j int) bool {
+	// If two items have the same priority, we use the first one inserted
+	if sq[i].Priority == sq[j].Priority {
+		return sq[i].order < sq[j].order
+	}
 	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
 	return sq[i].Priority > sq[j].Priority
 }
@@ -172,8 +129,10 @@ func (sq shutdownHeap) Swap(i, j int) {
 }
 
 func (sq *shutdownHeap) Push(x interface{}) {
-	sh := x.(*shutdownHandler)
-	sh.index = len(*sq)
+	sh := x.(*ShutdownHandler)
+	n := len(*sq)
+	sh.order = n
+	sh.index = n
 	*sq = append(*sq, sh)
 }
 
