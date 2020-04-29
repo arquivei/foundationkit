@@ -116,7 +116,7 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 	go func() {
 		defer close(done)
 		for a.shutdownHandlers.Len() > 0 {
-			h := heap.Pop(&a.shutdownHandlers).(*shutdownHandler)
+			h := heap.Pop(&a.shutdownHandlers).(*ShutdownHandler)
 			if ctx.Err() != nil {
 				done <- errors.E(op, ctx.Err())
 			}
@@ -169,9 +169,12 @@ func (a *App) RunAndWait() {
 }
 
 // RegisterShutdownHandler adds a handler in the end of the list. During shutdown all handlers are executed in the order they were added
-func (a *App) RegisterShutdownHandler(name string, fn ShutdownFunc, options ...interface{}) {
+func (a *App) RegisterShutdownHandler(sh *ShutdownHandler) {
+	if sh.Name == "" {
+		panic("Shutdown handler name must not be an empty string")
+	}
 	if len(a.shutdownHandlers) == 0 {
 		heap.Init(&a.shutdownHandlers)
 	}
-	heap.Push(&a.shutdownHandlers, NewShutdownHandler(name, fn, options...))
+	heap.Push(&a.shutdownHandlers, sh)
 }

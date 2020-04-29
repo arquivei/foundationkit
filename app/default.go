@@ -47,11 +47,11 @@ func Shutdown(ctx context.Context) error {
 }
 
 // RegisterShutdownHandler calls the RegisterShutdownHandler from the default app
-func RegisterShutdownHandler(name string, fn ShutdownFunc, options ...interface{}) {
+func RegisterShutdownHandler(sh *ShutdownHandler) {
 	if defaultApp == nil {
 		panic("default app not initialized")
 	}
-	defaultApp.RegisterShutdownHandler(name, fn, options...)
+	defaultApp.RegisterShutdownHandler(sh)
 }
 
 // IsReady returns if the default app is ready (to be used by kubernetes readyness probe)
