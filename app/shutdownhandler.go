@@ -61,7 +61,7 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 
 	// Avoid runnign if the context is already closed
 	if ctx.Err() != nil {
-		sh.err = ctx.Err()
+		sh.err = errors.E(op, errors.E(errors.Op(sh.Name), ctx.Err()))
 		return sh.err
 	}
 
