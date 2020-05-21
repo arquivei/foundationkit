@@ -31,6 +31,8 @@ const (
 // ShutdownFunc is a shutdown function that will be executed when the app is shutting down.
 type ShutdownFunc func(context.Context) error
 
+// ShutdownHandler is a shutdown structure that allows configuring
+// and storing shutdown information of an orchestrated shutdown flow.
 type ShutdownHandler struct {
 	Name     string
 	Timeout  time.Duration
@@ -59,9 +61,9 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 	}
 	sh.executed = true
 
-	// Avoid runnign if the context is already closed
+	// Avoid running if the context is already closed
 	if ctx.Err() != nil {
-		sh.err = errors.E(op, errors.E(errors.Op(sh.Name), ctx.Err()))
+		sh.err = errors.E(op, errors.E(errors.Op(sh.Name), "skipping handler as deadline has been reached"))
 		return sh.err
 	}
 

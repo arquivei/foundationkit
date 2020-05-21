@@ -8,9 +8,9 @@ import (
 var (
 	// DefaultGracePeriod is the default value for the grace period.
 	// During normal shutdown procedures, the shutdown function will wait
-	// this amount of time before actually starting calling the shurdown handlers.
+	// this amount of time before actually starting calling the shutdown handlers.
 	DefaultGracePeriod = 3 * time.Second
-	// DefaultShutdownTimeout is the defualt value for the timeout during shutdown.
+	// DefaultShutdownTimeout is the default value for the timeout during shutdown.
 	DefaultShutdownTimeout = 5 * time.Second
 	// DefaultAdminPort is the default port the app will bind the admin HTTP interface.
 	DefaultAdminPort = "9000"
@@ -18,7 +18,7 @@ var (
 	defaultApp *App
 )
 
-// NewDefaultApp creates and sets the defualt app. The default app is controlled by
+// NewDefaultApp creates and sets the default app. The default app is controlled by
 // public functions in app package
 func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error) {
 	defaultApp, err = New(ctx, DefaultAdminPort, mainLoop)

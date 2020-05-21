@@ -101,7 +101,7 @@ func (a *App) Shutdown(ctx context.Context) error {
 	var err error
 	select {
 	case <-ctx.Done():
-		err = ctx.Err()
+		err = errors.E(op, "shutdown deadline has been reached")
 	case err = <-a.shutdownAllHandlers(ctx):
 	}
 	if err != nil {
@@ -118,7 +118,7 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 		for a.shutdownHandlers.Len() > 0 {
 			h := heap.Pop(&a.shutdownHandlers).(*ShutdownHandler)
 			if ctx.Err() != nil {
-				done <- errors.E(op, ctx.Err())
+				done <- errors.E(op, "shutdow deadline has been reached")
 			}
 			if err := h.Execute(ctx); err != nil {
 				done <- errors.E(op, err)
