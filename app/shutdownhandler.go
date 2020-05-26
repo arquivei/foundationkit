@@ -31,6 +31,7 @@ const (
 // ShutdownFunc is a shutdown function that will be executed when the app is shutting down.
 type ShutdownFunc func(context.Context) error
 
+// ShutdownHandler is used to register a shutdown function
 type ShutdownHandler struct {
 	Name     string
 	Timeout  time.Duration
