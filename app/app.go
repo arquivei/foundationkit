@@ -156,8 +156,10 @@ func (a *App) RunAndWait() {
 		time.Sleep(a.GracePeriod)
 		log.Ctx(a.ctx).Info().Msg("Grace period is over, initiating shutdown procedures...")
 		err = a.Shutdown(ctx)
-	case err = <-errs: // App finished by itself
+	case err = <-errs:
 		a.Ready = false
+		log.Ctx(a.ctx).Info().Msg("App finished by itself, initialing shutdown procedures...")
+		err = a.Shutdown(ctx)
 	}
 	if err == nil {
 		log.Ctx(a.ctx).Info().Msg("App exited")
