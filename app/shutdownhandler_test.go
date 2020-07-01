@@ -54,10 +54,10 @@ func TestShutdownhandlerHeap(t *testing.T) {
 	p3 := heap.Pop(&h)
 	p4 := heap.Pop(&h)
 
-	assert.Equal(t, sh1, p4, "sh1 has de lowest priority and must be poped last")
-	assert.Equal(t, sh2, p1, "sh2 has the highest priority and must be poped first")
-	assert.Equal(t, sh3, p3, "sh3 must be poped after sh4 and before sh1")
-	assert.Equal(t, sh4, p2, "sh4 must be poped after sh2 and before sh3")
+	assert.Equal(t, sh1, p4, "sh1 has de lowest priority and must be popped last")
+	assert.Equal(t, sh2, p1, "sh2 has the highest priority and must be popped first")
+	assert.Equal(t, sh3, p3, "sh3 must be popped after sh4 and before sh1")
+	assert.Equal(t, sh4, p2, "sh4 must be popped after sh2 and before sh3")
 
 	assert.Equal(t, h.Len(), 0, "heap should be empty")
 }
@@ -112,7 +112,7 @@ func TestShutdownHandlerExecute_CanceledContext(t *testing.T) {
 
 	err := sh.Execute(ctx)
 	assert.True(t, sh.executed)
-	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: context canceled")
+	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: skipping handler as deadline has been reached")
 }
 
 func TestShutdownHandlerExecute_Timeout(t *testing.T) {
@@ -123,7 +123,7 @@ func TestShutdownHandlerExecute_Timeout(t *testing.T) {
 			case <-time.After(2 * time.Nanosecond):
 				return nil
 			case <-ctx.Done():
-				return ctx.Err()
+				return errors.New("custom handler error on deadline exceeded")
 			}
 		},
 		Policy:  ErrorPolicyAbort,
@@ -133,5 +133,5 @@ func TestShutdownHandlerExecute_Timeout(t *testing.T) {
 	ctx := context.Background()
 	err := sh.Execute(ctx)
 	assert.True(t, sh.executed)
-	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: context deadline exceeded")
+	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: custom handler error on deadline exceeded")
 }
