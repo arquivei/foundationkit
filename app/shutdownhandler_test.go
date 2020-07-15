@@ -65,7 +65,8 @@ func TestShutdownhandlerHeap(t *testing.T) {
 func TestShutdownHandlerExecute(t *testing.T) {
 	assert.Panics(t, func() {
 		sh := &ShutdownHandler{}
-		sh.Execute(context.TODO())
+		err := sh.Execute(context.Background())
+		assert.NoError(t, err)
 	}, "should panic if Handler is not set")
 
 	sh := &ShutdownHandler{
