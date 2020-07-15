@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"context"
 	"net/http"
+	"net/http/pprof" // Sadly, this also changes the DefaultMux to have the pprof URLs
 	"os"
 	"os/signal"
 	"syscall"
@@ -45,7 +46,9 @@ func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, er
 
 	{ // This spwans an admin HTTP server for this
 		mux := http.NewServeMux()
+
 		mux.Handle("/metrics", promhttp.Handler())
+
 		mux.HandleFunc("/healthy", func(w http.ResponseWriter, _ *http.Request) {
 			if app.Healthy {
 				w.WriteHeader(http.StatusOK)
@@ -69,6 +72,15 @@ func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, er
 				w.Write([]byte("NOT OK"))
 			}
 		})
+
+		mux.HandleFunc("/debug/pprof/", http.HandlerFunc(pprof.Index))
+		mux.HandleFunc("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+		mux.HandleFunc("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+		mux.HandleFunc("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+		mux.HandleFunc("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+		mux.HandleFunc("/debug/dump/goroutines", dumpGoroutines)
+		mux.HandleFunc("/debug/dump/memory", dumpMemProfile)
+		mux.HandleFunc("/debug/dump/memstats", dumpMemStats)
 
 		server := http.Server{
 			Addr:    ":" + adminPort,
@@ -158,7 +170,7 @@ func (a *App) RunAndWait() {
 		err = a.Shutdown(ctx)
 	case err = <-errs:
 		a.Ready = false
-		log.Ctx(a.ctx).Info().Msg("App finished by itself, initialing shutdown procedures...")
+		log.Ctx(a.ctx).Info().Err(err).Msg("App finished by itself, initialing shutdown procedures...")
 		err = a.Shutdown(ctx)
 	}
 	if err == nil {
