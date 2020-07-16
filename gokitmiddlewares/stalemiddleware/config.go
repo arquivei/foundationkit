@@ -8,11 +8,13 @@ import (
 )
 
 type Config struct {
-	Timeout time.Duration
-	Logger  *zerolog.Logger
+	Logger                 *zerolog.Logger
+	MaxTimeBetweenRequests time.Duration
+	StartCheckAfter        time.Duration
 }
 
 var DefaultConfig = Config{
-	Timeout: 60 * time.Second,
-	Logger:  &log.Logger,
+	MaxTimeBetweenRequests: time.Minute,
+	Logger:                 &log.Logger,
+	StartCheckAfter:        10 * time.Second,
 }
