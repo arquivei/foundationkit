@@ -7,3 +7,10 @@ import "github.com/rs/zerolog"
 func (i ID) MarshalZerologObject(e *zerolog.Event) {
 	e.Str("trace_id", i.String())
 }
+
+func (t Trace) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("trace_id", t.ID.String())
+	if t.ProbabilitySample != nil {
+		e.Float64("trace_probability_sample", *t.ProbabilitySample)
+	}
+}
