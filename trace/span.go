@@ -18,7 +18,7 @@ func (s *Span) End(err error) {
 	if s.span != nil {
 		s.span.End()
 		if err != nil {
-			s.span.AddAttributes(trace.StringAttribute("error_code", errors.GetErrorCode(err).String()))
+			s.span.AddAttributes(trace.StringAttribute("error_code", errors.GetCode(err).String()))
 		}
 	}
 }
