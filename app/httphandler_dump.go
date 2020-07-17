@@ -13,11 +13,12 @@ func dumpGoroutines(w http.ResponseWriter, r *http.Request) {
 	var b [4 * 1024 * 1024]byte
 
 	n := runtime.Stack(b[:], true)
+
 	if n > 0 {
 		w.Write(b[0:n])
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("This is not the DUMP you are looking for."))
+		w.Write([]byte("Unable to write Stack into the buffer"))
 	}
 }
 
@@ -25,14 +26,17 @@ func dumpMemProfile(w http.ResponseWriter, r *http.Request) {
 	var b bytes.Buffer
 	bufferWriter := bufio.NewWriter(&b)
 
-	pprof.WriteHeapProfile(bufferWriter)
+	err := pprof.WriteHeapProfile(bufferWriter)
 	bufferWriter.Flush()
 
-	if b.Len() > 0 {
-		w.Write(b.Bytes())
-	} else {
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("This is not the DUMP you are looking for."))
+		w.Write([]byte("Unable to write heap into the buffer: " + err.Error()))
+	} else if b.Len() == 0 {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Heap buffer is empty"))
+	} else {
+		w.Write(b.Bytes())
 	}
 }
 
