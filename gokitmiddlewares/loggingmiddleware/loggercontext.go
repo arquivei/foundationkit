@@ -13,12 +13,12 @@ import (
 func initLoggerContext(ctx context.Context, l zerolog.Logger) context.Context {
 	// Creates a copy, otherwise the logger is updated for every request
 	// Ensures that there is a logger in the context
-	// If there is a logger in the context, it's not updated
+	// If the same logger is in the context already or if there is a disabled
+	// logger already in the context, the context is not updated.
 	return l.WithContext(ctx)
 }
 
-func enrichLoggerContext(ctx context.Context, name string, c Config, req interface{}) {
-	l := log.Ctx(ctx)
+func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, name string, c Config, req interface{}) {
 	l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
 		if c.Meta != nil {
 			zctx = zctx.Interface("endpoint_meta", c.Meta)
@@ -41,7 +41,7 @@ func enrichLoggerContext(ctx context.Context, name string, c Config, req interfa
 		if t := trace.GetTraceFromContext(ctx); !trace.IDIsEmpty(t.ID) {
 			zctx = zctx.EmbedObject(trace.GetTraceFromContext(ctx))
 		} else {
-			log.Warn().Msg("Reqeust doesn't have a trace! Did you forget to use trackingmiddleware on the trasport layer?")
+			log.Warn().Msg("Request doesn't have a trace! Did you forget to use trackingmiddleware on the trasport layer?")
 		}
 
 		return zctx.Str("endpoint_name", name)
@@ -49,9 +49,7 @@ func enrichLoggerContext(ctx context.Context, name string, c Config, req interfa
 	})
 }
 
-func enrichLoggerAfterResponse(ctx context.Context, c Config, begin time.Time, resp interface{}) {
-	l := log.Ctx(ctx)
-
+func enrichLoggerAfterResponse(l *zerolog.Logger, c Config, begin time.Time, resp interface{}) {
 	l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
 		if l.WithLevel(c.LogResponseIfLevel).Enabled() {
 			zctx = zctx.Str("endpoint_response", toString(resp, c.TruncResponseAt))

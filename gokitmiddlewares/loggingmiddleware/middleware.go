@@ -7,18 +7,28 @@ import (
 
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/go-kit/kit/endpoint"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+// MustNew calls New and panics in case of error.
+func MustNew(name string, c Config) endpoint.Middleware {
+	m, err := New(name, c)
+	if err != nil {
+		panic(err)
+	}
+	return m
+}
+
 // New returns a new go-kit logging middleware with the given name and configuration.
 // It will panic if the name is empty.
-func New(name string, c Config) endpoint.Middleware {
+func New(name string, c Config) (endpoint.Middleware, error) {
 	if name == "" {
-		panic("endpoint name is empty")
+		return nil, errors.New("endpoint name is empty")
 	}
 
 	if c.Logger == nil {
-		panic("logger is nil")
+		return nil, errors.New("logger is nil")
 	}
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
@@ -26,32 +36,26 @@ func New(name string, c Config) endpoint.Middleware {
 			begin := time.Now()
 
 			ctx = initLoggerContext(ctx, *c.Logger)
+			l := log.Ctx(ctx)
 
-			enrichLoggerContext(ctx, name, c, req)
-
+			enrichLoggerContext(ctx, l, name, c, req)
 			defer func() {
-				doLogging(ctx, c, begin, resp, err)
+				enrichLoggerAfterResponse(l, c, begin, resp)
+				doLogging(l, c, err)
 			}()
 
 			return next(ctx, req)
 		}
-	}
+	}, nil
 }
 
-func doLogging(ctx context.Context, c Config, begin time.Time, resp interface{}, err error) {
-	enrichLoggerAfterResponse(ctx, c, begin, resp)
-
-	l := log.Ctx(ctx)
-
+func doLogging(l *zerolog.Logger, c Config, err error) {
 	if err != nil {
-		e := l.WithLevel(getErrorLevel(c, err)).Err(err)
-		if code := errors.GetCode(err); code.String() != "" {
-			e = e.Str("error_code", code.String())
-		}
-		if s := errors.GetSeverity(err); s.String() != "" {
-			e = e.Str("error_severity", s.String())
-		}
-		e.Msg("Request failed")
+		l.WithLevel(getErrorLevel(c, err)).
+			Err(err).
+			EmbedObject(errors.GetCode(err)).
+			EmbedObject(errors.GetSeverity(err)).
+			Msg("Request failed")
 		return
 	}
 

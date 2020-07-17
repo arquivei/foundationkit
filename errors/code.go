@@ -1,11 +1,19 @@
 package errors
 
+import "github.com/rs/zerolog"
+
 // Code is the error code
 type Code string
 
 // String returns the code as a string
 func (c Code) String() string {
 	return string(c)
+}
+
+// MarshalZerologObject allows for zerolog to
+// log the error code as 'error_code': '...'
+func (c Code) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("error_code", string(c))
 }
 
 const (
