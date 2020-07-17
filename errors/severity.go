@@ -1,5 +1,7 @@
 package errors
 
+import "github.com/rs/zerolog"
+
 // Severity is the error severity. It's used to classify errors in groups to be easily handled by the code. For example,
 // a retry layer should be only checking for Runtime errors to retry. Or in an HTTP layer, errors of input type are always
 // returned a 400 status.
@@ -18,6 +20,12 @@ const (
 
 func (s Severity) String() string {
 	return string(s)
+}
+
+// MarshalZerologObject allows for zerolog to log the error
+// severity as 'error_severity': '...'
+func (s Severity) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("error_severity", string(s))
 }
 
 // GetSeverity returns the error severity. If there is not severity, SeverityUnset is returned.
