@@ -71,8 +71,8 @@ func NewEndpointBatchProcessor(e endpoint.Endpoint, d EndpointBatchDecoder) (god
 
 // MustNewEndpointBatchProcessor calls NewEndpointProcessor and panics
 // in case of error.
-func MustNewEndpointBatchProcessor(e endpoint.Endpoint, d EndpointDecoder) goduck.Processor {
-	p, err := NewEndpointProcessor(e, d)
+func MustNewEndpointBatchProcessor(e endpoint.Endpoint, d EndpointBatchDecoder) goduck.BatchProcessor {
+	p, err := NewEndpointBatchProcessor(e, d)
 	if err != nil {
 		panic(err)
 	}
