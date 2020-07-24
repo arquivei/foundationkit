@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetTraceFromHTTRequest(t *testing.T) {
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
 	r.Header.Add(headerTraceID, "00000000000000000000000000000019")
@@ -23,7 +23,7 @@ func TestGetTraceFromHTTRequest(t *testing.T) {
 }
 
 func TestGetTraceFromHTTRequest_ErrorParseProbabilitySample(t *testing.T) {
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
 	r.Header.Add(headerTraceID, "00000000000000000000000000000019")
@@ -36,7 +36,7 @@ func TestGetTraceFromHTTRequest_ErrorParseProbabilitySample(t *testing.T) {
 }
 
 func TestGetTraceFromHTTRequest_WithoutHeader(t *testing.T) {
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
 	trace := GetTraceFromHTTRequest(r)
@@ -46,7 +46,7 @@ func TestGetTraceFromHTTRequest_WithoutHeader(t *testing.T) {
 }
 
 func TestGetTraceFromHTTRequest_WithoutProbabilitySample(t *testing.T) {
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
 	r.Header.Add(headerTraceID, "00000000000000000000000000000019")
@@ -58,7 +58,7 @@ func TestGetTraceFromHTTRequest_WithoutProbabilitySample(t *testing.T) {
 }
 
 func TestGetTraceFromHTTRequest_WithoutTraceID(t *testing.T) {
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
 	r.Header.Add(headerProbabilitySample, "0.5")
@@ -125,7 +125,7 @@ func TestSetTraceInHTTPRequest(t *testing.T) {
 		ProbabilitySample: &ps,
 	}
 
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 	SetTraceInHTTPRequest(WithTrace(context.Background(), trace), r)
 
@@ -135,7 +135,7 @@ func TestSetTraceInHTTPRequest(t *testing.T) {
 
 func TestSetTraceInHTTPRequest_EmptyTrace(t *testing.T) {
 	defaultProbabilitySample = 0.5
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 	SetTraceInHTTPRequest(WithTrace(context.Background(), Trace{}), r)
 
@@ -149,7 +149,7 @@ func TestSetTraceInHTTPRequest_EmptyProbabilitySample(t *testing.T) {
 		ID: decode([]byte("00000000000000000000000000000019")),
 	}
 
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 	SetTraceInHTTPRequest(WithTrace(context.Background(), trace), r)
 
@@ -163,7 +163,7 @@ func TestSetTraceInHTTPRequest_EmptyTraceID(t *testing.T) {
 		ProbabilitySample: &ps,
 	}
 
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 	SetTraceInHTTPRequest(WithTrace(context.Background(), trace), r)
 
@@ -173,7 +173,7 @@ func TestSetTraceInHTTPRequest_EmptyTraceID(t *testing.T) {
 
 // [DEPRECATED] Testing a Deprecated Methods
 func TestGetTraceIDFromHTTRequest(t *testing.T) {
-	r, err := http.NewRequest("POST", "URL", nil)
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
 	r.Header.Add(headerTraceID, "00000000000000000000000000000019")

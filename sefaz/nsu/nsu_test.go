@@ -56,7 +56,6 @@ func TestNSUJSONUnmarshaler(t *testing.T) {
 			assert.NoError(t, err, "[%s] Unexpected error", testcase.Test)
 		}
 	}
-
 }
 
 func TestParse(t *testing.T) {

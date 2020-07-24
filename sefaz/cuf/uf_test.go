@@ -47,11 +47,9 @@ func TestParseUF(t *testing.T) {
 		if test.errMsg == "" {
 			assert.NoError(t, err)
 			assert.Equal(t, test.str, strconv.Itoa(int(uf)))
-
 		} else {
 			assert.EqualError(t, err, test.errMsg)
 		}
-
 	}
 }
 

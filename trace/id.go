@@ -63,6 +63,7 @@ func decode(b []byte) ID {
 	b = b[:size]
 
 	var new ID
+	// nolint: errcheck
 	hex.Decode(new[:], b)
 
 	return new

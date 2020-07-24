@@ -17,7 +17,6 @@ type testSpan struct {
 }
 
 func TestSpan(t *testing.T) {
-
 	// PS = probability sample
 	// DPS = default probability sample (context's probability sample)
 

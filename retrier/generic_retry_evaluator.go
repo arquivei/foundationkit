@@ -73,7 +73,7 @@ func (e *GenericRetryEvaluator) IsRetryable(attempt int, attemptError error) boo
 		return false
 	}
 
-	canRetryOnErrorCode, err := isErrorCodeRetryable(errors.GetErrorCode(attemptError), e.ErrorsCodesPolicy, e.ErrorsCodes)
+	canRetryOnErrorCode, err := isErrorCodeRetryable(errors.GetCode(attemptError), e.ErrorsCodesPolicy, e.ErrorsCodes)
 	if err != nil {
 		panic(errors.E(op, err))
 	}

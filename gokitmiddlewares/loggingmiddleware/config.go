@@ -11,23 +11,23 @@ import (
 // loggingmiddleware. All fields should be set unless marked
 // as optional.
 type Config struct {
-	// LogRequestIfLevel will log the request if this
-	// log level is enabled in the logger.
-	LogRequestIfLevel zerolog.Level
-
 	// TruncRequestAt will truncate the serialized request if
 	// the string length is above this value.
 	// Setting to zero disables truncating.
 	TruncRequestAt int
 
-	// LogResponseIfLevel will log the response if this
-	// log level is enabled in the logger.
-	LogResponseIfLevel zerolog.Level
-
 	// TruncResponseAt will truncate the serialized request if
 	// the string length is above this value.
 	// Setting to zero disables truncating.
 	TruncResponseAt int
+
+	// LogRequestIfLevel will log the request if this
+	// log level is enabled in the logger.
+	LogRequestIfLevel zerolog.Level
+
+	// LogResponseIfLevel will log the response if this
+	// log level is enabled in the logger.
+	LogResponseIfLevel zerolog.Level
 
 	// SuccessLevel is the log level of requests that are processed without error.
 	SuccessLevel zerolog.Level

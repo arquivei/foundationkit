@@ -23,9 +23,9 @@ func TestTypeText(t *testing.T) {
 			expected: "cnpj",
 		},
 		{
-			name:     "Unkown",
+			name:     "Unknown",
 			input:    TypeUnknown,
-			expected: "unkown",
+			expected: "unknown",
 		},
 		{
 			name:     "Unmapped value",

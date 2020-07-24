@@ -9,6 +9,7 @@ import (
 	"runtime/pprof"
 )
 
+// nolint: errcheck
 func dumpGoroutines(w http.ResponseWriter, r *http.Request) {
 	var b [4 * 1024 * 1024]byte
 
@@ -22,6 +23,7 @@ func dumpGoroutines(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// nolint: errcheck
 func dumpMemProfile(w http.ResponseWriter, r *http.Request) {
 	var b bytes.Buffer
 	bufferWriter := bufio.NewWriter(&b)
@@ -29,13 +31,14 @@ func dumpMemProfile(w http.ResponseWriter, r *http.Request) {
 	err := pprof.WriteHeapProfile(bufferWriter)
 	bufferWriter.Flush()
 
-	if err != nil {
+	switch {
+	case err != nil:
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Unable to write heap into the buffer: " + err.Error()))
-	} else if b.Len() == 0 {
+	case b.Len() == 0:
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Heap buffer is empty"))
-	} else {
+	default:
 		w.Write(b.Bytes())
 	}
 }
@@ -44,6 +47,7 @@ func bytesToMegabytes(bytes uint64) uint64 {
 	return bytes / (1024 * 1024)
 }
 
+// nolint: errcheck
 func dumpMemStats(w http.ResponseWriter, r *http.Request) {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
