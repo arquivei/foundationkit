@@ -91,7 +91,7 @@ func TestAccessKeyValidator(t *testing.T) {
 		err := s.Check(test.accessKey)
 
 		if test.expectedErrorCode != "" {
-			assert.Equalf(t, test.expectedErrorCode, errors.GetErrorCode(err),
+			assert.Equalf(t, test.expectedErrorCode, errors.GetCode(err),
 				"test [%s] failed to match expected error code", test.name)
 		} else {
 			assert.NoErrorf(t, err, "test [%s] generated an unexpected error", test.name)
@@ -118,9 +118,7 @@ func TestCNPJCPFValidator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-
 		isValid := isValidCPFCNPJ(test.cpfcnpj)
 		assert.Equal(t, test.expectedValidation, isValid, test.name)
-
 	}
 }

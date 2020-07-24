@@ -34,17 +34,19 @@ type ShutdownFunc func(context.Context) error
 // ShutdownHandler is a shutdown structure that allows configuring
 // and storing shutdown information of an orchestrated shutdown flow.
 type ShutdownHandler struct {
-	Name     string
-	Timeout  time.Duration
-	Policy   ErrorPolicy
+	Name    string
+	Timeout time.Duration
+	Handler ShutdownFunc
+	Policy  ErrorPolicy
+
+	err   error
+	index int
+	order int
+	mu    sync.Mutex
+
 	Priority ShutdownPriority
-	Handler  ShutdownFunc
 
 	executed bool
-	err      error
-	mu       sync.Mutex
-	index    int
-	order    int
 }
 
 // Execute runs the shutdown functions and handles timeout and error policy
@@ -104,7 +106,7 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 	log.Ctx(ctx).Info().
 		Str("handler", sh.Name).
 		Uint8("shutdown_priority", uint8(sh.Priority)).
-		Msg("Shutdown successfull")
+		Msg("Shutdown successful")
 
 	return sh.err
 }

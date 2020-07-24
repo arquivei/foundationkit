@@ -8,7 +8,6 @@ import (
 
 func New(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		meta := loggingmiddleware.Meta{
 			"url":         r.URL.String(),
 			"user_agent":  r.UserAgent(),

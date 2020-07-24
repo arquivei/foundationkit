@@ -47,7 +47,7 @@ func TestStakeholderJSONUnmarshaler(t *testing.T) {
 			Test:     "Invalid cnpj",
 			Input:    []byte(`"abc"`),
 			Expected: Stakeholder(""),
-			Err:      "stakeholder.UnmarshalJSON: stakeholder.Parse: invalid stakeholder type: unkown",
+			Err:      "stakeholder.UnmarshalJSON: stakeholder.Parse: invalid stakeholder type: unknown",
 		},
 	}
 
@@ -61,7 +61,6 @@ func TestStakeholderJSONUnmarshaler(t *testing.T) {
 			assert.NoError(t, err, "[%s] Unexpected error", testcase.Test)
 		}
 	}
-
 }
 
 func TestNewCPF(t *testing.T) {

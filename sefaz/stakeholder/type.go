@@ -26,7 +26,7 @@ func TypeText(t Type) string {
 	case TypeCompany:
 		return "cnpj"
 	case TypeUnknown:
-		return "unkown"
+		return "unknown"
 	}
 	return "unexpected: " + strconv.Itoa(int(t))
 }

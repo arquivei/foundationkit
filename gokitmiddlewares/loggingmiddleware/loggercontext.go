@@ -45,7 +45,6 @@ func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, name string, c 
 		}
 
 		return zctx.Str("endpoint_name", name)
-
 	})
 }
 
