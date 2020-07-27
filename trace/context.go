@@ -15,10 +15,20 @@ const (
 	contextKeyTraceID
 )
 
-// WithTrace returns the @parent context with the Trace @trace
-func WithTrace(parent context.Context, trace Trace) context.Context {
+// WithTrace if there is no trace in the context, returns the @ctx with the @trace
+// else returns the @ctx unchanged
+func WithTrace(ctx context.Context, trace Trace) context.Context {
+	if v := ctx.Value(contextKeyTrace); v != nil {
+		return ctx
+	}
 	trace = ensureTraceNotEmpty(trace)
-	return context.WithValue(parent, contextKeyTrace, trace)
+	return context.WithValue(ctx, contextKeyTrace, trace)
+}
+
+// WithNewTrace returns the same as WithTrace, but instead of receiving
+// a trace, it creates a new one.
+func WithNewTrace(ctx context.Context) context.Context {
+	return WithTrace(ctx, Trace{})
 }
 
 // GetTraceFromContext returns the Trace saved in @ctx

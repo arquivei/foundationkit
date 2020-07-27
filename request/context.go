@@ -11,7 +11,10 @@ const (
 // WithRequestID checks the context if it already has a ID. If not,
 // creates a new one and returns a new context with it.
 func WithRequestID(ctx context.Context) context.Context {
-	return context.WithValue(ctx, contextKeyID, newID())
+	if v := ctx.Value(contextKeyID); v == nil {
+		return context.WithValue(ctx, contextKeyID, newID())
+	}
+	return ctx
 }
 
 // GetRequestIDFromContext returns the request ID in the context.
