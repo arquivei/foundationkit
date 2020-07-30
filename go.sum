@@ -57,8 +57,8 @@ github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hC
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/arquivei/foundationkit v0.0.0-20200302211010-306c93c13d0d/go.mod h1:V50AKkdT7HxWhvq/TSHicGSD2r960WLz8vgQwYF+EOo=
-github.com/arquivei/goduck v0.2.3 h1:svt1AGcO5vBqlVdBwcPf7C5OUkAzmQYVOuO6sbK6r+Y=
-github.com/arquivei/goduck v0.2.3/go.mod h1:pcmdrlbXJtgdEYjhETZ3mphnjap8CorCExEkecTRHDY=
+github.com/arquivei/goduck v0.2.4 h1:gnkuYv9AT65JFkQpKekExxopxidXvPOnNe9BOZIQtq4=
+github.com/arquivei/goduck v0.2.4/go.mod h1:pcmdrlbXJtgdEYjhETZ3mphnjap8CorCExEkecTRHDY=
 github.com/aryann/difflib v0.0.0-20170710044230-e206f873d14a/go.mod h1:DAHtR1m6lCRdSC2Tm3DSWRPvIPr6xNKyeHdqDQSQT+A=
 github.com/aws/aws-lambda-go v1.13.3/go.mod h1:4UKl9IzQMoD+QF79YdCuzCwp8VbmG4VAQwij/eHl5CU=
 github.com/aws/aws-sdk-go v1.23.20 h1:2CBuL21P0yKdZN5urf2NxKa1ha8fhnY+A3pBCHFeZoA=

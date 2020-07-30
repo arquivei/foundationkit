@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.60.0 // indirect
 	cloud.google.com/go/logging v1.0.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.2
-	github.com/arquivei/goduck v0.2.3
+	github.com/arquivei/goduck v0.2.4
 	github.com/aws/aws-sdk-go v1.32.13 // indirect
 	github.com/go-kit/kit v0.10.0
 	github.com/oklog/ulid v1.3.1
