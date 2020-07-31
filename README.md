@@ -1,6 +1,6 @@
 # Foundation Kit
 
-[![PkgGoDev](https://pkg.go.dev/badge/arquivei/foundationkit)](https://pkg.go.dev/arquivei/foundationkit)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/arquivei/foundationkit)](https://pkg.go.dev/github.com/arquivei/foundationkit)
 [![Go Report Card](https://goreportcard.com/badge/github.com/arquivei/foundationkit)](https://goreportcard.com/report/github.com/arquivei/foundationkit)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
