@@ -10,12 +10,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func initLoggerContext(ctx context.Context, l zerolog.Logger) context.Context {
+func initLoggerContext(ctx context.Context, l zerolog.Logger) (*zerolog.Logger, context.Context) {
 	// Creates a copy, otherwise the logger is updated for every request
 	// Ensures that there is a logger in the context
 	// If the same logger is in the context already or if there is a disabled
 	// logger already in the context, the context is not updated.
-	return l.WithContext(ctx)
+	logger := l.With().Logger()
+	return &logger, logger.WithContext(ctx)
 }
 
 func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, name string, c Config, req interface{}) {

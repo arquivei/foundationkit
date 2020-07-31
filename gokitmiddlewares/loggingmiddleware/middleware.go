@@ -8,7 +8,6 @@ import (
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 // MustNew calls New and panics in case of error.
@@ -35,8 +34,7 @@ func New(name string, c Config) (endpoint.Middleware, error) {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			begin := time.Now()
 
-			ctx = initLoggerContext(ctx, *c.Logger)
-			l := log.Ctx(ctx)
+			l, ctx := initLoggerContext(ctx, *c.Logger)
 
 			enrichLoggerContext(ctx, l, name, c, req)
 			defer func() {
