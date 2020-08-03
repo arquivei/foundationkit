@@ -1,6 +1,8 @@
 package loggingmiddleware
 
 import (
+	"context"
+
 	"github.com/arquivei/foundationkit/errors"
 
 	"github.com/rs/zerolog"
@@ -51,23 +53,59 @@ type Config struct {
 
 	// Meta are extra keys logged under 'endpoint_meta' key.
 	Meta Meta
+
+	// EnrichRequestFunc is used to enrich the logger context with the request.
+	//
+	// It is called by the middleware to enrich the logger with information from
+	// inside the request just before calling the next endpoint. This functions should
+	// interpret the request and extract information and return the new zerolog context.
+	//
+	// Remember that the request can be logged as a whole by using LogRequestIfLevel and
+	// TruncRequestAt.
+	//
+	// If set to 'nil' it is disabled.
+	EnrichLogWithRequest EnrichLogWithRequestFunc
+
+	// EnrichLogWithResponse is used to enrich the logger context with the response and error.
+	//
+	// It is called by the middleware to enrich the logger with information from
+	// inside the respose and error after calling the next endpoint. This functions should
+	// interpret the response and error and extract information and return the new zerolog context.
+	//
+	// Remember that the response can be logged as a whole by using LogResponseIfLevel and
+	// TruncResponseAt.
+	//
+	// If set to 'nil' it is disabled.
+	EnrichLogWithResponse EnrichLogWithResponseFunc
 }
 
+// EnrichLogWithRequestFunc is a function that receives a zerolog Context and the request. It should parse and
+// extract information and return a new enriched zerolog context.
+type EnrichLogWithRequestFunc func(ctx context.Context, zctx zerolog.Context, request interface{}) (context.Context, zerolog.Context)
+
+// EnrichLogWithResponseFunc is a function that receives a zerolog Context and the response and error. It should
+// parse and extract information and return a new enriched zerolog context. The error is already handled my the logging
+// middleware if it is an error.Error, but it is passed to this functions should you need to extract another kind of data
+// from the error.
+type EnrichLogWithResponseFunc func(ctx context.Context, zctx zerolog.Context, response interface{}, err error) zerolog.Context
+
 // DefaultConfig contains sane defaults to configure a new logging middleware.
-var DefaultConfig = Config{
-	Logger: &log.Logger,
+func NewDefaultConfig() Config {
+	return Config{
+		Logger: &log.Logger,
 
-	LogRequestIfLevel:  zerolog.DebugLevel,
-	TruncRequestAt:     200,
-	LogResponseIfLevel: zerolog.DebugLevel,
-	TruncResponseAt:    200,
+		LogRequestIfLevel:  zerolog.DebugLevel,
+		TruncRequestAt:     200,
+		LogResponseIfLevel: zerolog.DebugLevel,
+		TruncResponseAt:    200,
 
-	SuccessLevel:      zerolog.InfoLevel,
-	DefaultErrorLevel: zerolog.ErrorLevel,
+		SuccessLevel:      zerolog.InfoLevel,
+		DefaultErrorLevel: zerolog.ErrorLevel,
 
-	SeverityMapLevel: map[errors.Severity]zerolog.Level{
-		errors.SeverityInput:   zerolog.InfoLevel,
-		errors.SeverityRuntime: zerolog.WarnLevel,
-		errors.SeverityFatal:   zerolog.ErrorLevel,
-	},
+		SeverityMapLevel: map[errors.Severity]zerolog.Level{
+			errors.SeverityInput:   zerolog.InfoLevel,
+			errors.SeverityRuntime: zerolog.WarnLevel,
+			errors.SeverityFatal:   zerolog.ErrorLevel,
+		},
+	}
 }
