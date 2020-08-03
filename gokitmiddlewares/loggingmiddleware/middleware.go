@@ -30,6 +30,9 @@ func New(name string, c Config) (endpoint.Middleware, error) {
 		return nil, errors.New("logger is nil")
 	}
 
+	shouldEnrichLogWithRequest := c.EnrichLogWithRequest != nil
+	shouldEnrichLogWithResponse := c.EnrichLogWithResponse != nil
+
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			begin := time.Now()
@@ -37,8 +40,23 @@ func New(name string, c Config) (endpoint.Middleware, error) {
 			l, ctx := initLoggerContext(ctx, *c.Logger)
 
 			enrichLoggerContext(ctx, l, name, c, req)
+
+			if shouldEnrichLogWithRequest {
+				l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
+					ctx, zctx = c.EnrichLogWithRequest(ctx, zctx, req)
+					return zctx
+				})
+			}
+
 			defer func() {
 				enrichLoggerAfterResponse(l, c, begin, resp)
+
+				if shouldEnrichLogWithResponse {
+					l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
+						return c.EnrichLogWithResponse(ctx, zctx, resp, err)
+					})
+				}
+
 				doLogging(l, c, err)
 			}()
 
