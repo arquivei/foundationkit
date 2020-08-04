@@ -57,7 +57,7 @@ type Config struct {
 	// EnrichRequestFunc is used to enrich the logger context with the request.
 	//
 	// It is called by the middleware to enrich the logger with information from
-	// inside the request just before calling the next endpoint. This functions should
+	// inside the request just before calling the next endpoint. This function should
 	// interpret the request and extract information and return the new zerolog context.
 	//
 	// Remember that the request can be logged as a whole by using LogRequestIfLevel and
@@ -69,7 +69,7 @@ type Config struct {
 	// EnrichLogWithResponse is used to enrich the logger context with the response and error.
 	//
 	// It is called by the middleware to enrich the logger with information from
-	// inside the respose and error after calling the next endpoint. This functions should
+	// inside the respose and error after calling the next endpoint. This function should
 	// interpret the response and error and extract information and return the new zerolog context.
 	//
 	// Remember that the response can be logged as a whole by using LogResponseIfLevel and
@@ -84,7 +84,7 @@ type Config struct {
 type EnrichLogWithRequestFunc func(ctx context.Context, zctx zerolog.Context, request interface{}) (context.Context, zerolog.Context)
 
 // EnrichLogWithResponseFunc is a function that receives a zerolog Context and the response and error. It should
-// parse and extract information and return a new enriched zerolog context. The error is already handled my the logging
+// parse and extract information and return a new enriched zerolog context. The error is already handled by the logging
 // middleware if it is an error.Error, but it is passed to this functions should you need to extract another kind of data
 // from the error.
 type EnrichLogWithResponseFunc func(ctx context.Context, zctx zerolog.Context, response interface{}, err error) zerolog.Context
