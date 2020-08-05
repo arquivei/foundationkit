@@ -13,6 +13,10 @@ import (
 // loggingmiddleware. All fields should be set unless marked
 // as optional.
 type Config struct {
+	// Name is the name of the endpoint.
+	// It must not be empty abnd will be logged as endpoint_name.
+	Name string
+
 	// TruncRequestAt will truncate the serialized request if
 	// the string length is above this value.
 	// Setting to zero disables truncating.
@@ -89,9 +93,11 @@ type EnrichLogWithRequestFunc func(ctx context.Context, zctx zerolog.Context, re
 // from the error.
 type EnrichLogWithResponseFunc func(ctx context.Context, zctx zerolog.Context, response interface{}, err error) zerolog.Context
 
-// DefaultConfig contains sane defaults to configure a new logging middleware.
-func NewDefaultConfig() Config {
+// NewDefaultConfig contains sane defaults to configure a new logging middleware.
+func NewDefaultConfig(name string) Config {
 	return Config{
+		Name: name,
+
 		Logger: &log.Logger,
 
 		LogRequestIfLevel:  zerolog.DebugLevel,

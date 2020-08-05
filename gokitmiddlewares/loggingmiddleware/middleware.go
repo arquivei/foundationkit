@@ -6,23 +6,20 @@ import (
 	"time"
 
 	"github.com/arquivei/foundationkit/errors"
+	"github.com/arquivei/foundationkit/gokitmiddlewares"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/rs/zerolog"
 )
 
 // MustNew calls New and panics in case of error.
-func MustNew(name string, c Config) endpoint.Middleware {
-	m, err := New(name, c)
-	if err != nil {
-		panic(err)
-	}
-	return m
+func MustNew(c Config) endpoint.Middleware {
+	return gokitmiddlewares.Must(New(c))
 }
 
 // New returns a new go-kit logging middleware with the given name and configuration.
 // It will panic if the name is empty.
-func New(name string, c Config) (endpoint.Middleware, error) {
-	if name == "" {
+func New(c Config) (endpoint.Middleware, error) {
+	if c.Name == "" {
 		return nil, errors.New("endpoint name is empty")
 	}
 
@@ -39,7 +36,7 @@ func New(name string, c Config) (endpoint.Middleware, error) {
 
 			l, ctx := initLoggerContext(ctx, *c.Logger)
 
-			enrichLoggerContext(ctx, l, name, c, req)
+			enrichLoggerContext(ctx, l, c, req)
 
 			if shouldEnrichLogWithRequest {
 				l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
