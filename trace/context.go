@@ -32,7 +32,8 @@ func GetTraceFromContext(ctx context.Context) Trace {
 	return Trace{}
 }
 
-func withLabels(parent context.Context, labels map[string]string) context.Context {
+// WithLabels returns the @parent context with the labels @labels
+func WithLabels(parent context.Context, labels map[string]string) context.Context {
 	return context.WithValue(parent, contextKeyLabels, labels)
 }
 
@@ -53,7 +54,7 @@ func GetIDFromContext(ctx context.Context) ID {
 // and the labels @labels
 func WithTraceAndLabels(parent context.Context, trace Trace, labels map[string]string) context.Context {
 	parent = WithTrace(parent, trace)
-	return withLabels(parent, labels)
+	return WithLabels(parent, labels)
 }
 
 // WithTraceID instantiates a new child context from @parent with the

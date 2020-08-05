@@ -80,7 +80,7 @@ func TestLabelsOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.Nil(t, getLabelsFromContext(ctx))
 
-	ctx = withLabels(ctx, map[string]string{
+	ctx = WithLabels(ctx, map[string]string{
 		"k1": "v1",
 		"k2": "v2",
 	})
