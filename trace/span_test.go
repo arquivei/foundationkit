@@ -114,7 +114,7 @@ func assertResponse(ctx context.Context, s Span, test testSpan, t *testing.T) {
 		assert.Equal(t, test.parent.ID.String(), trace.ID.String(), fmt.Sprintf("trace ID should be equal [%s]", test.name))
 	}
 
-	ctx = withLabels(ctx, map[string]string{
+	ctx = WithLabels(ctx, map[string]string{
 		"key": "value",
 	})
 
@@ -138,7 +138,7 @@ func TestSpanName(t *testing.T) {
 }
 
 func TestSetSpanLabels(t *testing.T) {
-	ctx := withLabels(context.Background(), map[string]string{
+	ctx := WithLabels(context.Background(), map[string]string{
 		"key": "value",
 	})
 	var s Span
@@ -147,7 +147,7 @@ func TestSetSpanLabels(t *testing.T) {
 }
 
 func TestEnd(t *testing.T) {
-	ctx := withLabels(context.Background(), map[string]string{
+	ctx := WithLabels(context.Background(), map[string]string{
 		"key": "value",
 	})
 	var s Span
