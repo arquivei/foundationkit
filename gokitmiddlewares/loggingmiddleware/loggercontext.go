@@ -19,7 +19,7 @@ func initLoggerContext(ctx context.Context, l zerolog.Logger) (*zerolog.Logger, 
 	return &logger, logger.WithContext(ctx)
 }
 
-func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, name string, c Config, req interface{}) {
+func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, c Config, req interface{}) {
 	l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
 		if c.Meta != nil {
 			zctx = zctx.Interface("endpoint_meta", c.Meta)
@@ -45,7 +45,7 @@ func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, name string, c 
 			log.Warn().Msg("Request doesn't have a trace! Did you forget to use trackingmiddleware on the trasport layer?")
 		}
 
-		return zctx.Str("endpoint_name", name)
+		return zctx.Str("endpoint_name", c.Name)
 	})
 }
 
