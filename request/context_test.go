@@ -11,6 +11,6 @@ func TestIDContextOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.Empty(t, GetRequestIDFromContext(ctx))
 
-	ctx = WithRequestID(ctx)
+	ctx = WithNewRequestID(ctx)
 	assert.NotEmpty(t, GetRequestIDFromContext(ctx))
 }
