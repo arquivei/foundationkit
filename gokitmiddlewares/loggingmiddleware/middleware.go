@@ -17,7 +17,8 @@ func MustNew(c Config) endpoint.Middleware {
 }
 
 // New returns a new go-kit logging middleware with the given name and configuration.
-// It will panic if the name is empty.
+//
+// Fields Config.Name and Config.Logger are mandatory.
 func New(c Config) (endpoint.Middleware, error) {
 	if c.Name == "" {
 		return nil, errors.New("endpoint name is empty")
