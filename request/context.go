@@ -8,13 +8,19 @@ const (
 	contextKeyID contextKeyType = iota
 )
 
-// WithRequestID checks the context if it already has a ID. If not,
-// creates a new one and returns a new context with it.
-func WithRequestID(ctx context.Context) context.Context {
+// WithRequestID returns a context with the given ID
+//
+// If there is already an ID in the context, the context is returned unchanged.
+func WithRequestID(ctx context.Context, id ID) context.Context {
 	if v := ctx.Value(contextKeyID); v == nil {
-		return context.WithValue(ctx, contextKeyID, newID())
+		return context.WithValue(ctx, contextKeyID, id)
 	}
 	return ctx
+}
+
+// WithNewRequestID calls WithRequestIDpassign a new ID
+func WithNewRequestID(ctx context.Context) context.Context {
+	return WithRequestID(ctx, newID())
 }
 
 // GetRequestIDFromContext returns the request ID in the context.

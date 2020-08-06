@@ -10,7 +10,7 @@ import (
 func New(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		ctx = request.WithRequestID(ctx)
+		ctx = request.WithNewRequestID(ctx)
 		ctx = trace.WithTrace(ctx, trace.GetTraceFromHTTRequest(r))
 
 		w.Header().Set("X-REQUESTID", request.GetRequestIDFromContext(ctx).String())
