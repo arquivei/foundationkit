@@ -17,6 +17,7 @@ type Generator interface {
 
 var traceIDGen Generator
 
+// nolint: gosec
 func init() {
 	gen := &defaultIDGenerator{}
 	var rngSeed int64

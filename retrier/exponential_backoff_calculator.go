@@ -56,6 +56,7 @@ func NewExponentialBackoffCalculator(settings ExponentialBackoffCalculatorSettin
 // base backoff time @attempt-1 times against a multiplier . The multiplier value
 // must be higher than 1.0. If @attempt is 1, return the base backoff. See type
 // definition for more information
+// nolint: gosec
 func (c ExponentialBackoffCalculator) CalculateBackoff(attempt int) time.Duration {
 	multiplier := float64(1)
 	for i := 1; i < attempt; i++ {

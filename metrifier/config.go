@@ -3,7 +3,7 @@ package metrifier
 import (
 	"time"
 
-	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Config is used to configure a Metrifier.
@@ -30,7 +30,7 @@ type Config struct {
 	// will be (and must be) passed by calling the Span.WithLabels.
 	ExtraLabels []string
 
-	// The bellow fields are passed directly to promethues.
+	// The bellow fields are passed directly to Prometheus.
 
 	// ConstLabels are used to attach fixed labels to this metric. Metrics
 	// with the same fully-qualified name must have the same label names in
@@ -47,10 +47,14 @@ type Config struct {
 	// server, or by one specific metric (e.g. a build_info or a
 	// machine_role metric). See also
 	// https://prometheus.io/docs/instrumenting/writing_exporters/#target-labels,-not-static-scraped-labels
-	ConstLabels stdprometheus.Labels
+	ConstLabels prometheus.Labels
 
-	// The bellow fields applies only to summary
+	// Summary contains only Summary specific configurations
+	Summary ConfigSummary
+}
 
+// ConfigSummary contains some Summary specific configuration
+type ConfigSummary struct {
 	// Objectives defines the quantile rank estimates with their respective
 	// absolute error. If Objectives[q] = e, then the value reported for q
 	// will be the φ-quantile value for some φ between q-e and q+e.  The
@@ -82,8 +86,10 @@ type Config struct {
 // NewDefaultConfig returns the Config struct filled with sane defaults.
 func NewDefaultConfig(system, subsystem string) Config {
 	return Config{
-		System:     system,
-		Subsystem:  subsystem,
-		Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		System:    system,
+		Subsystem: subsystem,
+		Summary: ConfigSummary{
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		},
 	}
 }

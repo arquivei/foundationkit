@@ -14,7 +14,7 @@ import (
 // as optional.
 type Config struct {
 	// Name is the name of the endpoint.
-	// It must not be empty abnd will be logged as endpoint_name.
+	// It must not be empty and will be logged as endpoint_name.
 	Name string
 
 	// TruncRequestAt will truncate the serialized request if

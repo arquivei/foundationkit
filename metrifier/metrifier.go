@@ -12,8 +12,11 @@ const (
 	labelErrorCode = "error_code"
 )
 
-// Metrifier is a struct that helps metrify any computation using
-// two Promethus metrics: execution_count and execution_latency_seconds.
+// Metrifier is a struct that helps metrify any computation
+//
+// It uses two Prometheus metrics: <system>_<subsystem>_execution_count and <system>_<subsystem>_execution_latency_seconds.
+// Only one metrifier per <system>_<subsystem> is allowed, Prometheus will panic if
+// it tries ro register the same metrics twice.
 type Metrifier struct {
 	count   *kitprometheus.Counter
 	latency *kitprometheus.Summary
@@ -26,51 +29,6 @@ func (m *Metrifier) Begin() Span {
 		begin: time.Now(),
 		m:     m,
 	}
-}
-
-// Span is used to metrify a piece of computation.
-type Span struct {
-	begin  time.Time
-	labels map[string]string
-	m      *Metrifier
-}
-
-// End ends a span and calculate and publish the metrics.
-func (s *Span) End(err error) {
-	labels := make([]string, 0, 2*len(s.m.labels))
-	labels = append(labels, labelErrorCode, getErrorCode(err))
-
-	if len(s.labels) > 0 {
-		for k, v := range s.labels {
-			labels = append(labels, k, v)
-		}
-	}
-
-	s.m.latency.With(labels...).Observe(time.Since(s.begin).Seconds())
-	s.m.count.With(labels...).Add(1)
-}
-
-func getErrorCode(err error) string {
-	if err == nil {
-		return ""
-	}
-	c := errors.GetCode(err).String()
-	if c == "" {
-		return "UNKNOWN"
-	}
-	return c
-}
-
-// WithLabels appends the given labels on the Prometheus metrics.
-func (s *Span) WithLabels(l map[string]string) *Span {
-	if s.labels != nil {
-		for k, v := range l {
-			s.labels[k] = v
-		}
-	} else {
-		s.labels = l
-	}
-	return s
 }
 
 // MustNew returns a new Metrifier but panics in case of error.
@@ -110,10 +68,10 @@ func New(c Config) (Metrifier, error) {
 			Name:        "execution_latency_seconds",
 			Help:        "Total duration of execution in seconds.",
 			ConstLabels: c.ConstLabels,
-			Objectives:  c.Objectives,
-			MaxAge:      c.MaxAge,
-			AgeBuckets:  c.AgeBuckets,
-			BufCap:      c.BufCap,
+			Objectives:  c.Summary.Objectives,
+			MaxAge:      c.Summary.MaxAge,
+			AgeBuckets:  c.Summary.AgeBuckets,
+			BufCap:      c.Summary.BufCap,
 		}, labelKeys),
 	}, nil
 }
