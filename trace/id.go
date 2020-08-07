@@ -17,6 +17,7 @@ type Generator interface {
 
 var traceIDGen Generator
 
+// Disables gosec lint here because it complains about math/rand instead of crypto/rand, but here it's ok.
 // nolint: gosec
 func init() {
 	gen := &defaultIDGenerator{}
