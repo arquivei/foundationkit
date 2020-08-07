@@ -14,19 +14,33 @@ type Span struct {
 }
 
 // WithLabels appends the given labels on the Prometheus metrics.
-func (s *Span) WithLabels(l map[string]string) *Span {
-	if s.labels != nil {
-		for k, v := range l {
-			s.labels[k] = v
-		}
-	} else {
-		s.labels = l
+func (s Span) WithLabels(l map[string]string) Span {
+	if len(l) == 0 {
+		return s
 	}
-	return s
+
+	return Span{
+		begin:  s.begin,
+		m:      s.m,
+		labels: mergeMaps(s.labels, l),
+	}
+}
+
+func mergeMaps(maps ...map[string]string) map[string]string {
+	merged := make(map[string]string)
+	for _, m := range maps {
+		for k, v := range m {
+			merged[k] = v
+		}
+	}
+	if len(merged) == 0 {
+		return nil
+	}
+	return merged
 }
 
 // End ends a span and calculate and publish the metrics.
-func (s *Span) End(err error) {
+func (s Span) End(err error) {
 	labels := make([]string, 0, 2*len(s.m.labels))
 	labels = append(labels, labelErrorCode, getErrorCode(err))
 	for k, v := range s.labels {

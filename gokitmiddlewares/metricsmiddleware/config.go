@@ -1,15 +1,17 @@
 package metricsmiddleware
 
-import "github.com/arquivei/foundationkit/metrifier"
+import (
+	"github.com/arquivei/foundationkit/metrifier"
+)
 
 // Config is used to configure a metrics middleware.
 type Config struct {
 	// Metrifier is the metrifier configuration
 	Metrifier metrifier.Config
 
-	// LabelDecoders defines decoder for labels. The Labels must also be declared
+	// LabelDecoder defines decoder for labels. The Labels must also be declared
 	// in the Metrifier.ExtraLabels.
-	LabelDecoders map[string]LabelDecoder
+	LabelsDecoder LabelsDecoder
 }
 
 // NewDefaultConfig returns a new Config with sane defaults.
