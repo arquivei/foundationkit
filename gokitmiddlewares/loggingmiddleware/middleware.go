@@ -7,8 +7,11 @@ import (
 
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/arquivei/foundationkit/gokitmiddlewares"
+	logutil "github.com/arquivei/foundationkit/log"
+
 	"github.com/go-kit/kit/endpoint"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // MustNew calls New and panics in case of error.
@@ -19,6 +22,8 @@ func MustNew(c Config) endpoint.Middleware {
 // New returns a new go-kit logging middleware with the given name and configuration.
 //
 // Fields Config.Name and Config.Logger are mandatory.
+// Considering that this middleware puts a logger inside the context, this should always
+// be the outter middleware when using endpoint.Chain.
 func New(c Config) (endpoint.Middleware, error) {
 	if c.Name == "" {
 		return nil, errors.New("endpoint name is empty")
@@ -32,6 +37,8 @@ func New(c Config) (endpoint.Middleware, error) {
 	shouldEnrichLogWithResponse := c.EnrichLogWithResponse != nil
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		log.Debug().Str("config", logutil.Flatten(c)).Msg("New logging endpoint middleware")
+
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			begin := time.Now()
 
@@ -47,6 +54,13 @@ func New(c Config) (endpoint.Middleware, error) {
 			}
 
 			defer func() {
+				var r interface{}
+				// Panics are handled as errors and re-raised
+				if r = recover(); r != nil {
+					err = errors.NewFromRecover(r)
+					log.Ctx(ctx).Warn().Err(err).
+						Msg("Logging endpoint middleware is handling an uncaught a panic. Please fix it!")
+				}
 				enrichLoggerAfterResponse(l, c, begin, resp)
 
 				if shouldEnrichLogWithResponse {
@@ -56,6 +70,9 @@ func New(c Config) (endpoint.Middleware, error) {
 				}
 
 				doLogging(l, c, err)
+				if r != nil {
+					panic(r)
+				}
 			}()
 
 			return next(ctx, req)
