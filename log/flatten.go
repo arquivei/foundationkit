@@ -56,6 +56,9 @@ func flattenPrefixedToResult(value interface{}, prefix string, m map[string]inte
 		}
 		for _, childKey := range original.MapKeys() {
 			childValue := original.MapIndex(childKey)
+			if !childValue.CanInterface() {
+				continue
+			}
 			flattenPrefixedToResult(childValue.Interface(), base+childKey.String(), m)
 		}
 	case reflect.Struct:
@@ -66,6 +69,9 @@ func flattenPrefixedToResult(value interface{}, prefix string, m map[string]inte
 			}
 
 			childValue := original.Field(i)
+			if !childValue.CanInterface() {
+				continue
+			}
 			childKey := t.Field(i).Name
 			flattenPrefixedToResult(childValue.Interface(), base+childKey, m)
 		}
