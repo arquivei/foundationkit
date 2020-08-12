@@ -10,12 +10,11 @@ import (
 // Error represents the error struct that should be returned in all functions
 // Error implements the Go's error interface
 type Error struct {
-	Severity   Severity
-	Err        error
-	Code       Code
-	Op         Op
-	HTTPStatus HTTPStatus
-	KVs        []KeyValue
+	Severity Severity
+	Err      error
+	Code     Code
+	Op       Op
+	KVs      []KeyValue
 }
 
 func (e Error) Error() string {
@@ -92,8 +91,6 @@ func E(args ...interface{}) error {
 			e.Severity = a
 		case error:
 			e.Err = a
-		case HTTPStatus:
-			e.HTTPStatus = a
 		case string:
 			e.Err = New(a)
 		case Op:
