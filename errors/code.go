@@ -18,7 +18,11 @@ func (c Code) MarshalZerologObject(e *zerolog.Event) {
 
 const (
 	// ErrorCodeEmpty is an empty error code
-	ErrorCodeEmpty = Code("")
+	// Deprecated: prefer CodeEmpty
+	ErrorCodeEmpty = CodeEmpty
+
+	// CodeEmpty is the zero-value for error codes
+	CodeEmpty = Code("")
 )
 
 // GetCode returns the error code. If the error doesn't contains
