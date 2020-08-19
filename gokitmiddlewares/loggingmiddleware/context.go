@@ -9,7 +9,10 @@ const requestMetaKey requestMetaKeyType = iota
 // GetRequestMeta returns a Meta added in the context by the
 // WithRequestMeta function
 func GetRequestMeta(ctx context.Context) Meta {
-	return ctx.Value(requestMetaKey).(Meta)
+	if v := ctx.Value(requestMetaKey); v != nil {
+		return ctx.Value(requestMetaKey).(Meta)
+	}
+	return nil
 }
 
 // WithRequestMeta returns a context the given metadata.
