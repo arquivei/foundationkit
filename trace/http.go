@@ -14,9 +14,9 @@ const (
 	headerProbabilitySample = "X-PROBABILITYSAMPLE"
 )
 
-// GetTraceFromHTTRequest returns a Trace using the trace
+// GetTraceFromHTTPRequest returns a Trace using the trace
 // ID and the probability sample get from the header of @r
-func GetTraceFromHTTRequest(r *http.Request) Trace {
+func GetTraceFromHTTPRequest(r *http.Request) Trace {
 	idStr := r.Header.Get(headerTraceID)
 	id := decode([]byte(idStr))
 
@@ -47,6 +47,26 @@ func SetTraceInHTTPRequest(ctx context.Context, request *http.Request) {
 	trace := GetTraceFromContext(ctx)
 	request.Header.Set(headerTraceID, trace.ID.String())
 	request.Header.Set(headerProbabilitySample, fmt.Sprintf("%f", *trace.ProbabilitySample))
+}
+
+// GetTraceFromHTTPResponse returns a Trace using the trace
+// ID and the probability sample get from the header of @r
+func GetTraceFromHTTPResponse(r *http.Response) Trace {
+	idStr := r.Header.Get(headerTraceID)
+	id := decode([]byte(idStr))
+
+	probabilitySampleStr := r.Header.Get(headerProbabilitySample)
+	probabilitySample, err := strconv.ParseFloat(probabilitySampleStr, 64)
+
+	var probabilitySamplePtr *float64
+	if err == nil {
+		probabilitySamplePtr = &probabilitySample
+	}
+
+	return Trace{
+		ID:                id,
+		ProbabilitySample: probabilitySamplePtr,
+	}
 }
 
 // SetTraceInHTTPResponse sets the header of @response using @trace.

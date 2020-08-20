@@ -7,11 +7,12 @@ import (
 	"github.com/arquivei/foundationkit/trace"
 )
 
+// New instantiates a new tracking middleware wrapping the @next handler.
 func New(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		ctx = request.WithNewRequestID(ctx)
-		ctx = trace.WithTrace(ctx, trace.GetTraceFromHTTRequest(r))
+		ctx = trace.WithTrace(ctx, trace.GetTraceFromHTTPRequest(r))
 
 		w.Header().Set("X-REQUESTID", request.GetRequestIDFromContext(ctx).String())
 		trace.SetTraceInHTTPResponse(trace.GetTraceFromContext(ctx), w)
