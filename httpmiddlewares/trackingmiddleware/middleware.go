@@ -14,7 +14,7 @@ func New(next http.Handler) http.Handler {
 		ctx = request.WithNewRequestID(ctx)
 		ctx = trace.WithTrace(ctx, trace.GetTraceFromHTTPRequest(r))
 
-		w.Header().Set("X-REQUESTID", request.GetRequestIDFromContext(ctx).String())
+		request.SetInHTTPResponse(request.GetRequestIDFromContext(ctx), w)
 		trace.SetTraceInHTTPResponse(trace.GetTraceFromContext(ctx), w)
 
 		r = r.WithContext(ctx)

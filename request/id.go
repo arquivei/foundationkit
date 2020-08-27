@@ -35,25 +35,43 @@ func (i ID) IsEmpty() bool {
 // UnmarshalJSON parses an ID from a json
 func (i *ID) UnmarshalJSON(b []byte) error {
 	b = bytes.Trim(b, `"`)
-	slices := strings.Split(string(b), ("-"))
 
-	if len(slices) != 2 {
-		return errors.New("wrong format for request id")
-	}
-
-	timestamp, err := strconv.Atoi(slices[0])
+	id, err := Parse(string(b))
 	if err != nil {
 		return err
 	}
 
-	i.timestamp = uint64(timestamp)
-	i.randomID = slices[1]
+	*i = id
 	return nil
 }
 
 // MarshalJSON converts ID to a string.
 func (i ID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(i.String())
+}
+
+// Parse read the given @id into an request ID.
+func Parse(id string) (ID, error) {
+	slices := strings.Split(id, ("-"))
+
+	if len(slices) != 2 {
+		return ID{}, errors.New("wrong format for request id")
+	}
+
+	timestamp, err := strconv.Atoi(slices[0])
+	if err != nil {
+		return ID{}, err
+	}
+
+	return ID{
+		timestamp: uint64(timestamp),
+		randomID:  slices[1],
+	}, nil
+}
+
+// IsEmpty returns true if an request ID is in it's zero-value format
+func IsEmpty(id ID) bool {
+	return (id == ID{})
 }
 
 func newID() ID {
