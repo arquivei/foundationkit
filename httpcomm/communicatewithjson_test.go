@@ -10,13 +10,14 @@ import (
 	"time"
 
 	"github.com/arquivei/foundationkit/errors"
+	"github.com/arquivei/foundationkit/request"
 	"github.com/arquivei/foundationkit/trace"
 	"github.com/rs/zerolog"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCommunicateWithJSON_Success(t *testing.T) {
+func Test_communicateWithJSON_Success(t *testing.T) {
 	zerolog.SetGlobalLevel(zerolog.Disabled)
 
 	type RequestType struct {
@@ -32,17 +33,25 @@ func TestCommunicateWithJSON_Success(t *testing.T) {
 	ctx = trace.WithNewTrace(ctx)
 	requestTrace := trace.GetTraceFromContext(ctx)
 
+	var serverRequestID request.ID
+
 	testServer := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			receivedTrace := trace.GetTraceFromHTTPRequest(r)
 
-			// Casting traces to String so assertion message is friedlier to human eyes
+			// Casting traces to String so assertion message is friendlier to human eyes
 			assert.Equal(t, requestTrace.ID.String(), receivedTrace.ID.String(), "server trace id")
 			assert.Equal(t, requestTrace.ProbabilitySample, receivedTrace.ProbabilitySample, "server trace probability sample")
 
+			// TODO : need a request.NewID() method to avoid using context like this in tests
+			serverRequestID = request.GetRequestIDFromContext(request.WithNewRequestID(context.Background()))
 			trace.SetTraceInHTTPResponse(receivedTrace, w)
+			request.SetInHTTPResponse(serverRequestID, w)
+
 			// NOTE : theres no implementation to send request id over http response yet
-			w.WriteHeader(http.StatusAccepted) // Should always be the last header
+
+			w.Header().Add("some-header", "some-value")
+			w.WriteHeader(http.StatusForbidden) // Should always be the last header
 
 			var request RequestType
 			err := json.NewDecoder(r.Body).Decode(&request)
@@ -68,7 +77,7 @@ func TestCommunicateWithJSON_Success(t *testing.T) {
 
 	var response ResponseType
 
-	responseTrace, err := CommunicateWithJSON(
+	details, err := communicateWithJSON(
 		ctx,
 		http.Client{},
 		http.MethodPost,
@@ -87,11 +96,17 @@ func TestCommunicateWithJSON_Success(t *testing.T) {
 	assert.Equal(t, "Not stringer", response.String)
 
 	// Casting traces to String so assertion message is friedlier to human eyes
-	assert.Equal(t, requestTrace.ID.String(), responseTrace.ID.String(), "trace id")
-	assert.Equal(t, requestTrace.ProbabilitySample, responseTrace.ProbabilitySample, "probability sample")
+	assert.Equal(t, requestTrace.ID.String(), details.Trace.ID.String(), "trace id")
+	assert.Equal(t, requestTrace.ProbabilitySample, details.Trace.ProbabilitySample, "probability sample")
+	assert.Equal(t, serverRequestID.String(), details.RequestID.String(), "request ID")
+	assert.Equal(t, http.StatusForbidden, details.StatusCode, "http status code")
+
+	if assert.True(t, len(details.Header) > 0, "should have headers") {
+		assert.Equal(t, "some-value", details.Header.Get("some-header"), "custom header value")
+	}
 }
 
-func TestCommunicateWithJSON_CommunicationErrors(t *testing.T) {
+func Test_communicateWithJSON_CommunicationErrors(t *testing.T) {
 	zerolog.SetGlobalLevel(zerolog.Disabled)
 
 	type RequestType struct {
@@ -157,7 +172,7 @@ func TestCommunicateWithJSON_CommunicationErrors(t *testing.T) {
 
 			var response ResponseType
 
-			_, err := CommunicateWithJSON(
+			_, err := communicateWithJSON(
 				context.Background(),
 				http.Client{},
 				http.MethodPost,
@@ -176,7 +191,7 @@ func TestCommunicateWithJSON_CommunicationErrors(t *testing.T) {
 	}
 }
 
-func TestCommunicateWithJSON_Timeout(t *testing.T) {
+func Test_communicateWithJSON_Timeout(t *testing.T) {
 	zerolog.SetGlobalLevel(zerolog.Disabled)
 
 	testServer := httptest.NewServer(http.HandlerFunc(
@@ -188,7 +203,7 @@ func TestCommunicateWithJSON_Timeout(t *testing.T) {
 	var request struct{}
 	var response struct{}
 
-	_, err := CommunicateWithJSON(
+	_, err := communicateWithJSON(
 		context.Background(),
 		http.Client{Timeout: 1},
 		http.MethodPost,
@@ -205,7 +220,7 @@ func TestCommunicateWithJSON_Timeout(t *testing.T) {
 	// Not checking message as it changes on every test
 }
 
-func TestDoJSONRequest_ExpiredContext(t *testing.T) {
+func Test_communicateWithJSON_ExpiredContext(t *testing.T) {
 	zerolog.SetGlobalLevel(zerolog.Disabled)
 
 	testServer := httptest.NewServer(http.HandlerFunc(
@@ -220,7 +235,7 @@ func TestDoJSONRequest_ExpiredContext(t *testing.T) {
 	var request struct{}
 	var response struct{}
 
-	_, err := CommunicateWithJSON(
+	_, err := communicateWithJSON(
 		ctx,
 		http.Client{Timeout: 1},
 		http.MethodPost,

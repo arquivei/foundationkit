@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/arquivei/foundationkit/errors"
+	"github.com/arquivei/foundationkit/request"
 	"github.com/arquivei/foundationkit/trace"
 )
 
@@ -43,9 +44,83 @@ func CommunicateWithJSON(
 ) (trace.Trace, error) {
 	const op = errors.Op("httpcomm.CommunicateWithJSON")
 
+	details, err := communicateWithJSON(
+		ctx,
+		httpClient,
+		httpMethod,
+		fullURL,
+		requestData,
+		maxAcceptedBodySize,
+		maxErrBodySize,
+		outResponse,
+	)
+	if err != nil {
+		return details.Trace, errors.E(op, err)
+	}
+
+	return details.Trace, nil
+}
+
+// CommunicateWithJSONDetailed uses a given @httpClient to communicate with
+// a HTTP server at @fullURL using the specified @httpMethod. This function will
+// send @requestData marshalled as a JSON content and wait for the server
+// response. The response will be written into the given @outResponse (it
+// will mutate the parameter contents) using the json unmarshaling rules set
+// by @outResponse itself. This function returns detailed information of the
+// response. It is possible that the detailed information might hold some data
+// even if error is not nil, but the data may not be complete.
+//
+// To reduce damage in case of bugs or attacks, a @maxAcceptedBodySize must be
+// passed, and bodies contents larger than this will be considered noxious and
+// return an error.
+//
+// A value of @maxErrBodySize must be passed to indicate how much of response
+// contents can be added into the error message.
+func CommunicateWithJSONDetailed(
+	ctx context.Context,
+	httpClient http.Client,
+	httpMethod HTTPMethod,
+	fullURL string,
+	requestData interface{},
+	maxAcceptedBodySize int64,
+	maxErrBodySize int,
+
+	// output response, on success, will be overwritten. This is not
+	// a nice design, but it allows the ErrCodeDecodeError well unmarshalling
+	// json to stay inside this function, and avoids the need of a cast by the caller.
+	outResponse interface{},
+) (ResponseDetails, error) {
+	const op = errors.Op("httpcomm.CommunicateWithJSONDetailed")
+
+	details, err := communicateWithJSON(
+		ctx,
+		httpClient,
+		httpMethod,
+		fullURL,
+		requestData,
+		maxAcceptedBodySize,
+		maxErrBodySize,
+		outResponse,
+	)
+	if err != nil {
+		return details, errors.E(op, err)
+	}
+
+	return details, nil
+}
+
+func communicateWithJSON(
+	ctx context.Context,
+	httpClient http.Client,
+	httpMethod HTTPMethod,
+	fullURL string,
+	requestData interface{},
+	maxAcceptedBodySize int64,
+	maxErrBodySize int,
+	outResponse interface{},
+) (ResponseDetails, error) {
 	if ctx.Err() != nil {
-		return trace.Trace{}, errors.E(
-			op,
+		return ResponseDetails{}, errors.E(
 			ErrCodeExpiredContext,
 			errors.SeverityRuntime,
 			"refusing request due to expired context",
@@ -53,14 +128,48 @@ func CommunicateWithJSON(
 		)
 	}
 
+	httpRequest, err := makeHTTPRequest(ctx, fullURL, httpMethod, requestData)
+	if err != nil {
+		return ResponseDetails{}, err
+	}
+
+	details, contents, err := communicateWithHTTPRequest(httpClient, maxAcceptedBodySize, httpRequest)
+	if err != nil {
+		return details, err
+	}
+
+	if err := json.Unmarshal(contents, outResponse); err != nil {
+		contentsStr := string(contents)
+		if len(contentsStr) > maxErrBodySize {
+			contentsStr = string(contents[0:maxErrBodySize-5]) + "(...)"
+		}
+
+		return details, errors.E(
+			ErrCodeDecodeError,
+			errors.SeverityRuntime,
+			fmt.Errorf("failed to decode received response: %v", err),
+			errors.KV("HTTP", details.StatusCode),
+			errors.KV("BODY", contentsStr),
+		)
+	}
+
+	return details, nil
+}
+
+func makeHTTPRequest(
+	ctx context.Context,
+	fullURL string,
+	httpMethod HTTPMethod,
+	requestData interface{},
+) (*http.Request, error) {
 	requestDataBody, err := json.Marshal(requestData)
 	if err != nil {
-		return trace.Trace{}, errors.E(op, ErrCodeRequestError, errors.SeverityFatal, err)
+		return nil, errors.E(ErrCodeRequestError, errors.SeverityFatal, err)
 	}
 
 	httpRequest, err := http.NewRequestWithContext(ctx, httpMethod, fullURL, bytes.NewReader(requestDataBody))
 	if err != nil {
-		return trace.Trace{}, errors.E(op, ErrCodeRequestError, errors.SeverityFatal, err)
+		return nil, errors.E(ErrCodeRequestError, errors.SeverityFatal, err)
 	}
 
 	if trace.IDIsEmpty(trace.GetIDFromContext(ctx)) {
@@ -71,28 +180,45 @@ func CommunicateWithJSON(
 	}
 	trace.SetTraceInHTTPRequest(ctx, httpRequest)
 
+	// NOTE : it is proposed that RequestID can be sent over HTTP Requests so that the receiver
+	// side (the server) can log it; but not use it. This can aid in backtracking request is
+	// systems where a same trace ID may result in many request ID's over time, and only a handful
+	// of requests fails. There's no formal discussion over this proposal yet.
+
+	return httpRequest, nil
+}
+
+func communicateWithHTTPRequest(
+	httpClient http.Client,
+	maxAcceptedBodySize int64,
+	httpRequest *http.Request,
+) (ResponseDetails, []byte, error) {
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
 		if isHTTPTimeoutError(err) {
-			return trace.Trace{}, errors.E(op, ErrCodeTimeout, errors.SeverityRuntime, err)
+			return ResponseDetails{}, nil, errors.E(ErrCodeTimeout, errors.SeverityRuntime, err)
 		}
 
-		return trace.Trace{}, errors.E(
-			op,
+		return ResponseDetails{}, nil, errors.E(
 			ErrCodeRequestError,
 			errors.SeverityRuntime,
 			err,
 		)
 	}
 
+	details := ResponseDetails{
+		StatusCode: httpResponse.StatusCode,
+		Header:     httpResponse.Header,
+	}
+
 	defer httpResponse.Body.Close()
-	responseTrace := trace.GetTraceFromHTTPResponse(httpResponse)
+	details.Trace = trace.GetTraceFromHTTPResponse(httpResponse)
+	details.RequestID = request.GetFromHTTPResponse(httpResponse)
 
 	limitedReader := io.LimitReader(httpResponse.Body, maxAcceptedBodySize+1)
 	contents, err := ioutil.ReadAll(limitedReader)
 	if err != nil {
-		return trace.Trace{}, errors.E(
-			op,
+		return details, nil, errors.E(
 			ErrCodeDecodeError,
 			errors.SeverityRuntime,
 			err,
@@ -100,31 +226,14 @@ func CommunicateWithJSON(
 	}
 
 	if int64(len(contents)) > maxAcceptedBodySize {
-		return responseTrace, errors.E(
-			op,
+		return details, nil, errors.E(
 			ErrCodeResponseTooLong,
 			errors.SeverityRuntime,
 			errors.Errorf("received contents longer than the allowed %d bytes", maxAcceptedBodySize),
 		)
 	}
 
-	if err := json.Unmarshal(contents, outResponse); err != nil {
-		contentsStr := string(contents)
-		if len(contentsStr) > maxErrBodySize {
-			contentsStr = string(contents[0:maxErrBodySize-5]) + "(...)"
-		}
-
-		return responseTrace, errors.E(
-			op,
-			ErrCodeDecodeError,
-			errors.SeverityRuntime,
-			fmt.Errorf("failed to decode received response: %v", err),
-			errors.KV("HTTP", httpResponse.StatusCode),
-			errors.KV("BODY", contentsStr),
-		)
-	}
-
-	return responseTrace, nil
+	return details, contents, nil
 }
 
 func isHTTPTimeoutError(httpError error) bool {
