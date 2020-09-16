@@ -43,7 +43,16 @@ func GetTraceFromContext(ctx context.Context) Trace {
 }
 
 // WithLabels returns the @parent context with the labels @labels
+// If there are already labels in the context, the new labels will be merged
+// into the existing one. If a label with the same key already exists, it will
+// be overwritten
 func WithLabels(parent context.Context, labels map[string]string) context.Context {
+	if currentLabels := getLabelsFromContext(parent); currentLabels != nil {
+		for k, v := range labels {
+			currentLabels[k] = v
+		}
+		return parent
+	}
 	return context.WithValue(parent, contextKeyLabels, labels)
 }
 

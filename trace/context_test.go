@@ -88,6 +88,16 @@ func TestLabelsOperations(t *testing.T) {
 	labels := getLabelsFromContext(ctx)
 	assert.Equal(t, "v1", labels["k1"])
 	assert.Equal(t, "v2", labels["k2"])
+
+	ctx = WithLabels(ctx, map[string]string{
+		"k2": "v22",
+		"k3": "v3",
+	})
+
+	labels = getLabelsFromContext(ctx)
+	assert.Equal(t, "v1", labels["k1"])
+	assert.Equal(t, "v22", labels["k2"])
+	assert.Equal(t, "v3", labels["k3"])
 }
 
 // [DEPRECATED] Testing a Deprecated Methods
