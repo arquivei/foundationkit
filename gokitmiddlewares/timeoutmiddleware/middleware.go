@@ -53,13 +53,24 @@ type asyncResult struct {
 // runAsync executes next inside a go-routine and returns the result in a channel.
 func runAsync(ctx context.Context, next endpoint.Endpoint, request interface{}) <-chan asyncResult {
 	c := make(chan asyncResult)
+
 	go func() {
 		defer close(c)
-		response, err := next(ctx, request)
-		c <- asyncResult{
-			response: response,
-			err:      err,
+
+		// Panics in go-routines must be captured inside the go-routine
+		err := errors.DontPanic(func() {
+			response, err := next(ctx, request)
+			c <- asyncResult{
+				response: response,
+				err:      err,
+			}
+		})
+		if err != nil {
+			c <- asyncResult{
+				err: err,
+			}
 		}
 	}()
+
 	return c
 }
