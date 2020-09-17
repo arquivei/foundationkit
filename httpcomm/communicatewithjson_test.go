@@ -31,21 +31,21 @@ func Test_communicateWithJSON_Success(t *testing.T) {
 
 	ctx := context.Background()
 	ctx = trace.WithNewTrace(ctx)
-	requestTrace := trace.GetTraceFromContext(ctx)
+	requestTrace := trace.GetFromContext(ctx)
 
 	var serverRequestID request.ID
 
 	testServer := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			receivedTrace := trace.GetTraceFromHTTPRequest(r)
+			receivedTrace := trace.GetFromHTTPRequest(r)
 
 			// Casting traces to String so assertion message is friendlier to human eyes
 			assert.Equal(t, requestTrace.ID.String(), receivedTrace.ID.String(), "server trace id")
 			assert.Equal(t, requestTrace.ProbabilitySample, receivedTrace.ProbabilitySample, "server trace probability sample")
 
 			// TODO : need a request.NewID() method to avoid using context like this in tests
-			serverRequestID = request.GetRequestIDFromContext(request.WithNewRequestID(context.Background()))
-			trace.SetTraceInHTTPResponse(receivedTrace, w)
+			serverRequestID = request.GetIDFromContext(request.WithNewID(context.Background()))
+			trace.SetInHTTPResponse(receivedTrace, w)
 			request.SetInHTTPResponse(serverRequestID, w)
 
 			// NOTE : theres no implementation to send request id over http response yet

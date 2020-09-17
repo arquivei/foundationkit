@@ -25,14 +25,14 @@ type Response struct {
 
 #### HTTP Layer
 
-Use the method `request.WithRequestID` to create and put a Request ID in context
+Use the method `request.WithID` to create and put a Request ID in context
 
 ```golang
 func MakeEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, r interface{}) (interface{}, error) {
 		req := r.(Request)
 
-		ctx = request.WithRequestID(ctx)
+		ctx = request.WithID(ctx)
 
 		response, err := s.Do(ctx, req)
 
@@ -43,12 +43,12 @@ func MakeEndpoint(s Service) endpoint.Endpoint {
 
 #### Logging
 
-Use the method `request.GetRequestIDFromContext` to log the Request ID
+Use the method `request.GetIDFromContext` to log the Request ID
 
 ```golang
 func (l *logging) Do(ctx ontext.Context, req Request) (response Response, err error) {
 	logger := log.Logger.With().
-		EmbedObject(request.GetRequestIDFromContext(ctx)).
+		EmbedObject(request.GetIDFromContext(ctx)).
 		Logger()
     // (...)
 }
@@ -169,13 +169,13 @@ func (s service) Do(ctx ontext.Context, req Request) (response Response, err err
     // Make a POST in another service
     var req *http.Request
     prepareRequest(req)
-    trace.SetTraceInHTTPRequest(ctx, req)
+    trace.SetInHTTPRequest(ctx, req)
 
     // Create a job/event to send to a queue
     // or
     // Create the Service Response
-    response.Trace = trace.GetTraceFromContext(ctx)
-    newJob.Trace = trace.GetTraceFromContext(ctx)
+    response.Trace = trace.GetFromContext(ctx)
+    newJob.Trace = trace.GetFromContext(ctx)
 }
 
 func prepareRequest(req *http.Request) {
@@ -201,7 +201,7 @@ func (l *logging) Do(ctx ontext.Context, req Request) (response Response, err er
 ```golang
 func EncodeResponse(ctx context.Context, w http.ResponseWriter, r interface{}) error {
     response := r.(Response)
-    trace.SetTraceInHTTPResponse(response.Trace, w)
+    trace.SetInHTTPResponse(response.Trace, w)
     // (...)
 }
 ```

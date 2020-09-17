@@ -19,7 +19,7 @@ func New() endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r interface{}) (interface{}, error) {
 			// Ensures that we have a request ID in the context
-			ctx = request.WithNewRequestID(ctx)
+			ctx = request.WithNewID(ctx)
 
 			// Get trace from request if there is one or else
 			// creates a new trace.

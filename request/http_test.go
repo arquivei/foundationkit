@@ -30,7 +30,7 @@ func TestSetInHTTPRequest(t *testing.T) {
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
-	SetInHTTPRequest(WithRequestID(context.Background(), id), r)
+	SetInHTTPRequest(WithID(context.Background(), id), r)
 
 	assert.Equal(t, id.String(), r.Header.Get(HTTPHeaderID))
 }
@@ -39,7 +39,7 @@ func TestSetInHTTPRequest_EmptyID(t *testing.T) {
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "URL", nil)
 	assert.NoError(t, err)
 
-	SetInHTTPRequest(WithRequestID(context.Background(), ID{}), r)
+	SetInHTTPRequest(WithID(context.Background(), ID{}), r)
 
 	assert.Empty(t, r.Header.Get(HTTPHeaderID))
 }

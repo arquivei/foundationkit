@@ -9,8 +9,8 @@ import (
 
 func TestTraceIDGeneration(t *testing.T) {
 	// Should generate random non-empty traceIDs
-	id1 := NewTraceID()
-	id2 := NewTraceID()
+	id1 := NewID()
+	id2 := NewID()
 	assert.False(t, IDIsEmpty(id1))
 	assert.False(t, IDIsEmpty(id2))
 	assert.NotEqual(t, id1, id2)

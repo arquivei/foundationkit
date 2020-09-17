@@ -18,7 +18,7 @@ type traceTest struct {
 
 func TestEnsureTraceNotEmpty(t *testing.T) {
 	ps := 1.9
-	newID := NewTraceID()
+	newID := NewID()
 
 	tests := []traceTest{
 		{
@@ -61,7 +61,7 @@ func TestEnsureTraceNotEmpty(t *testing.T) {
 		ctx := WithTrace(context.Background(), test.trace)
 		assertTrace(t, test, "Trace from Test")
 
-		traceFromCtx := GetTraceFromContext(ctx)
+		traceFromCtx := GetFromContext(ctx)
 		test.trace = traceFromCtx
 		assertTrace(t, test, "Trace from Context")
 	}

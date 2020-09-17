@@ -76,12 +76,19 @@ func (id ID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(id.String())
 }
 
-// NewTraceID generates a new random trace id
-func NewTraceID() ID {
+// NewID generates a new random trace id
+func NewID() ID {
 	return traceIDGen.NewTraceID()
 }
 
-// EnsureIDNotEmpty checks if the ID is not empty and return it, else it returns NewTraceID().
+// NewTraceID generates a new random trace id
+//
+// Deprecated: use NewID instead
+func NewTraceID() ID {
+	return NewID()
+}
+
+// EnsureIDNotEmpty checks if the ID is not empty and return it, else it returns NewID().
 // The empty check follows the same rules as the IDIsEmpty function.
 func EnsureIDNotEmpty(id ID) ID {
 	if IDIsEmpty(id) {

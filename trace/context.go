@@ -31,15 +31,22 @@ func WithNewTrace(ctx context.Context) context.Context {
 	return WithTrace(ctx, Trace{})
 }
 
-// GetTraceFromContext returns the Trace saved in @ctx
-func GetTraceFromContext(ctx context.Context) Trace {
+// GetFromContext returns the Trace saved in @ctx
+func GetFromContext(ctx context.Context) Trace {
 	if t, ok := ctx.Value(contextKeyTrace).(Trace); ok {
 		return t
 	}
 	log.Warn().
-		Str("method", "trace.GetTraceFromContext").
+		Str("method", "trace.GetFromContext").
 		Msg("[FoundationKit] There is no Trace in context. Use trace.WithTrace(context.Context, trace.Trace)")
 	return Trace{}
+}
+
+// GetTraceFromContext returns the Trace saved in @ctx
+//
+// Deprecated: use GetFromContext instead
+func GetTraceFromContext(ctx context.Context) Trace {
+	return GetFromContext(ctx)
 }
 
 // WithLabels returns the @parent context with the labels @labels
@@ -66,7 +73,7 @@ func getLabelsFromContext(ctx context.Context) map[string]string {
 // GetIDFromContext returns the Trace ID in the context.
 // Will return a empty ID if a Trace is not set in context
 func GetIDFromContext(ctx context.Context) ID {
-	return GetTraceFromContext(ctx).ID
+	return GetFromContext(ctx).ID
 }
 
 // WithTraceAndLabels returns the @parent context with the Trace @trace
@@ -87,7 +94,7 @@ func WithTraceID(parent context.Context, traceID ID) context.Context {
 // GetTraceIDFromContext returns the trace ID set in the context, if any,
 // or an empty trace id if none is set
 //
-// Deprecated: Should use GetTraceFromContext instead
+// Deprecated: Should use GetFromContext instead
 func GetTraceIDFromContext(ctx context.Context) ID {
 	if id, ok := ctx.Value(contextKeyTraceID).(ID); ok {
 		return id

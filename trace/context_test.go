@@ -21,12 +21,12 @@ func TestIDOperations(t *testing.T) {
 
 func TestTraceOperations(t *testing.T) {
 	ctx := context.Background()
-	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
+	assert.True(t, IDIsEmpty(GetFromContext(ctx).ID))
 
 	defaultProbabilitySample = 0.5
 	ctx = WithTrace(ctx, newTrace())
 
-	trace := GetTraceFromContext(ctx)
+	trace := GetFromContext(ctx)
 
 	assert.False(t, IDIsEmpty(trace.ID))
 	assert.Equal(t, defaultProbabilitySample, *trace.ProbabilitySample)
@@ -34,7 +34,7 @@ func TestTraceOperations(t *testing.T) {
 
 func TestTraceAndLabelsOperations(t *testing.T) {
 	ctx := context.Background()
-	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
+	assert.True(t, IDIsEmpty(GetFromContext(ctx).ID))
 	assert.Nil(t, getLabelsFromContext(ctx))
 
 	defaultProbabilitySample = 0.5
@@ -43,7 +43,7 @@ func TestTraceAndLabelsOperations(t *testing.T) {
 		"k2": "v2",
 	})
 
-	trace := GetTraceFromContext(ctx)
+	trace := GetFromContext(ctx)
 	assert.False(t, IDIsEmpty(trace.ID))
 	assert.Equal(t, defaultProbabilitySample, *trace.ProbabilitySample)
 
@@ -62,13 +62,13 @@ func TestTraceAndLabelsOperations(t *testing.T) {
 
 func TestTraceAndLabelsOperations_LabelsNil(t *testing.T) {
 	ctx := context.Background()
-	assert.True(t, IDIsEmpty(GetTraceFromContext(ctx).ID))
+	assert.True(t, IDIsEmpty(GetFromContext(ctx).ID))
 	assert.Nil(t, getLabelsFromContext(ctx))
 
 	defaultProbabilitySample = 0.5
 	ctx = WithTraceAndLabels(ctx, newTrace(), nil)
 
-	trace := GetTraceFromContext(ctx)
+	trace := GetFromContext(ctx)
 	assert.False(t, IDIsEmpty(trace.ID))
 	assert.Equal(t, defaultProbabilitySample, *trace.ProbabilitySample)
 
@@ -105,7 +105,7 @@ func TestTraceIDContextOperations(t *testing.T) {
 	ctx := context.Background()
 	assert.True(t, IDIsEmpty(GetTraceIDFromContext(ctx)))
 
-	id := NewTraceID()
+	id := NewID()
 	ctx = WithTraceID(ctx, id)
 	assert.Equal(t, id.String(), GetTraceIDFromContext(ctx).String())
 }

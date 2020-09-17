@@ -37,7 +37,7 @@ func SetInHTTPRequest(ctx context.Context, request *http.Request) {
 		return
 	}
 
-	id := GetRequestIDFromContext(ctx)
+	id := GetIDFromContext(ctx)
 	request.Header.Set(HTTPHeaderID, id.String())
 }
 

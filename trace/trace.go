@@ -14,7 +14,7 @@ type Trace struct {
 
 func newTrace() Trace {
 	return Trace{
-		ID:                NewTraceID(),
+		ID:                NewID(),
 		ProbabilitySample: &defaultProbabilitySample,
 	}
 }
@@ -25,7 +25,7 @@ func (t Trace) isEmpty() bool {
 
 func ensureTraceNotEmpty(t Trace) Trace {
 	if IDIsEmpty(t.ID) {
-		t.ID = NewTraceID()
+		t.ID = NewID()
 	}
 	if t.ProbabilitySample == nil {
 		t.ProbabilitySample = &defaultProbabilitySample
