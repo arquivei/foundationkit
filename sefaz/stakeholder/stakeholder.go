@@ -14,12 +14,12 @@ func (s Stakeholder) String() string {
 	return string(s)
 }
 
-//MarshalJSON serializes the stakeholder value as a JSON value
+// MarshalJSON serializes the stakeholder value as a JSON value
 func (s Stakeholder) MarshalJSON() ([]byte, error) {
 	return json.Marshal(string(s))
 }
 
-//UnmarshalJSON deserializes a JSON value into a Stakeholder value
+// UnmarshalJSON deserializes a JSON value into a Stakeholder value
 func (s *Stakeholder) UnmarshalJSON(b []byte) error {
 	const op = errors.Op("stakeholder.UnmarshalJSON")
 	var v string

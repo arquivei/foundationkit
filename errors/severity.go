@@ -8,7 +8,7 @@ import "github.com/rs/zerolog"
 type Severity string
 
 const (
-	//SeverityUnset indicates the severity was not set
+	// SeverityUnset indicates the severity was not set
 	SeverityUnset = Severity("")
 	// SeverityRuntime indicates the error is returned for an operation that should/could be executed again. For example, timeouts.
 	SeverityRuntime = Severity("runtime")

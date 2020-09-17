@@ -4,13 +4,16 @@ package accesskey
 type AccessKey string
 
 // Validator is the interface that performs AccessKey validation
+// Deprecated: prefer using the Check function
 type Validator interface {
+	// Deprecated: prefer using the Check function
 	Check(AccessKey) error
 }
 
 type validator struct{}
 
 // NewValidator returns a real validator
+// Deprecated: prefer using the Check function instead of instantiating a Validator
 func NewValidator() Validator {
 	return &validator{}
 }
