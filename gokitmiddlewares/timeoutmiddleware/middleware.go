@@ -24,25 +24,29 @@ func New(c Config) (endpoint.Middleware, error) {
 			ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 			defer cancel()
 
+			// Override error code and severity based on the context
 			defer func() {
 				if err != nil && ctx.Err() != nil {
-					err = errors.E(err, c.ErrorSeverity)
+					err = errors.E(err, c.ErrorSeverity, c.ErrorCode)
 				}
 			}()
 
 			if c.Wait {
 				return next(ctx, request)
 			}
-
-			select {
-			case <-ctx.Done():
-				return nil, ctx.Err()
-			case r := <-runAsync(ctx, next, request):
-
-				return r.response, r.err
-			}
+			return nextNoWait(ctx, next, request)
 		}
 	}, nil
+}
+
+// nextNoWait runs next but don't wait for a response in case of canceled context
+func nextNoWait(ctx context.Context, next endpoint.Endpoint, request interface{}) (interface{}, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case r := <-runNextAsync(ctx, next, request):
+		return r.response, r.err
+	}
 }
 
 type asyncResult struct {
@@ -50,8 +54,8 @@ type asyncResult struct {
 	err      error
 }
 
-// runAsync executes next inside a go-routine and returns the result in a channel.
-func runAsync(ctx context.Context, next endpoint.Endpoint, request interface{}) <-chan asyncResult {
+// runNextAsync executes next inside a go-routine and returns the result in a channel.
+func runNextAsync(ctx context.Context, next endpoint.Endpoint, request interface{}) <-chan asyncResult {
 	c := make(chan asyncResult)
 
 	go func() {
