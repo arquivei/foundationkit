@@ -16,7 +16,7 @@ func (nsu NSU) String() string {
 	return fmt.Sprintf("%015s", string(nsu))
 }
 
-//MarshalJSON serializes the NSU value as a JSON value
+// MarshalJSON serializes the NSU value as a JSON value
 func (nsu NSU) MarshalJSON() ([]byte, error) {
 	// I don't capture the error here and wraps it with op because it's impossible (probably)
 	// that we can reproduce said error in a unit test and we would have some untestable code.
@@ -32,7 +32,7 @@ func (nsu NSU) MarshalJSON() ([]byte, error) {
 	*/
 }
 
-//UnmarshalJSON deserializes a JSON value into a NSU value
+// UnmarshalJSON deserializes a JSON value into a NSU value
 func (nsu *NSU) UnmarshalJSON(b []byte) error {
 	const op = errors.Op("nsu.UnmarshalJSON")
 	var s string

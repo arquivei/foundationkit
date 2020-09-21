@@ -42,7 +42,7 @@ func (c CUF) String() string {
 	return strconv.Itoa(int(c.value))
 }
 
-//MarshalJSON serializes the CUF value as a JSON value
+// MarshalJSON serializes the CUF value as a JSON value
 func (c CUF) MarshalJSON() ([]byte, error) {
 	const op = errors.Op("CUF.MarshalJSON")
 
@@ -52,7 +52,7 @@ func (c CUF) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c.String())
 }
 
-//UnmarshalJSON deserialize a JSON value into a CUF value
+// UnmarshalJSON deserialize a JSON value into a CUF value
 func (c *CUF) UnmarshalJSON(b []byte) error {
 	const op = errors.Op("CUF.UnmarshalJSON")
 	var v string

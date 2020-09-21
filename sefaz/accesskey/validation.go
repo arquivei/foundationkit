@@ -5,45 +5,72 @@ import (
 	"github.com/arquivei/foundationkit/sefaz/stakeholder"
 )
 
-// validate execute all sub-routines necessary to perform a full accesskey validation
-func validate(accessKey AccessKey) error {
-	const op errors.Op = "validate"
-	if accessKey == "" {
-		return errors.E(op, ErrEmptyAccessKey, ErrCodeEmptyAccessKey)
-	}
-	if len(accessKey) != 44 {
-		return errors.E(op, ErrInvalidLenght, ErrCodeInvalidAccessKey)
-	}
+// Check checks if an access key is valid. It returns an error with an specific code based on
+// the validation problem
+func Check(accessKey AccessKey) error {
+	const op errors.Op = "accesskey.Check"
 
-	if !isDigitOnly(accessKey) {
-		return errors.E(op, ErrInvalidCharacter, ErrCodeInvalidAccessKey)
-	}
-
-	if !isValidUF(accessKey[0:2].String()) {
-		return errors.E(op, ErrInvalidUF, ErrCodeInvalidAccessKey)
-	}
-
-	if !isValidMonth(accessKey[4:6].String()) {
-		return errors.E(op, ErrInvalidMonth, ErrCodeInvalidAccessKey)
-	}
-
-	if !isValidCPFCNPJ(accessKey[6:20].String()) {
-		return errors.E(op, ErrInvalidCPFCNPJ, ErrCodeInvalidAccessKey)
-	}
-
-	if !isValidModel(accessKey[20:22].String()) {
-		return errors.E(op, ErrInvalidModel, ErrCodeInvalidAccessKey)
-	}
-
-	if !isValidationDigitCorrect(accessKey.String()) {
-		return errors.E(op, ErrInvalidDigit, ErrCodeInvalidAccessKey)
+	err := validate(accessKey)
+	if err != nil {
+		return errors.E(op, err)
 	}
 
 	return nil
 }
 
+// validate execute all sub-routines necessary to perform a full accesskey validation
+func validate(accessKey AccessKey) error {
+	const op errors.Op = "validate"
+
+	if accessKey == "" {
+		return errors.E(op, ErrEmptyAccessKey, ErrCodeEmptyAccessKey)
+	}
+
+	if len(accessKey) != 44 {
+		return errors.E(op, ErrInvalidLength, ErrCodeInvalidLength)
+	}
+
+	if !isDigitOnly(accessKey) {
+		return errors.E(op, ErrInvalidCharacter, ErrCodeInvalidCharacter)
+	}
+
+	if !isValidUF(accessKey[0:2].String()) {
+		return errors.E(op, ErrInvalidUF, ErrCodeInvalidUF)
+	}
+
+	if !isValidMonth(accessKey[4:6].String()) {
+		return errors.E(op, ErrInvalidMonth, ErrCodeInvalidMonth)
+	}
+
+	if !isValidCPFCNPJ(accessKey[6:20].String()) {
+		return errors.E(op, ErrInvalidCPFCNPJ, ErrCodeInvalidCPFCNPJ)
+	}
+
+	if !isValidModel(accessKey[20:22].String()) {
+		return errors.E(op, ErrInvalidModel, ErrCodeInvalidModel)
+	}
+
+	if !isValidationDigitCorrect(accessKey.String()) {
+		return errors.E(op, ErrInvalidDigit, ErrCodeInvalidDigit)
+	}
+
+	return nil
+}
+
+// Deprecated: prefer using the Check function
 func (v *validator) Check(accessKey AccessKey) error {
-	return validate(accessKey)
+	const op errors.Op = "accesskey.validator.Check"
+
+	err := validate(accessKey)
+	if err == nil {
+		return nil
+	}
+
+	if code := errors.GetCode(err); code != ErrCodeEmptyAccessKey && code != ErrCodeInvalidAccessKey {
+		return errors.E(op, err, ErrCodeInvalidAccessKey)
+	}
+
+	return errors.E(op, err)
 }
 
 func isDigitOnly(accesskey AccessKey) bool {
