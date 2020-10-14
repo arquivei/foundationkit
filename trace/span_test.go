@@ -28,7 +28,7 @@ func TestSpan(t *testing.T) {
 			name:                     "With Parent with PS = 1 and DPS = 0; Should Sample",
 			defaultProbabilitySample: 0,
 			parent: Trace{
-				ID:                NewTraceID(),
+				ID:                NewID(),
 				ProbabilitySample: &one,
 			},
 			expectedIsSample: true,
@@ -37,7 +37,7 @@ func TestSpan(t *testing.T) {
 			name:                     "With Parent with PS = 0 and DPS = 1; Should not Sample",
 			defaultProbabilitySample: 1,
 			parent: Trace{
-				ID:                NewTraceID(),
+				ID:                NewID(),
 				ProbabilitySample: &zero,
 			},
 			expectedIsSample: false,
@@ -46,7 +46,7 @@ func TestSpan(t *testing.T) {
 			name:                     "With Parent with PS = 1 and DPS = nil; Should Sample",
 			defaultProbabilitySample: -1,
 			parent: Trace{
-				ID:                NewTraceID(),
+				ID:                NewID(),
 				ProbabilitySample: &one,
 			},
 			expectedIsSample: true,
@@ -55,7 +55,7 @@ func TestSpan(t *testing.T) {
 			name:                     "With Parent with PS = 0 and DPS = nil; Should not Sample",
 			defaultProbabilitySample: -1,
 			parent: Trace{
-				ID:                NewTraceID(),
+				ID:                NewID(),
 				ProbabilitySample: &zero,
 			},
 			expectedIsSample: false,
@@ -93,7 +93,7 @@ func assertResponse(ctx context.Context, s Span, test testSpan, t *testing.T) {
 		assert.Equal(t, test.parent.ID.String(), s.span.SpanContext().TraceID.String(), fmt.Sprintf("trace ID not equal [%s]", test.name))
 	}
 
-	trace := GetTraceFromContext(ctx)
+	trace := GetFromContext(ctx)
 	if !assert.NotNil(t, trace, fmt.Sprintf("trace should not be nil [%s]", test.name)) {
 		return
 	}
@@ -123,7 +123,7 @@ func assertResponse(ctx context.Context, s Span, test testSpan, t *testing.T) {
 }
 
 func TestCreateSampleContext(t *testing.T) {
-	traceID := NewTraceID()
+	traceID := NewID()
 	span0 := createSpanContext(traceID.String(), 0)
 	span1 := createSpanContext(traceID.String(), 1)
 

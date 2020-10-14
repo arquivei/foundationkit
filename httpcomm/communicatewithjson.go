@@ -178,7 +178,7 @@ func makeHTTPRequest(
 		//         a trace.ExistsInContext(ctx) to allow checking.
 		ctx = trace.WithTrace(ctx, trace.Trace{})
 	}
-	trace.SetTraceInHTTPRequest(ctx, httpRequest)
+	trace.SetInHTTPRequest(ctx, httpRequest)
 
 	// NOTE : it is proposed that RequestID can be sent over HTTP Requests so that the receiver
 	// side (the server) can log it; but not use it. This can aid in backtracking request is
@@ -212,7 +212,7 @@ func communicateWithHTTPRequest(
 	}
 
 	defer httpResponse.Body.Close()
-	details.Trace = trace.GetTraceFromHTTPResponse(httpResponse)
+	details.Trace = trace.GetFromHTTPResponse(httpResponse)
 	details.RequestID = request.GetFromHTTPResponse(httpResponse)
 
 	limitedReader := io.LimitReader(httpResponse.Body, maxAcceptedBodySize+1)

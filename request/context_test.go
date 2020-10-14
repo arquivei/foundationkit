@@ -9,8 +9,8 @@ import (
 
 func TestIDContextOperations(t *testing.T) {
 	ctx := context.Background()
-	assert.Empty(t, GetRequestIDFromContext(ctx))
+	assert.Empty(t, GetIDFromContext(ctx))
 
-	ctx = WithNewRequestID(ctx)
-	assert.NotEmpty(t, GetRequestIDFromContext(ctx))
+	ctx = WithNewID(ctx)
+	assert.NotEmpty(t, GetIDFromContext(ctx))
 }

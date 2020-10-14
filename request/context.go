@@ -8,26 +8,50 @@ const (
 	contextKeyID contextKeyType = iota
 )
 
-// WithRequestID returns a context with the given ID
+// WithID returns a context with the given ID
 //
 // If there is already an ID in the context, the context is returned unchanged.
-func WithRequestID(ctx context.Context, id ID) context.Context {
+func WithID(ctx context.Context, id ID) context.Context {
 	if v := ctx.Value(contextKeyID); v == nil {
 		return context.WithValue(ctx, contextKeyID, id)
 	}
 	return ctx
 }
 
-// WithNewRequestID calls WithRequestIDpassign a new ID
-func WithNewRequestID(ctx context.Context) context.Context {
-	return WithRequestID(ctx, newID())
+// WithRequestID returns a context with the given ID
+//
+// If there is already an ID in the context, the context is returned unchanged.
+//
+// Deprecated: use WithID instead
+func WithRequestID(ctx context.Context, id ID) context.Context {
+	return WithID(ctx, id)
 }
 
-// GetRequestIDFromContext returns the request ID in the context.
+// WithNewID calls WithID with a new ID
+func WithNewID(ctx context.Context) context.Context {
+	return WithID(ctx, newID())
+}
+
+// WithNewRequestID calls WithNewID
+//
+// Deprecated: use WithNewID instead
+func WithNewRequestID(ctx context.Context) context.Context {
+	return WithNewID(ctx)
+}
+
+// GetIDFromContext returns the request ID in the context.
 // Will return a empty ID if it is not set
-func GetRequestIDFromContext(ctx context.Context) ID {
+func GetIDFromContext(ctx context.Context) ID {
 	if id, ok := ctx.Value(contextKeyID).(ID); ok {
 		return id
 	}
 	return ID{}
+}
+
+// GetRequestIDFromContext returns the request ID in the context.
+// Will return a empty ID if it is not set
+//
+// Deprecated: use GetIDFromContext instead
+func GetRequestIDFromContext(ctx context.Context) ID {
+	return GetIDFromContext(ctx)
 }

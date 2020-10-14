@@ -14,7 +14,7 @@ func TestNotPanicMarshalZerologObject(t *testing.T) {
 	}{
 		{
 			name: "New ID",
-			id:   NewTraceID(),
+			id:   NewID(),
 		},
 		{
 			name: "Empty ID",

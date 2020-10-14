@@ -33,16 +33,16 @@ func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, c Config, req i
 			zctx = zctx.Interface("request_meta", meta)
 		}
 
-		if rid := request.GetRequestIDFromContext(ctx); !rid.IsEmpty() {
-			zctx = zctx.EmbedObject(request.GetRequestIDFromContext(ctx))
+		if rid := request.GetIDFromContext(ctx); !rid.IsEmpty() {
+			zctx = zctx.EmbedObject(request.GetIDFromContext(ctx))
 		} else {
-			log.Warn().Msg("Request doesn't have a Request ID! Did you forget to use trackingmiddleware on the trasport layer?")
+			log.Warn().Msg("Request doesn't have a Request ID! Did you forget to use trackingmiddleware on the transport layer?")
 		}
 
-		if t := trace.GetTraceFromContext(ctx); !trace.IDIsEmpty(t.ID) {
-			zctx = zctx.EmbedObject(trace.GetTraceFromContext(ctx))
+		if t := trace.GetFromContext(ctx); !trace.IDIsEmpty(t.ID) {
+			zctx = zctx.EmbedObject(trace.GetFromContext(ctx))
 		} else {
-			log.Warn().Msg("Request doesn't have a trace! Did you forget to use trackingmiddleware on the trasport layer?")
+			log.Warn().Msg("Request doesn't have a trace! Did you forget to use trackingmiddleware on the transport layer?")
 		}
 
 		return zctx.Str("endpoint_name", c.Name)
