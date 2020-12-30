@@ -22,27 +22,37 @@ type MainLoopFunc func() error
 type App struct {
 	ctx context.Context
 
-	Ready   bool
-	Healthy bool
+	Ready   ProbeGroup
+	Healthy ProbeGroup
 
-	mainLoop         MainLoopFunc
 	shutdownHandlers shutdownHeap
 	GracePeriod      time.Duration
 	ShutdownTimeout  time.Duration
+
+	mainReadinessProbe  Probe
+	mainHealthnessProbe Probe
 }
 
 // New returns a new App.
-func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, error) {
-	if mainLoop == nil {
-		return nil, errors.New("main loop is nil")
+func New(ctx context.Context, adminPort string) (*App, error) {
+	app := &App{
+		ctx:     ctx,
+		Ready:   NewProbeGroup(),
+		Healthy: NewProbeGroup(),
 	}
 
-	app := &App{
-		ctx:      ctx,
-		mainLoop: mainLoop,
-		Ready:    false,
-		Healthy:  true,
+	mainReadinessProbe, err := app.Ready.NewProbe("fkit/app", false)
+	if err != nil {
+		return nil, err
 	}
+
+	mainHealthnessProbe, err := app.Healthy.NewProbe("fkit/app", true)
+	if err != nil {
+		return nil, err
+	}
+
+	app.mainReadinessProbe = mainReadinessProbe
+	app.mainHealthnessProbe = mainHealthnessProbe
 
 	{ // This spwans an admin HTTP server for this
 		mux := http.NewServeMux()
@@ -50,26 +60,28 @@ func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, er
 		mux.Handle("/metrics", promhttp.Handler())
 
 		mux.HandleFunc("/healthy", func(w http.ResponseWriter, _ *http.Request) {
-			if app.Healthy {
+			isHealthy, cause := app.Healthy.CheckProbes()
+			if isHealthy {
 				w.WriteHeader(http.StatusOK)
 				//nolint:errcheck
 				w.Write([]byte("OK"))
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)
 				//nolint:errcheck
-				w.Write([]byte("NOT OK"))
+				w.Write([]byte(cause))
 			}
 		})
 
 		mux.HandleFunc("/ready", func(w http.ResponseWriter, _ *http.Request) {
-			if app.Ready {
+			isReady, cause := app.Ready.CheckProbes()
+			if isReady {
 				w.WriteHeader(http.StatusOK)
 				//nolint:errcheck
 				w.Write([]byte("OK"))
 			} else {
 				w.WriteHeader(http.StatusServiceUnavailable)
 				//nolint:errcheck
-				w.Write([]byte("NOT OK"))
+				w.Write([]byte(cause))
 			}
 		})
 
@@ -94,8 +106,8 @@ func New(ctx context.Context, adminPort string, mainLoop MainLoopFunc) (*App, er
 }
 
 // MustNew returns a new App, but panics if there is an error.
-func MustNew(ctx context.Context, adminPort string, mainLoop MainLoopFunc) *App {
-	app, err := New(ctx, adminPort, mainLoop)
+func MustNew(ctx context.Context, adminPort string) *App {
+	app, err := New(ctx, adminPort)
 	if err != nil {
 		panic(err)
 	}
@@ -141,13 +153,17 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 }
 
 // RunAndWait executes the main loop on a go-routine and listens to SIGINT and SIGKILL to start the shutdown
-func (a *App) RunAndWait() {
+func (a *App) RunAndWait(mainLoop MainLoopFunc) {
 	errs := make(chan error)
 
 	go func() {
 		log.Ctx(a.ctx).Info().Msg("Application main loop starting now!")
-		a.Ready = true
-		errs <- a.mainLoop()
+		if mainLoop == nil {
+			errs <- errors.New("main loop is nil")
+			return
+		}
+		a.mainReadinessProbe.SetOk()
+		errs <- mainLoop()
 	}()
 
 	signals := make(chan os.Signal, 2)
@@ -156,11 +172,11 @@ func (a *App) RunAndWait() {
 	ctx := log.Ctx(a.ctx).WithContext(context.Background())
 	select {
 	case <-a.ctx.Done():
-		a.Ready = false
+		a.mainReadinessProbe.SetNotOk()
 		log.Ctx(a.ctx).Info().Msg("App context canceled, initialing shutdown procedures...")
 		err = a.Shutdown(ctx)
 	case s := <-signals:
-		a.Ready = false
+		a.mainReadinessProbe.SetNotOk()
 		log.Ctx(a.ctx).Info().
 			Str("signal", s.String()).
 			Dur("grace_period", a.GracePeriod).
@@ -169,7 +185,7 @@ func (a *App) RunAndWait() {
 		log.Ctx(a.ctx).Info().Msg("Grace period is over, initiating shutdown procedures...")
 		err = a.Shutdown(ctx)
 	case err = <-errs:
-		a.Ready = false
+		a.mainReadinessProbe.SetNotOk()
 		log.Ctx(a.ctx).Info().Err(err).Msg("App finished by itself, initialing shutdown procedures...")
 		err = a.Shutdown(ctx)
 	}
@@ -179,7 +195,7 @@ func (a *App) RunAndWait() {
 		log.Ctx(a.ctx).Error().Err(err).Msg("App exited with error")
 	}
 	// This forces kubernetes kills the pod if some other code is holding the main func.
-	a.Healthy = false
+	a.mainHealthnessProbe.SetNotOk()
 }
 
 // RegisterShutdownHandler adds a handler in the end of the list. During shutdown all handlers are executed in the order they were added

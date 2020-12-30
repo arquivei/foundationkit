@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/arquivei/foundationkit/app"
 	"github.com/go-kit/kit/endpoint"
 )
 
@@ -13,11 +12,9 @@ import (
 // unhealthy if no request is received in
 // the allotted time.
 //
-// Unhealthy is a final state for now, so the checker
-// stops after reaching unhealthy.
-//
-// With a better health handler we could try
-// to recover from it.
+// If a request is received after being unhealthy,
+// it's not considered stale anymore abd becomes
+// healthy again.
 func New(c Config) endpoint.Middleware {
 	var lastKnownRequestTime int64
 
@@ -36,9 +33,14 @@ func backgroundStaleCheck(c Config, lastKnownRequestTime *int64) {
 	*lastKnownRequestTime = time.Now().UnixNano()
 	for {
 		time.Sleep(c.MaxTimeBetweenRequests)
-		if time.Since(time.Unix(0, *lastKnownRequestTime)) > c.MaxTimeBetweenRequests {
-			logAndSetUnhealthy(c)
-			return
+
+		if isUnhealthy(c, *lastKnownRequestTime) {
+			if c.HealthinessPobe.IsOk() {
+				logAndSetUnhealthy(c)
+			}
+			continue
+		} else if !c.HealthinessPobe.IsOk() {
+			logAndSetHealthy(c)
 		}
 	}
 }
@@ -49,5 +51,18 @@ func logAndSetUnhealthy(c Config) {
 			Dur("timeout", c.MaxTimeBetweenRequests).
 			Msg("Endpoint didn't receive any request and it's stale")
 	}
-	app.SetUnhealthy()
+	c.HealthinessPobe.SetNotOk()
+}
+
+func logAndSetHealthy(c Config) {
+	if c.Logger != nil {
+		c.Logger.Info().
+			Dur("timeout", c.MaxTimeBetweenRequests).
+			Msg("Endpoint received a request and is no longer stale")
+	}
+	c.HealthinessPobe.SetOk()
+}
+
+func isUnhealthy(c Config, last int64) bool {
+	return time.Since(time.Unix(0, last)) > c.MaxTimeBetweenRequests
 }

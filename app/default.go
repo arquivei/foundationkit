@@ -20,8 +20,8 @@ var (
 
 // NewDefaultApp creates and sets the default app. The default app is controlled by
 // public functions in app package
-func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error) {
-	defaultApp, err = New(ctx, DefaultAdminPort, mainLoop)
+func NewDefaultApp(ctx context.Context) (err error) {
+	defaultApp, err = New(ctx, DefaultAdminPort)
 	if err != nil {
 		return err
 	}
@@ -31,11 +31,11 @@ func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error) {
 }
 
 // RunAndWait calls the RunAndWait of the default app
-func RunAndWait() {
+func RunAndWait(f MainLoopFunc) {
 	if defaultApp == nil {
 		panic("default app not initialized")
 	}
-	defaultApp.RunAndWait()
+	defaultApp.RunAndWait(f)
 }
 
 // Shutdown calls the Shutdown of the default app
@@ -54,32 +54,18 @@ func RegisterShutdownHandler(sh *ShutdownHandler) {
 	defaultApp.RegisterShutdownHandler(sh)
 }
 
-// IsReady returns if the default app is ready (to be used by kubernetes readyness probe)
-func IsReady() bool {
-	return defaultApp.Ready
+// ReadinessProbeGoup TODO
+func ReadinessProbeGoup() *ProbeGroup {
+	if defaultApp == nil {
+		panic("default app not initialized")
+	}
+	return &defaultApp.Ready
 }
 
-// SetReady sets the app to ready state
-func SetReady() {
-	defaultApp.Ready = true
-}
-
-// SetUnready sets the app to unready state
-func SetUnready() {
-	defaultApp.Ready = false
-}
-
-// IsHealthy returns if the app is healthy. Unhealthy apps are killed by the kubernetes.
-func IsHealthy() bool {
-	return defaultApp.Healthy
-}
-
-// SetHealthy sets the app to an healthy state
-func SetHealthy() {
-	defaultApp.Healthy = true
-}
-
-// SetUnhealthy sets the app to an unhealthy state
-func SetUnhealthy() {
-	defaultApp.Healthy = false
+// HealthinessProbeGroup TODO
+func HealthinessProbeGroup() *ProbeGroup {
+	if defaultApp == nil {
+		panic("default app not initialized")
+	}
+	return &defaultApp.Healthy
 }
