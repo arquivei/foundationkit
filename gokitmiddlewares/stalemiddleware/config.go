@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Config TODO
+// Config is a struct used to configure a new stale middleware.
 type Config struct {
 	Logger                 *zerolog.Logger
 	MaxTimeBetweenRequests time.Duration
@@ -16,7 +16,7 @@ type Config struct {
 	HealthinessPobe        app.Probe
 }
 
-// NewDefaultConfig TODO
+// NewDefaultConfig returns a new `Config` with all values filled with a sane default.
 func NewDefaultConfig(pg *app.ProbeGroup) Config {
 	probe, err := pg.NewProbe("fkit/stale", true)
 	if err != nil {
