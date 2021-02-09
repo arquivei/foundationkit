@@ -20,7 +20,7 @@ type ContextMap interface {
 
 type contextMap map[string]interface{}
 
-// New returns a new ContextMap that can be embeded in a context.Context.
+// New returns a new ContextMap that can be embedded in a context.Context.
 func New() ContextMap {
 	return make(contextMap)
 }

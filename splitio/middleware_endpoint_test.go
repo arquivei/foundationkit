@@ -118,7 +118,8 @@ func TestMiddlewareNoUserFn(t *testing.T) {
 
 			middleware := NewFeatureFlagMiddleware(test.client, config)
 			endpoint = middleware(endpoint)
-			endpoint(context.Background(), nil)
+			_, err := endpoint(context.Background(), nil)
+			assert.NoError(t, err)
 		})
 	}
 }
@@ -273,7 +274,8 @@ func TestMiddlewareMultiUserFn(t *testing.T) {
 
 			middleware := NewFeatureFlagMiddleware(test.client, config)
 			endpoint = middleware(endpoint)
-			endpoint(context.Background(), test.request)
+			_, err := endpoint(context.Background(), test.request)
+			assert.NoError(t, err)
 		})
 	}
 }

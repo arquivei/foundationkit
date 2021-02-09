@@ -73,6 +73,6 @@ func mustNewSplitIOClient(config Config) Client {
 
 	return &sdkclient{
 		client: splitClient,
-		rand:   rand.New(rand.NewSource(time.Now().UnixNano())),
+		rand:   rand.New(rand.NewSource(time.Now().UnixNano())), //nolint:gosec
 	}
 }
