@@ -33,9 +33,6 @@ func New(c Config) (endpoint.Middleware, error) {
 		return nil, errors.New("logger is nil")
 	}
 
-	shouldEnrichLogWithRequest := c.EnrichLogWithRequest != nil
-	shouldEnrichLogWithResponse := c.EnrichLogWithResponse != nil
-
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		log.Debug().Str("config", logutil.Flatten(c)).Msg("New logging endpoint middleware")
 
@@ -45,13 +42,7 @@ func New(c Config) (endpoint.Middleware, error) {
 			l, ctx := initLoggerContext(ctx, *c.Logger)
 
 			enrichLoggerContext(ctx, l, c, req)
-
-			if shouldEnrichLogWithRequest {
-				l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
-					ctx, zctx = c.EnrichLogWithRequest(ctx, zctx, req)
-					return zctx
-				})
-			}
+			ctx = doCustomEnrichRequest(ctx, c, l, req)
 
 			defer func() {
 				var r interface{}
@@ -62,12 +53,7 @@ func New(c Config) (endpoint.Middleware, error) {
 						Msg("Logging endpoint middleware is handling an uncaught a panic. Please fix it!")
 				}
 				enrichLoggerAfterResponse(l, c, begin, resp)
-
-				if shouldEnrichLogWithResponse {
-					l.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
-						return c.EnrichLogWithResponse(ctx, zctx, resp, err)
-					})
-				}
+				doCustomEnrichResponse(ctx, c, l, resp, err)
 
 				doLogging(l, c, err)
 				if r != nil {
@@ -99,4 +85,46 @@ func toString(i interface{}, n int) string {
 		return s
 	}
 	return s[:n]
+}
+
+func doCustomEnrichRequest(
+	ctx context.Context,
+	config Config,
+	logger *zerolog.Logger,
+	request interface{},
+) context.Context {
+	if typedReq, ok := request.(LoggableEndpointRequest); ok {
+		logger.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
+			ctx, zctx = typedReq.EnrichLog(ctx, zctx)
+			return zctx
+		})
+	}
+	if config.EnrichLogWithRequest != nil {
+		logger.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
+			ctx, zctx = config.EnrichLogWithRequest(ctx, zctx, request)
+			return zctx
+		})
+	}
+	return ctx
+}
+
+func doCustomEnrichResponse(
+	ctx context.Context,
+	config Config,
+	logger *zerolog.Logger,
+	response interface{},
+	err error,
+) {
+	if typedReq, ok := response.(LoggableEndpointResponse); ok {
+		logger.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
+			zctx = typedReq.EnrichLog(ctx, zctx)
+			return zctx
+		})
+	}
+	if config.EnrichLogWithResponse != nil {
+		logger.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
+			zctx = config.EnrichLogWithResponse(ctx, zctx, response, err)
+			return zctx
+		})
+	}
 }
