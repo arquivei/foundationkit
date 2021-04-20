@@ -98,7 +98,8 @@ func doCustomEnrichRequest(
 			ctx, zctx = typedReq.EnrichLog(ctx, zctx)
 			return zctx
 		})
-	} else if config.EnrichLogWithRequest != nil {
+	}
+	if config.EnrichLogWithRequest != nil {
 		logger.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
 			ctx, zctx = config.EnrichLogWithRequest(ctx, zctx, request)
 			return zctx
@@ -119,7 +120,8 @@ func doCustomEnrichResponse(
 			zctx = typedReq.EnrichLog(ctx, zctx)
 			return zctx
 		})
-	} else if config.EnrichLogWithResponse != nil {
+	}
+	if config.EnrichLogWithResponse != nil {
 		logger.UpdateContext(func(zctx zerolog.Context) zerolog.Context {
 			zctx = config.EnrichLogWithResponse(ctx, zctx, response, err)
 			return zctx
