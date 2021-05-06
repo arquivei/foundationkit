@@ -18,7 +18,27 @@ func Check(accessKey AccessKey) error {
 	return nil
 }
 
-// validate execute all sub-routines necessary to perform a full accesskey validation
+// CheckNFF checks if an access key is valid also considering NFF rules. It returns an error with an specific code based on
+// the validation proble
+func CheckNFF(accessKey AccessKey) error {
+	const op errors.Op = "accesskey.CheckWithNFF"
+
+	err := validate(accessKey)
+	if err != nil {
+		return errors.E(op, err)
+	}
+
+	if isNFF(accessKey) {
+		err := validateNFF(accessKey)
+		if err != nil {
+			return errors.E(op, err)
+		}
+	}
+
+	return nil
+}
+
+// validate execute all sub-routines necessary to perform a full accesskey validation for regular NFes
 func validate(accessKey AccessKey) error {
 	const op errors.Op = "validate"
 
@@ -71,6 +91,41 @@ func (v *validator) Check(accessKey AccessKey) error {
 	}
 
 	return errors.E(op, err)
+}
+
+func isNFF(accessKey AccessKey) bool {
+	/*model = 55 && tpEmis = 3 && AAMM more recent than April 2021*/
+	if accessKey[20:22] == "55" && accessKey[34:35] == "3" && accessKey[2:6] >= "2104" {
+		return true
+	}
+	return false
+}
+
+// validate execute all sub-routines necessary to perform a full accesskey validation for NFF
+func validateNFF(accessKey AccessKey) error {
+	const op errors.Op = "validateNFF"
+
+	if !isValidSerieForNFF(accessKey[22:25].String()) {
+		return errors.E(op, ErrInvalidSerieForNFF, ErrCodeInvalidSerieForNFF)
+	}
+
+	if !isValidNumeroForNFF(accessKey[25:34].String()) {
+		return errors.E(op, ErrInvalidNumeroForNFF, ErrCodeInvalidNumeroForNFF)
+	}
+
+	if accessKey[29] == '1' {
+		err := stakeholder.CheckCNPJ(accessKey[6:20].String())
+		if err != nil {
+			return errors.E(op, err, ErrCodeInvalidCNPJForNFF)
+		}
+	} else if accessKey[29] == '2' {
+		err := stakeholder.CheckCPF(accessKey[6:20].String())
+		if err != nil {
+			return errors.E(op, err, ErrCodeInvalidCPFForNFF)
+		}
+	}
+
+	return nil
 }
 
 func isDigitOnly(accesskey AccessKey) bool {
@@ -147,6 +202,37 @@ func isValidMonth(month string) bool {
 	}
 }
 
+func isValidDate(month string, day string) bool {
+	if len(month) != 2 {
+		return false
+	}
+
+	if len(day) != 2 {
+		return false
+	}
+
+	if month == "00" {
+		return false
+	}
+
+	switch month {
+	case "01", "03", "05", "07", "08", "10", "12":
+		if day > "31" {
+			return false
+		}
+	case "04", "06", "09", "11":
+		if day > "30" {
+			return false
+		}
+	case "02":
+		if day > "29" {
+			return false
+		}
+	}
+
+	return true
+}
+
 func isValidModel(model string) bool {
 	return model == "01" || model == "1A" ||
 		model == "02" || model == "04" ||
@@ -201,4 +287,19 @@ func isValidCPFCNPJ(cpfcnpj string) bool {
 	}
 
 	return stakeholder.CheckCPF(cpfcnpj[3:14]) == nil
+}
+
+func isValidSerieForNFF(serie string) bool {
+	return serie[0] != '0'
+}
+
+func isValidNumeroForNFF(numero string) bool {
+	if !isValidDate(numero[0:2], numero[2:4]) {
+		return false
+	}
+	if numero[4] != '1' && numero[4] != '2' {
+		return false
+	}
+
+	return true
 }
