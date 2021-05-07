@@ -25,6 +25,15 @@ var (
 	// ErrCodeInvalidDigit is an error code used to imply that an access has a verification digit mismatch
 	ErrCodeInvalidDigit = errors.Code("INVALID_DIGIT")
 
+	// ErrCodeInvalidSerieForNFF
+	ErrCodeInvalidSerieForNFF = errors.Code("INVALID_SERIE_FOR_NFF")
+	// ErrCodeInvalidCodigoForNFF
+	ErrCodeInvalidNumeroForNFF = errors.Code("INVALID_NUMERO_FOR_NFF")
+	// ErrCodeInvalidCNPJForNFF
+	ErrCodeInvalidCNPJForNFF = errors.Code("INVALID_CNPJ_FOR_NFF")
+	// ErrCodeInvalidCPFForNFF
+	ErrCodeInvalidCPFForNFF = errors.Code("INVALID_CPF_FOR_NFF")
+
 	// ErrEmptyAccessKey is returned when the provided access key is an empty string
 	ErrEmptyAccessKey = errors.New("access key is empty")
 	// ErrInvalidLength the access key does not contains 44 digits
@@ -43,4 +52,9 @@ var (
 	ErrInvalidModel = errors.New("access key has invalid model")
 	// ErrInvalidDigit verification digit mismatch
 	ErrInvalidDigit = errors.New("access key has invalid validation digit")
+
+	// ErrInvalidSerieForNFF
+	ErrInvalidSerieForNFF = errors.New("access key invalid serie for NFF")
+	// ErrInvalidCodigoForNFF
+	ErrInvalidNumeroForNFF = errors.New("access key invalid numero for NFF")
 )
