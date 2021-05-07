@@ -18,8 +18,8 @@ func Check(accessKey AccessKey) error {
 	return nil
 }
 
-// CheckNFF checks if an access key is valid also considering NFF rules. It returns an error with an specific code based on
-// the validation proble
+// CheckNFF checks if an access key is valid with more restrictive rules also considering NFF.
+// It returns an error with an specific code based on the validation proble
 func CheckNFF(accessKey AccessKey) error {
 	const op errors.Op = "accesskey.CheckWithNFF"
 
@@ -95,7 +95,7 @@ func (v *validator) Check(accessKey AccessKey) error {
 
 func isNFF(accessKey AccessKey) bool {
 	/*model = 55 && tpEmis = 3 && AAMM more recent than April 2021*/
-	if accessKey[20:22] == "55" && accessKey[34:35] == "3" && accessKey[2:6] >= "2104" {
+	if accessKey[20:22] == "55" && accessKey[34] == '3' && accessKey[2:6] >= "2104" {
 		return true
 	}
 	return false
@@ -202,7 +202,7 @@ func isValidMonth(month string) bool {
 	}
 }
 
-func isValidDate(month string, day string) bool {
+func isValidMonthDay(month string, day string) bool {
 	if len(month) != 2 {
 		return false
 	}
@@ -211,7 +211,7 @@ func isValidDate(month string, day string) bool {
 		return false
 	}
 
-	if month == "00" {
+	if day == "00" {
 		return false
 	}
 
@@ -228,6 +228,8 @@ func isValidDate(month string, day string) bool {
 		if day > "29" {
 			return false
 		}
+	default:
+		return false
 	}
 
 	return true
@@ -294,7 +296,7 @@ func isValidSerieForNFF(serie string) bool {
 }
 
 func isValidNumeroForNFF(numero string) bool {
-	if !isValidDate(numero[0:2], numero[2:4]) {
+	if !isValidMonthDay(numero[0:2], numero[2:4]) {
 		return false
 	}
 	if numero[4] != '1' && numero[4] != '2' {
