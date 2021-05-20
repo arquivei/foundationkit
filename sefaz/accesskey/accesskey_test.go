@@ -83,6 +83,11 @@ func TestAccessKeyValidator(t *testing.T) {
 			accessKey:         "31181200079713500075550010000066931939775144",
 			expectedErrorCode: "",
 		},
+		{
+			name:              "valid NFF access Key (NOTE: CREATED BY HAND)",
+			accessKey:         "35211000017946554095551211015243213936501279",
+			expectedErrorCode: "",
+		},
 	}
 
 	for _, test := range tests {
