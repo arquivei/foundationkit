@@ -119,7 +119,11 @@ func validateNFF(accessKey AccessKey) error {
 			return errors.E(op, err, ErrCodeInvalidCNPJForNFF)
 		}
 	} else if accessKey[29] == '2' {
-		err := stakeholder.CheckCPF(accessKey[6:20].String())
+		if accessKey[6:9] != "000" {
+			return errors.E(op, "cpf is not padded with 0", ErrCodeInvalidCPFForNFF)
+		}
+
+		err := stakeholder.CheckCPF(accessKey[9:20].String())
 		if err != nil {
 			return errors.E(op, err, ErrCodeInvalidCPFForNFF)
 		}
