@@ -16,16 +16,15 @@ var ConfigFilename = "config.json"
 func SetupConfig(config interface{}) {
 	var files uconfig.Files
 	if fileExists(ConfigFilename) {
-		files =
-			[]struct {
-				Path      string
-				Unmarshal file.Unmarshal
-			}{
-				{
-					Path:      ConfigFilename,
-					Unmarshal: json.Unmarshal,
-				},
-			}
+		files = []struct {
+			Path      string
+			Unmarshal file.Unmarshal
+		}{
+			{
+				Path:      ConfigFilename,
+				Unmarshal: json.Unmarshal,
+			},
+		}
 	}
 
 	c, err := uconfig.Classic(config, files)
