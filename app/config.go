@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/omeid/uconfig"
+	"github.com/omeid/uconfig/plugins/file"
 	"github.com/rs/zerolog/log"
 )
 
@@ -13,9 +14,17 @@ var ConfigFilename = "config.json"
 
 // SetupConfig loads the configuration in the given struct. In case of error, prints help and exit application.
 func SetupConfig(config interface{}) {
-	files := make(uconfig.Files)
+	var files uconfig.Files
 	if fileExists(ConfigFilename) {
-		files[ConfigFilename] = json.Unmarshal
+		files = []struct {
+			Path      string
+			Unmarshal file.Unmarshal
+		}{
+			{
+				Path:      ConfigFilename,
+				Unmarshal: json.Unmarshal,
+			},
+		}
 	}
 
 	c, err := uconfig.Classic(config, files)
