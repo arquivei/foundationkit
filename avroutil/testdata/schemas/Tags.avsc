@@ -1,0 +1,13 @@
+{
+  "type" : "record",
+  "name" : "Tags",
+  "namespace" : "com.arquivei.saas",
+  "fields" : [ {
+    "name" : "Tags",
+    "type" : {
+      "type" : "array",
+      "items" : "string"
+    },
+    "doc" : "Lista de tags"
+  } ]
+}
