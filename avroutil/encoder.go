@@ -13,7 +13,7 @@ import (
 
 // Encoder is able to transform golang's concrete types into avro's wire format
 type Encoder interface {
-	// Decode decodes @data, in the wire format, into @output.
+	// Encode encodes @input in the wire format
 	Encode(input interface{}) ([]byte, error)
 }
 
@@ -70,7 +70,10 @@ func (e *implEncoder) Encode(input interface{}) ([]byte, error) {
 // to write it as an Avro Wire Format message.
 // The header is a 5-byte slice, where the first byte is equal to x00, and
 // the last four represent the ID in a 32-bit big endian integer encoding.
-func joinAvroWireFormatMessage(schemaID schemaregistry.ID, msg []byte) ([]byte, error) {
+func joinAvroWireFormatMessage(
+	schemaID schemaregistry.ID,
+	msg []byte,
+) ([]byte, error) {
 	const op = errors.Op("joinAvroWireFormatMessage")
 
 	buf := new(bytes.Buffer)

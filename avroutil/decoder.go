@@ -30,7 +30,11 @@ func NewDecoder(schemaRepository schemaregistry.Repository) Decoder {
 	}
 }
 
-func (i *implDecoder) Decode(ctx context.Context, data []byte, output interface{}) error {
+func (i *implDecoder) Decode(
+	ctx context.Context,
+	data []byte,
+	output interface{},
+) error {
 	const op = errors.Op("avroutil.implDecoder.Decode")
 	ctx, span := trace.StartSpan(ctx, "AvroDecode")
 	defer span.End(nil)
@@ -47,21 +51,6 @@ func (i *implDecoder) Decode(ctx context.Context, data []byte, output interface{
 
 	err = avro.Unmarshal(schema, data, output)
 	return errors.E(op, err, errors.SeverityInput)
-}
-
-// DecodeWireFormatMessage decodes any @msg data encoded with the wire format
-// into the @output variable. The @output parameter must be defined as specified by the
-// library: github.com/hamba/avro
-// Deprecated: Use avroutil.Decoder instead
-func DecodeWireFormatMessage(
-	ctx context.Context,
-	msg []byte,
-	schemaRegistry schemaregistry.Repository,
-	output interface{},
-) error {
-	const op = errors.Op("avroutil.DecodeWireFormatMessage")
-	err := NewDecoder(schemaRegistry).Decode(ctx, msg, output)
-	return errors.E(op, err)
 }
 
 // SplitAvroWireFormatMessage extracts the schema ID and the data from a

@@ -13,7 +13,7 @@ type loggingRepository struct {
 	next schemaregistry.Repository
 }
 
-// WrapWithLogging wraps @next with a cache layer that stores the result indefinitely
+// WrapWithLogging wraps @next with a logging layer
 func WrapWithLogging(next schemaregistry.Repository) schemaregistry.Repository {
 	return &loggingRepository{
 		next: next,
