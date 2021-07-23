@@ -10,6 +10,7 @@ require (
 	github.com/go-kit/kit v0.11.0
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/hamba/avro v1.5.6
 	github.com/oklog/ulid v1.3.1
 	github.com/omeid/uconfig v1.2.0
 	github.com/prometheus/client_golang v1.11.0
