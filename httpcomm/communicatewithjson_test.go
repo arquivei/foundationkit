@@ -43,6 +43,9 @@ func Test_communicateWithJSON_Success(t *testing.T) {
 			assert.Equal(t, requestTrace.ID.String(), receivedTrace.ID.String(), "server trace id")
 			assert.Equal(t, requestTrace.ProbabilitySample, receivedTrace.ProbabilitySample, "server trace probability sample")
 
+			// checking headers
+			assert.Equal(t, []string{"1", "2"}, r.Header.Values("HEADER_TEST"), "request headers")
+
 			// TODO : need a request.NewID() method to avoid using context like this in tests
 			serverRequestID = request.GetIDFromContext(request.WithNewID(context.Background()))
 			trace.SetInHTTPResponse(receivedTrace, w)
@@ -83,6 +86,7 @@ func Test_communicateWithJSON_Success(t *testing.T) {
 		http.MethodPost,
 		testServer.URL,
 		RequestType{Integer: 123},
+		map[string][]string{"HEADER_TEST": {"1", "2"}},
 		100,
 		20,
 		/*out*/ &response,
@@ -178,6 +182,7 @@ func Test_communicateWithJSON_CommunicationErrors(t *testing.T) {
 				http.MethodPost,
 				testServer.URL,
 				RequestType{Integer: testCase.requestInteger},
+				nil,
 				100,
 				20,
 				/*out*/ response,
@@ -209,6 +214,7 @@ func Test_communicateWithJSON_Timeout(t *testing.T) {
 		http.MethodPost,
 		testServer.URL,
 		request,
+		nil,
 		2*(1<<10), // 2KB
 		20,
 		/*out*/ response,
@@ -241,6 +247,7 @@ func Test_communicateWithJSON_ExpiredContext(t *testing.T) {
 		http.MethodPost,
 		testServer.URL,
 		request,
+		nil,
 		2*(1<<10), // 2KB
 		20,
 		/*out*/ response,

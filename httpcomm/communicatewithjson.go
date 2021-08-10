@@ -50,6 +50,7 @@ func CommunicateWithJSON(
 		httpMethod,
 		fullURL,
 		requestData,
+		nil,
 		maxAcceptedBodySize,
 		maxErrBodySize,
 		outResponse,
@@ -98,6 +99,58 @@ func CommunicateWithJSONDetailed(
 		httpMethod,
 		fullURL,
 		requestData,
+		nil,
+		maxAcceptedBodySize,
+		maxErrBodySize,
+		outResponse,
+	)
+	if err != nil {
+		return details, errors.E(op, err)
+	}
+
+	return details, nil
+}
+
+// CommunicateWithJSONAndHeadersDetailed uses a given @httpClient to communicate
+// with a HTTP server at @fullURL using the specified @httpMethod. This function
+// will send @requestData marshalled as a JSON content, with @headers as headers
+// and wait for the server response. The response will be written into the given
+// @outResponse (it will mutate the parameter contents) using the json
+// unmarshaling rules set by @outResponse itself. This function returns detailed
+// information of the response. It is possible that the detailed information
+// might hold some data even if error is not nil, but the data may not be
+// complete.
+//
+// To reduce damage in case of bugs or attacks, a @maxAcceptedBodySize must be
+// passed, and bodies contents larger than this will be considered noxious and
+// return an error.
+//
+// A value of @maxErrBodySize must be passed to indicate how much of response
+// contents can be added into the error message.
+func CommunicateWithJSONAndHeadersDetailed(
+	ctx context.Context,
+	httpClient http.Client,
+	httpMethod HTTPMethod,
+	fullURL string,
+	requestData interface{},
+	headers map[string][]string,
+	maxAcceptedBodySize int64,
+	maxErrBodySize int,
+
+	// output response, on success, will be overwritten. This is not
+	// a nice design, but it allows the ErrCodeDecodeError well unmarshalling
+	// json to stay inside this function, and avoids the need of a cast by the caller.
+	outResponse interface{},
+) (ResponseDetails, error) {
+	const op = errors.Op("httpcomm.CommunicateWithJSONAndHeadersDetailed")
+
+	details, err := communicateWithJSON(
+		ctx,
+		httpClient,
+		httpMethod,
+		fullURL,
+		requestData,
+		headers,
 		maxAcceptedBodySize,
 		maxErrBodySize,
 		outResponse,
@@ -115,6 +168,7 @@ func communicateWithJSON(
 	httpMethod HTTPMethod,
 	fullURL string,
 	requestData interface{},
+	headers map[string][]string,
 	maxAcceptedBodySize int64,
 	maxErrBodySize int,
 	outResponse interface{},
@@ -128,7 +182,7 @@ func communicateWithJSON(
 		)
 	}
 
-	httpRequest, err := makeHTTPRequest(ctx, fullURL, httpMethod, requestData)
+	httpRequest, err := makeHTTPRequest(ctx, fullURL, httpMethod, requestData, headers)
 	if err != nil {
 		return ResponseDetails{}, err
 	}
@@ -161,6 +215,7 @@ func makeHTTPRequest(
 	fullURL string,
 	httpMethod HTTPMethod,
 	requestData interface{},
+	headers map[string][]string,
 ) (*http.Request, error) {
 	requestDataBody, err := json.Marshal(requestData)
 	if err != nil {
@@ -179,6 +234,12 @@ func makeHTTPRequest(
 		ctx = trace.WithTrace(ctx, trace.Trace{})
 	}
 	trace.SetInHTTPRequest(ctx, httpRequest)
+
+	for header, values := range headers {
+		for _, value := range values {
+			httpRequest.Header.Add(header, value)
+		}
+	}
 
 	// NOTE : it is proposed that RequestID can be sent over HTTP Requests so that the receiver
 	// side (the server) can log it; but not use it. This can aid in backtracking request is
