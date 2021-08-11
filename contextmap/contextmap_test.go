@@ -2,6 +2,7 @@ package contextmap
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,38 +15,42 @@ func TestNew(t *testing.T) {
 func Test_contextMap_String(t *testing.T) {
 	tests := []struct {
 		name string
-		m    contextMap
+		m    map[string]interface{}
 		want string
 	}{
 		{
 			name: "empty map",
-			m:    contextMap{},
+			m:    map[string]interface{}{},
 			want: "{}",
 		},
 		{
 			name: "one string entry",
-			m:    contextMap{"key": "value"},
+			m:    map[string]interface{}{"key": "value"},
 			want: `{"key":"value"}`,
 		},
 		{
 			name: "one int entry",
-			m:    contextMap{"key": 1},
+			m:    map[string]interface{}{"key": 1},
 			want: `{"key":1}`,
 		},
 		{
 			name: "two entries",
-			m:    contextMap{"key1": 1, "key2": 2},
+			m:    map[string]interface{}{"key1": 1, "key2": 2},
 			want: `{"key1":1,"key2":2}`,
 		},
 		{
 			name: "three entries",
-			m:    contextMap{"key1": 1, "key2": 2, "key3": "3"},
+			m:    map[string]interface{}{"key1": 1, "key2": 2, "key3": "3"},
 			want: `{"key1":1,"key2":2,"key3":"3"}`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.m.String())
+			cm := contextMap{
+				mu: &sync.RWMutex{},
+				m:  tt.m,
+			}
+			assert.Equal(t, tt.want, cm.String())
 		})
 	}
 }

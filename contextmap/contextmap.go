@@ -3,6 +3,7 @@ package contextmap
 import (
 	"context"
 	"encoding/json"
+	"sync"
 )
 
 type contextmapKeyType int
@@ -18,32 +19,44 @@ type ContextMap interface {
 	Get(key string) interface{}
 }
 
-type contextMap map[string]interface{}
+type contextMap struct {
+	mu *sync.RWMutex
+	m  map[string]interface{}
+}
 
 // New returns a new ContextMap that can be embedded in a context.Context.
 func New() ContextMap {
-	return make(contextMap)
+	return contextMap{
+		mu: &sync.RWMutex{},
+		m:  make(map[string]interface{}),
+	}
 }
 
-func (m contextMap) String() string {
-	s, err := json.Marshal(m)
+func (cm contextMap) String() string {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	s, err := json.Marshal(cm.m)
 	if err != nil {
 		return err.Error()
 	}
 	return string(s)
 }
 
-func (m contextMap) WithCtx(ctx context.Context) context.Context {
-	return context.WithValue(ctx, contextmapKey, m)
+func (cm contextMap) WithCtx(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contextmapKey, cm)
 }
 
-func (m contextMap) Set(key string, val interface{}) ContextMap {
-	m[key] = val
-	return m
+func (cm contextMap) Set(key string, val interface{}) ContextMap {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.m[key] = val
+	return cm
 }
 
-func (m contextMap) Get(key string) interface{} {
-	return m[key]
+func (cm contextMap) Get(key string) interface{} {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	return cm.m[key]
 }
 
 // Ctx retrieved a ContextMap from the context.Context.
