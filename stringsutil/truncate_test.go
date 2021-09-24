@@ -46,6 +46,5 @@ func TestTruncate(t *testing.T) {
 	for _, test := range tests {
 		actual := Truncate(test.input.str, test.input.size)
 		assert.Equal(t, test.expected, actual, "[%s] Unexpected value", test.name)
-
 	}
 }
