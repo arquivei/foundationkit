@@ -1,4 +1,4 @@
-package stringutils
+package stringutil
 
 // Truncate cuts a given string if it's longer than the given size. Else it returns the string as is.
 func Truncate(str string, size int) string {
