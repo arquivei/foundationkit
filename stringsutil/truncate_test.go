@@ -1,4 +1,4 @@
-package stringutil
+package stringsutil
 
 import (
 	"github.com/stretchr/testify/assert"
