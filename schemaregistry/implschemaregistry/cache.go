@@ -11,9 +11,9 @@ import (
 )
 
 type cacheRepository struct {
-	next            schemaregistry.Repository
-	schemaByIDCache map[schemaregistry.ID]avro.Schema
-	idBySchemaCache map[string]schemaregistry.ID
+	next                schemaregistry.Repository
+	schemaByIDCache     map[schemaregistry.ID]avro.Schema
+	idBySchemaCache     map[string]schemaregistry.ID
 	lockSchemaByIDCache sync.RWMutex
 	lockIDBySchemaCache sync.RWMutex
 }
@@ -41,7 +41,7 @@ func (r *cacheRepository) GetSchemaByID(ctx context.Context, id schemaregistry.I
 		return nil, errors.E(op, err)
 	}
 
-	r.storeSchemaById(id, schema)
+	r.storeSchemaByID(id, schema)
 
 	return schema, nil
 }
@@ -80,12 +80,12 @@ func (r *cacheRepository) GetIDBySchema(
 	}
 
 	r.storeIDBySchemaCache(id, schema)
-	r.storeSchemaById(id, avroSchema)
+	r.storeSchemaByID(id, avroSchema)
 
 	return id, avroSchema, nil
 }
 
-func (r *cacheRepository) storeSchemaById(id schemaregistry.ID, schema avro.Schema) {
+func (r *cacheRepository) storeSchemaByID(id schemaregistry.ID, schema avro.Schema) {
 	r.lockIDBySchemaCache.Lock()
 	defer r.lockIDBySchemaCache.Unlock()
 
