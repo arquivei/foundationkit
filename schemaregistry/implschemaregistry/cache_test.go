@@ -27,7 +27,7 @@ func TestCacheGetSchemaByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, tagsSchemaStr, schema.String())
 
-	// Second time, get from cache
+	// Second time, get from schemaByIDCache
 	schema, err = repository.GetSchemaByID(context.Background(), 10)
 	assert.NoError(t, err)
 	assert.Equal(t, tagsSchemaStr, schema.String())
