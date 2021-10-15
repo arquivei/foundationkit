@@ -11,21 +11,19 @@ import (
 )
 
 type cacheRepository struct {
-	next                schemaregistry.Repository
-	schemaByIDCache     map[schemaregistry.ID]avro.Schema
-	idBySchemaCache     map[string]schemaregistry.ID
-	lockSchemaByIDCache sync.RWMutex
-	lockIDBySchemaCache sync.RWMutex
+	next            schemaregistry.Repository
+	schemaByIDCache map[schemaregistry.ID]avro.Schema
+	idBySchemaCache map[string]schemaregistry.ID
+	lock            sync.RWMutex
 }
 
 // WrapWithCache wraps @next with a schemaByIDCache layer that stores the result indefinitely
 func WrapWithCache(next schemaregistry.Repository) schemaregistry.Repository {
 	return &cacheRepository{
-		next:                next,
-		lockSchemaByIDCache: sync.RWMutex{},
-		lockIDBySchemaCache: sync.RWMutex{},
-		schemaByIDCache:     map[schemaregistry.ID]avro.Schema{},
-		idBySchemaCache:     map[string]schemaregistry.ID{},
+		next:            next,
+		lock:            sync.RWMutex{},
+		schemaByIDCache: map[schemaregistry.ID]avro.Schema{},
+		idBySchemaCache: map[string]schemaregistry.ID{},
 	}
 }
 
@@ -47,15 +45,16 @@ func (r *cacheRepository) GetSchemaByID(ctx context.Context, id schemaregistry.I
 }
 
 func (r *cacheRepository) tryGetSchemaFromCache(id schemaregistry.ID) (avro.Schema, bool) {
-	r.lockSchemaByIDCache.RLock()
-	defer r.lockSchemaByIDCache.RUnlock()
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 
 	schema, ok := r.schemaByIDCache[id]
 	return schema, ok
 }
+
 func (r *cacheRepository) tryGetIDFromSchemaCache(schema string) (schemaregistry.ID, bool) {
-	r.lockSchemaByIDCache.RLock()
-	defer r.lockSchemaByIDCache.RUnlock()
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 
 	id, ok := r.idBySchemaCache[schema]
 	return id, ok
@@ -86,15 +85,15 @@ func (r *cacheRepository) GetIDBySchema(
 }
 
 func (r *cacheRepository) storeSchemaByID(id schemaregistry.ID, schema avro.Schema) {
-	r.lockIDBySchemaCache.Lock()
-	defer r.lockIDBySchemaCache.Unlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 
 	r.schemaByIDCache[id] = schema
 }
 
 func (r *cacheRepository) storeIDBySchema(id schemaregistry.ID, schema string) {
-	r.lockIDBySchemaCache.Lock()
-	defer r.lockIDBySchemaCache.Unlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 
 	r.idBySchemaCache[schema] = id
 }
