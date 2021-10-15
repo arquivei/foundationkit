@@ -76,10 +76,10 @@ func (r *cacheRepository) GetIDBySchema(
 
 	id, avroSchema, err := r.next.GetIDBySchema(ctx, subject, schema)
 	if err != nil {
-		return 0, nil, errors.E(op, err)
+		return id, nil, errors.E(op, err)
 	}
 
-	r.storeIDBySchemaCache(id, schema)
+	r.storeIDBySchema(id, schema)
 	r.storeSchemaByID(id, avroSchema)
 
 	return id, avroSchema, nil
@@ -92,7 +92,7 @@ func (r *cacheRepository) storeSchemaByID(id schemaregistry.ID, schema avro.Sche
 	r.schemaByIDCache[id] = schema
 }
 
-func (r *cacheRepository) storeIDBySchemaCache(id schemaregistry.ID, schema string) {
+func (r *cacheRepository) storeIDBySchema(id schemaregistry.ID, schema string) {
 	r.lockIDBySchemaCache.Lock()
 	defer r.lockIDBySchemaCache.Unlock()
 
