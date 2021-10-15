@@ -16,10 +16,10 @@ func TestCacheGetSchemaByID(t *testing.T) {
 	mock := new(mockTestRepository)
 	mock.On("GetSchemaByID", schemaregistry.ID(10)).
 		Return(tagsSchema, nil).
-		Once()
+		Times(1)
 	mock.On("GetSchemaByID", schemaregistry.ID(99)).
 		Return(tagsSchema, errors.New("not found")).
-		Once()
+		Times(1)
 
 	repository := WrapWithCache(mock)
 	// First time, fetch from repository
@@ -27,7 +27,7 @@ func TestCacheGetSchemaByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, tagsSchemaStr, schema.String())
 
-	// Second time, get from cache
+	// Second time, get from schemaByIDCache
 	schema, err = repository.GetSchemaByID(context.Background(), 10)
 	assert.NoError(t, err)
 	assert.Equal(t, tagsSchemaStr, schema.String())
@@ -35,6 +35,8 @@ func TestCacheGetSchemaByID(t *testing.T) {
 	// Repository returned error
 	_, err = repository.GetSchemaByID(context.Background(), 99)
 	assert.EqualError(t, errors.GetRootErrorWithKV(err), "not found")
+
+	mock.AssertExpectations(t)
 }
 
 func TestCacheGetIDBySchema(t *testing.T) {
@@ -42,11 +44,11 @@ func TestCacheGetIDBySchema(t *testing.T) {
 	mock.
 		On("GetIDBySchema", schemaregistry.Subject("mysubject"), tagsSchemaStr).
 		Return(schemaregistry.ID(10), tagsSchema, nil).
-		Twice()
+		Times(1)
 	mock.
 		On("GetIDBySchema", schemaregistry.Subject("mysubject"), "wrongschema").
 		Return(schemaregistry.ID(10), tagsSchema, errors.New("not found")).
-		Once()
+		Times(1)
 
 	repository := WrapWithCache(mock)
 	// First time, fetch from repository
@@ -59,7 +61,7 @@ func TestCacheGetIDBySchema(t *testing.T) {
 	assert.Equal(t, tagsSchemaStr, schema.String())
 	assert.Equal(t, schemaregistry.ID(10), id)
 
-	// Second time, fetch from repository. CACHE IS NOT IMPLEMENTED
+	// Second time, get from idBySchemaCache
 	id, schema, err = repository.GetIDBySchema(
 		context.Background(),
 		schemaregistry.Subject("mysubject"),
@@ -76,6 +78,8 @@ func TestCacheGetIDBySchema(t *testing.T) {
 		"wrongschema",
 	)
 	assert.EqualError(t, errors.GetRootErrorWithKV(err), "not found")
+
+	mock.AssertExpectations(t)
 }
 
 type mockTestRepository struct {
