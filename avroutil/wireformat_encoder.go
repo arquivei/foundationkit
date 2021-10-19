@@ -9,9 +9,11 @@ import (
 	"github.com/arquivei/foundationkit/schemaregistry"
 )
 
-// WireFormatEncoder encodes an Avro message in the Wire Format
+// WireFormatEncoder uses the Schema ID provided in the constructor to encodes Avro Messages of the same type into its
+// Wire Format form. The `WireFormatEncoder` is used undercover by `Encoder` to deal with the Wire Format transformation
+// step.
 type WireFormatEncoder interface {
-	BinaryToWireFormat(input []byte) ([]byte, error)
+	BinaryToWireFormat(avroInput []byte) ([]byte, error)
 }
 
 type wireFormatEncoder struct {
@@ -49,7 +51,7 @@ func NewWireFormatEncoder(
 // to write it as an Avro Wire Format message.
 // The header is a 5-byte slice, where the first byte is equal to x00, and
 // the last four represent the ID in a 32-bit big endian integer encoding.
-func (e *wireFormatEncoder) BinaryToWireFormat(input []byte) ([]byte, error) {
+func (e *wireFormatEncoder) BinaryToWireFormat(avroInput []byte) ([]byte, error) {
 	const op = errors.Op("avroutil.wireFormatEncoder.BinaryToWireFormat")
 
 	buf := new(bytes.Buffer)
@@ -62,7 +64,7 @@ func (e *wireFormatEncoder) BinaryToWireFormat(input []byte) ([]byte, error) {
 		return nil, errors.E(op, err)
 	}
 
-	if _, err := buf.Write(input); err != nil {
+	if _, err := buf.Write(avroInput); err != nil {
 		return nil, errors.E(op, err)
 	}
 
