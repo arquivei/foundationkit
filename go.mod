@@ -6,10 +6,11 @@ require (
 	cloud.google.com/go v0.90.0 // indirect
 	cloud.google.com/go/logging v1.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.8
+	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.0.0
 	github.com/aws/aws-sdk-go v1.40.19 // indirect
 	github.com/go-kit/kit v0.11.0
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/hamba/avro v1.5.6
 	github.com/oklog/ulid v1.3.1
 	github.com/omeid/uconfig v1.2.0
@@ -23,6 +24,10 @@ require (
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	go.opencensus.io v0.23.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.26.0
+	go.opentelemetry.io/otel v1.1.0
+	go.opentelemetry.io/otel/sdk v1.1.0
+	go.opentelemetry.io/otel/trace v1.1.0
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
 	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5 // indirect
 	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect

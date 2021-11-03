@@ -1,0 +1,15 @@
+{
+    "Log": {
+        "Human": true,
+        "Hook": {
+            "Stackdriver": false
+        }
+    },
+    "Trace": {
+        "Exporter": "stackdriver",
+        "ProbabilitySample": 0.5,
+        "Stackdriver": {
+            "ProjectID": "arquivei-dev"
+        }
+    }
+}
