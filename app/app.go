@@ -35,6 +35,8 @@ type App struct {
 
 // New returns a new App.
 func New(ctx context.Context, adminPort string) (*App, error) {
+	log.Trace().Msg("[app] Creating new app")
+
 	app := &App{
 		ctx:     ctx,
 		Ready:   NewProbeGroup(),
@@ -115,14 +117,18 @@ func MustNew(ctx context.Context, adminPort string) *App {
 }
 
 // Shutdown calls all shutdown methods, in order they were added.
-func (a *App) Shutdown(ctx context.Context) error {
+func (a *App) Shutdown(ctx context.Context) (err error) {
+	log.Trace().Msg("[app] Starting graceful shutdown")
+	defer log.Trace().Err(err).Msg("[app] Graceful shutdown finished")
+
 	const op = errors.Op("app.App.Shutdown")
+
 	if a.ShutdownTimeout > 0 {
 		var cancel func()
 		ctx, cancel = context.WithTimeout(ctx, a.ShutdownTimeout)
 		defer cancel()
 	}
-	var err error
+
 	select {
 	case <-ctx.Done():
 		err = errors.E(op, "shutdown deadline has been reached")
@@ -154,6 +160,8 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 
 // RunAndWait executes the main loop on a go-routine and listens to SIGINT and SIGKILL to start the shutdown
 func (a *App) RunAndWait(mainLoop MainLoopFunc) {
+	log.Trace().Msg("[app] Starting run and wait")
+
 	errs := make(chan error)
 
 	go func() {
@@ -194,6 +202,7 @@ func (a *App) RunAndWait(mainLoop MainLoopFunc) {
 	} else {
 		log.Ctx(a.ctx).Error().Err(err).Msg("App exited with error")
 	}
+
 	// This forces kubernetes kills the pod if some other code is holding the main func.
 	a.mainHealthnessProbe.SetNotOk()
 }
@@ -207,4 +216,8 @@ func (a *App) RegisterShutdownHandler(sh *ShutdownHandler) {
 		heap.Init(&a.shutdownHandlers)
 	}
 	heap.Push(&a.shutdownHandlers, sh)
+
+	log.Trace().
+		Str("shutdown_handler_name", sh.Name).
+		Msg("[app] Shutdown handler registered")
 }

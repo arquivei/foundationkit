@@ -12,29 +12,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseLevel(t *testing.T) {
-	for strLevel, zeroLogLevel := range map[string]zerolog.Level{
-		"debug": zerolog.DebugLevel,
-		"info":  zerolog.InfoLevel,
-		"warn":  zerolog.WarnLevel,
-		"error": zerolog.ErrorLevel,
-	} {
-		result, err := ParseLevel(strLevel)
-
-		assert.Nil(t, err)
-		assert.Equal(t, zeroLogLevel, result)
-	}
-
-	_, err := ParseLevel("bla")
-	assert.NotNil(t, err)
-}
-
 func TestMustParseLevel(t *testing.T) {
 	assert.Panics(t, func() {
 		MustParseLevel("bla")
 	})
 
-	assert.Equal(t, zerolog.DebugLevel, MustParseLevel("debug"))
+	for strLevel, zeroLogLevel := range map[string]zerolog.Level{
+		"trace": zerolog.TraceLevel,
+		"TRACE": zerolog.TraceLevel,
+		"Trace": zerolog.TraceLevel,
+		"debug": zerolog.DebugLevel,
+		"info":  zerolog.InfoLevel,
+		"warn":  zerolog.WarnLevel,
+		"error": zerolog.ErrorLevel,
+	} {
+		assert.Equal(t, zeroLogLevel, MustParseLevel(strLevel))
+	}
 }
 
 func testLogger(t *testing.T, testFunc func(Config, *bytes.Buffer, string), message string) {
