@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/arquivei/foundationkit/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -18,7 +17,7 @@ type Config struct {
 	Level string `default:"info"`
 	Human bool   `default:"false"`
 	Hook  struct {
-		Stackdriver bool `default:"true"`
+		Stackdriver bool `default:"false"`
 	}
 }
 
@@ -62,25 +61,9 @@ func SetupLoggerWithContext(ctx context.Context, config Config, version string,
 	return log.Logger.WithContext(ctx)
 }
 
-// ParseLevel transforms a string in a zerolog level
-func ParseLevel(l string) (zerolog.Level, error) {
-	switch strings.ToLower(l) {
-	case "debug":
-		return zerolog.DebugLevel, nil
-	case "info":
-		return zerolog.InfoLevel, nil
-	case "warn":
-		return zerolog.WarnLevel, nil
-	case "error":
-		return zerolog.ErrorLevel, nil
-	}
-
-	return zerolog.InfoLevel, errors.Errorf("invalid level: %v", l)
-}
-
 // MustParseLevel transforms a string in a zerolog level
 func MustParseLevel(l string) zerolog.Level {
-	zl, err := ParseLevel(l)
+	zl, err := zerolog.ParseLevel(strings.ToLower(l))
 	if err != nil {
 		panic(err)
 	}

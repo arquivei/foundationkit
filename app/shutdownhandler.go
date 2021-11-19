@@ -28,6 +28,22 @@ const (
 	ErrorPolicyPanic
 )
 
+// ErrorPolicyString returns a string representation of a ErrorPolicy. This was intended for logging purposes.
+func ErrorPolicyString(p ErrorPolicy) string {
+	switch p {
+	case ErrorPolicyAbort:
+		return "abort"
+	case ErrorPolicyFatal:
+		return "fatal"
+	case ErrorPolicyPanic:
+		return "panic"
+	case ErrorPolicyWarn:
+		return "warn"
+	default:
+		return ""
+	}
+}
+
 // ShutdownFunc is a shutdown function that will be executed when the app is shutting down.
 type ShutdownFunc func(context.Context) error
 

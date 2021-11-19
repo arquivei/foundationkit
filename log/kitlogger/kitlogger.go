@@ -3,7 +3,7 @@ package kitlog
 import (
 	"github.com/arquivei/foundationkit/errors"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/rs/zerolog"
 )
 
