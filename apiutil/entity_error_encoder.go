@@ -47,6 +47,7 @@ func NewHTTPErrorJSONEncoder(
 //
 // This is a default implementation that sets the satus code base on the error
 // severity.
+// nolint:gocritic
 func GetDefaultErrorHTTPStatusCode(err error) (s int) {
 	switch errors.GetSeverity(err) {
 	case errors.SeverityInput:
@@ -58,6 +59,6 @@ func GetDefaultErrorHTTPStatusCode(err error) (s int) {
 		return http.StatusRequestTimeout
 	}
 
-	// If we don't know what happend...
+	// If we don't know what happened...
 	return http.StatusInternalServerError
 }
