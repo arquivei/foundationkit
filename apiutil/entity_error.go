@@ -28,12 +28,26 @@ func ParseError(err error) ErrorDescription {
 			Message: "trying to encode nil error",
 		}
 	}
-	code := errors.GetCode(err)
-	if code == errors.CodeEmpty {
-		code = ErrCodeInternal
-	}
 	return ErrorDescription{
-		Code:    code.String(),
+		Code:    getErrorCode(err).String(),
 		Message: errors.GetRootErrorWithKV(err).Error(),
+	}
+}
+
+func getErrorCode(err error) errors.Code {
+	switch code := errors.GetCode(err); code {
+	case errors.CodeEmpty:
+		return getErrorCodeBasedOnSeverity(errors.GetSeverity(err))
+	default:
+		return code
+	}
+}
+
+func getErrorCodeBasedOnSeverity(code errors.Severity) errors.Code {
+	switch code {
+	case errors.SeverityInput:
+		return ErrCodeBadRequest
+	default:
+		return ErrCodeInternal
 	}
 }
