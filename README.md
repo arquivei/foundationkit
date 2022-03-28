@@ -6,252 +6,45 @@
 
 This project contains very opinionated packages for common operations.
 
-## Request
+## Getting Started
 
-### Usage
+These instructions will give you a copy of the project up and running on
+your local machine for development and testing purposes. See deployment
+for notes on deploying the project on a live system.
 
-It will be used the following service as example:
+### Prerequisites
 
-```golang
-type Service interface {
-    Do(context.Context, Request) (Response, error)
-}
+Requirements for the software and other tools to build, test and push:
 
-type Response struct {
-    //(...)
-    RequestID request.ID
-}
+- [go](https://go.dev/)
+- [golangci-lint](https://golangci-lint.run/): for linting.
+
+### Linting
+
+Please run `golangci-lint run` before submitting code.
+
+### Godoc
+
+To read the godoc documentation run:
+
+```sh
+godoc -http=localhost:6060
 ```
 
-#### HTTP Layer
+and open `http://localhost:6060` on yout browser.
 
-Use the method `request.WithID` to create and put a Request ID in context
+## Contributing
 
-```golang
-func MakeEndpoint(s Service) endpoint.Endpoint {
-	return func(ctx context.Context, r interface{}) (interface{}, error) {
-		req := r.(Request)
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code
+of conduct, and the process for submitting pull requests to us.
 
-		ctx = request.WithID(ctx)
+## Versioning
 
-		response, err := s.Do(ctx, req)
+We use [Semantic Versioning](http://semver.org/) for versioning. For the versions
+available, see the [tags on this
+repository](https://github.com/arquivei/foundationkit/tags).
 
-		return response, err
-	}
-}
-```
+## License
 
-#### Logging
-
-Use the method `request.GetIDFromContext` to log the Request ID
-
-```golang
-func (l *logging) Do(ctx ontext.Context, req Request) (response Response, err error) {
-	logger := log.Logger.With().
-		EmbedObject(request.GetIDFromContext(ctx)).
-		Logger()
-    // (...)
-}
-```
-
-## Trace
-
-### Config and Initialization
-
-In the config variable, add the `trace.Config` struct
-
-```golang
-var config struct {
-    Trace trace.Config
-}
-```
-
-The `trace.Config` has the following values:
-
-```golang
-type Config struct {
-	Exporter          string  `default:""` // empty string or "stackdriver"
-	ProbabilitySample float64 `default:"0"` // [0, 1]
-	Stackdriver       struct {
-		ProjectID string
-	}
-}
-```
-
-Initialize your config using the `app.SetupConfig`
-
-```golang
-app.SetupConfig(&config)
-```
-
-Now, inicialize your trace exporter using `trace.SetupTrace`
-
-```golang
-trace.SetupTrace(config.Trace)
-```
-
-### Service
-
-It will be used the following service as example:
-
-```golang
-type Service interface {
-    Do(context.Context, Request) (Response, error)
-}
-
-type Request struct {
-    // (...)
-    trace.Trace
-}
-
-type Response struct {
-    // (...)
-    trace.Trace
-}
-```
-
-And will be used the following job as example of job/event:
-
-```golang
-type Job interface {
-    //(...)
-    trace.Trace
-}
-```
-
-#### HTTP Layer
-
-```golang
-
-func decodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    var req Request
-
-    // (...)
-    req.Trace = trace.GetTraceFromHTTRequest(r)
-
-    return req, nil
-}
-
-
-func MakeEndpoint(s Service) endpoint.Endpoint {
-	return func(ctx context.Context, r interface{}) (interface{}, error) {
-		req := r.(Request)
-
-		ctx = trace.WithTraceAndLabels(ctx, req.Trace, getLabelsFromRequest(req))
-
-		response, err := s.Do(ctx, req)
-
-		return response, err
-	}
-}
-
-func getLabelsFromRequest(req Request) map[string]string{
-    //(...)
-}
-```
-
-#### Method Do
-
-```golang
-func (s service) Do(ctx ontext.Context, req Request) (response Response, err error) {
-
-    // When receive the trace through a job/event
-    ctx = trace.WithTrace(ctx, job.Trace)
-
-    // When is the first span in service
-    span := trace.StartSpanWithParent(ctx)
-    defer span.End(err)
-
-    // When is not the first span in service
-    span := trace.StartSpan(ctx)
-    defer span.End(err)
-
-    // Make a POST in another service
-    var req *http.Request
-    prepareRequest(req)
-    trace.SetInHTTPRequest(ctx, req)
-
-    // Create a job/event to send to a queue
-    // or
-    // Create the Service Response
-    response.Trace = trace.GetFromContext(ctx)
-    newJob.Trace = trace.GetFromContext(ctx)
-}
-
-func prepareRequest(req *http.Request) {
-    //(...)
-}
-```
-
-#### Logging
-
-Use the method `trace.GetIDFromContext` to log the Trace ID
-
-```golang
-func (l *logging) Do(ctx ontext.Context, req Request) (response Response, err error) {
-	logger := log.Logger.With().
-		EmbedObject(trace.GetIDFromContext(ctx)).
-		Logger()
-    // (...)
-}
-```
-
-#### Encoding
-
-```golang
-func EncodeResponse(ctx context.Context, w http.ResponseWriter, r interface{}) error {
-    response := r.(Response)
-    trace.SetInHTTPResponse(response.Trace, w)
-    // (...)
-}
-```
-
-
-## SplitIO
-
-### Using the client directly
-```golang
-client := splitio.MustNewClient(config)
-attributes := splitIO.Attributes{
-    "age": 37,
-}
-if client.IsFeatureEnabled("MY_FEATURE_FLAG", attributes) {
-    // do stuff
-}
-```
-
-### Using the middleware
-```golang
-// in the service
-MY_FF := splitio.Feature("MY_FEATURE_FLAG")
-Features := []splitio.Feature{
-    MY_FF,
-}
-
-// In the transport layer
-func GetUserFromRequest(ctx context.Context, request interface{}) map[User]Attributes {
-    // Extract user and attributes from the endpoint request
-}
-
-// in the main package
-client := splitio.MustNewClient(config)
-middlewareConfig := splitio.DefaultFFMidlewareConfig()
-middlewareConfig.MultiUserDecodeFn = myapi.GetUserFromRequest
-middlewareConfig.Features = myservice.Features
-
-middleware := NewFeatureFlagMiddleware(client, middlewareConfig)
-myEndpoint := endpoint.Chain(
-    // ...
-    middleware,
-    // ...
-)(myEndpoint)
-
-// In your code
-if splitio.IsFeatureEnabled(ctx, MY_FF) {
-    // do stuff
-}
-```
-
-Although the initial setup is more complex, it has the advantage of setting up everything only once, and then integrating seamlessly with new feature flags.
-
-Each feature is checked once per request, for the users and attributes specified in the `MultiUserDecodeFn`. The behaviour is stored in the context, so that it is possible to check anywhere in the service if the feature is enabled without caring about which user or attributes should be used.
+This project is licensed under the _BSD 3-Clause_ - see the [LICENSE.md](LICENSE.md) file for
+details.
