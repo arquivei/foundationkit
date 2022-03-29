@@ -19,14 +19,14 @@ type Config struct {
 	ExternalMetrics ExternalMetrics
 }
 
-// WithLabelsDecoder TODO
+// WithLabelsDecoder adds a LabelsDecoder to the metrics middleware.
 func (c Config) WithLabelsDecoder(d LabelsDecoder) Config {
 	c.LabelsDecoder = d
 	c.Metrifier.ExtraLabels = d.Labels()
 	return c
 }
 
-// WithExternalMetrics TODO
+// WithExternalMetrics adds ExternalMetrics to the metrics middleware.
 func (c Config) WithExternalMetrics(m ExternalMetrics) Config {
 	c.ExternalMetrics = m
 	return c

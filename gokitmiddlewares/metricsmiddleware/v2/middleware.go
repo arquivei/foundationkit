@@ -24,7 +24,7 @@ func New(c Config) (endpoint.Middleware, error) {
 	}
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
-		log.Debug().Str("config", logutil.Flatten(c)).Msg("New metrics endpoint middleware")
+		log.Debug().Str("config", logutil.Flatten(c)).Msg("[metricsmiddleware] New metrics endpoint middleware")
 
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			defer func(s metrifier.Span) {
@@ -33,11 +33,12 @@ func New(c Config) (endpoint.Middleware, error) {
 				if r = recover(); r != nil {
 					err = errors.E(errors.NewFromRecover(r), errors.SeverityFatal, errors.CodePanic)
 					log.Ctx(ctx).Warn().Err(err).
-						Msg("Metrics endpoint middleware is handling an uncaught a panic. Please fix it!")
+						Msg("[metricsmiddleware] Metrics endpoint middleware is handling an uncaught a panic. Please fix it!")
 				}
 				metrify(ctx, c.LabelsDecoder, s, req, resp, err)
-				if c.ExternalMetrics != nil {
-					c.ExternalMetrics(ctx, req, resp, err)
+				if panicErr := tryRunExternalMetrics(ctx, c.ExternalMetrics, req, resp, err); panicErr != nil {
+					log.Ctx(ctx).Error().Err(panicErr).
+						Msg("[metricsmiddleware] External Metrics panicked. Please check you ExternalMetrics function.")
 				}
 
 				// re-raise panic
@@ -55,11 +56,26 @@ func metrify(ctx context.Context, labelsDecoder LabelsDecoder, s metrifier.Span,
 		if r := recover(); r != nil {
 			log.Ctx(ctx).Error().
 				Err(errors.NewFromRecover(r)).
-				Msg("Metrics middleware panicked! Please check your code and configuration.")
+				Msg("[metricsmiddleware] Metrics middleware panicked! Please check your code and configuration.")
 		}
 	}()
 	if labelsDecoder != nil {
 		s = s.WithLabels(labelsDecoder.Decode(ctx, req, resp, err))
 	}
 	s.End(err)
+}
+
+func tryRunExternalMetrics(ctx context.Context, externalMetrics ExternalMetrics, req, resp interface{}, err error) (panicErr error) {
+	if externalMetrics == nil {
+		return
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			panicErr = errors.E(errors.NewFromRecover(r), errors.SeverityFatal, errors.CodePanic)
+		}
+	}()
+
+	externalMetrics(ctx, req, resp, err)
+	return
 }
