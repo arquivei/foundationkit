@@ -20,7 +20,7 @@ type Config struct {
 	}
 }
 
-// Setup use @c to setup an trace exporter and returns a shutdown handler
+// Setup use Config to setup an trace exporter and returns a shutdown handler
 func Setup(c Config) app.ShutdownFunc {
 	var exporter trace.SpanExporter
 
