@@ -1,50 +1,78 @@
 package stringsutil
 
 import (
+	"strings"
+
 	"github.com/stretchr/testify/assert"
 
 	"testing"
 )
 
 func TestTruncate(t *testing.T) {
-	type input struct {
-		str  string
-		size int
-	}
+	t.Parallel()
 	tests := []struct {
 		name     string
-		input    input
+		s        string
+		i        int
 		expected string
 	}{
 		{
 			name:     "Size bigger than string",
-			input:    input{str: "pudim", size: 100},
+			s:        "pudim",
+			i:        100,
 			expected: "pudim",
 		},
 		{
 			name:     "Size same as string",
-			input:    input{str: "flan", size: 4},
+			s:        "flan",
+			i:        4,
 			expected: "flan",
 		},
 		{
 			name:     "Size less than string",
-			input:    input{str: "marshmallow", size: 3},
+			s:        "marshmallow",
+			i:        3,
 			expected: "mar",
 		},
 		{
 			name:     "Size less than string (with UTF-8)",
-			input:    input{str: "mãrshmallow", size: 3},
+			s:        "mãrshmallow",
+			i:        3,
 			expected: "mãr",
 		},
 		{
 			name:     "Size is zero",
-			input:    input{str: "anything goes", size: 0},
+			s:        "anything goes",
+			i:        0,
 			expected: "",
+		},
+		{
+			name:     "Size is 3000",
+			s:        strings.Repeat("a", 4000),
+			i:        3000,
+			expected: strings.Repeat("a", 3000),
+		},
+		{
+			name:     "String with UTF-8 that has a bigger length than @i but has less elements",
+			s:        "00000000000000000000000000맱00000",
+			i:        33,
+			expected: "00000000000000000000000000맱00000",
 		},
 	}
 
 	for _, test := range tests {
-		actual := Truncate(test.input.str, test.input.size)
-		assert.Equal(t, test.expected, actual, "[%s] Unexpected value", test.name)
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			assert.NotPanics(t, func() {
+				assert.Equal(t, test.expected, Truncate(test.s, test.i))
+			})
+		})
 	}
+}
+
+func FuzzTruncate(f *testing.F) {
+	f.Fuzz(func(t *testing.T, s string, i int) {
+		_ = Truncate(s, i)
+	})
 }
