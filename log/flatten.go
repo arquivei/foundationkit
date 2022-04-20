@@ -36,6 +36,10 @@ func flattenPrefixed(value interface{}, prefix string) map[string]interface{} {
 }
 
 func flattenPrefixedToResult(value interface{}, prefix string, m map[string]interface{}) {
+	if value == nil {
+		return
+	}
+
 	base := ""
 	if prefix != "" {
 		base = prefix + "."
