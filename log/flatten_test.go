@@ -50,4 +50,10 @@ func TestFlatten(t *testing.T) {
 	}
 	expectedFlattenE := `FooE1: '5'`
 	assert.Equal(t, expectedFlattenE, Flatten(structE), "test failed for struct E")
+
+	assert.NotPanics(t, func() {
+		Flatten(nil)
+	})
+
+	assert.Equal(t, "", Flatten(nil))
 }
