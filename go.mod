@@ -10,7 +10,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.10.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.2 // indirect
 	github.com/go-kit/kit v0.12.0
-	github.com/go-kit/log v0.2.0
+	github.com/go-kit/log v0.2.1
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/hamba/avro v1.6.0
