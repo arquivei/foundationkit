@@ -23,7 +23,7 @@ require (
 	github.com/splitio/go-split-commons v3.1.1-0.20210714173613-90097f92c8af+incompatible // indirect
 	github.com/splitio/go-toolkit v4.2.1-0.20210714181516-85e7c471376a+incompatible // indirect
 	github.com/stretchr/objx v0.3.0 // indirect
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.27.0
 	go.opentelemetry.io/otel v1.2.0
