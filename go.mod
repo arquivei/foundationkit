@@ -5,7 +5,7 @@ go 1.12
 require (
 	cloud.google.com/go/logging v1.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.12
-	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.0.0
+	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.7.0
 	github.com/aws/aws-sdk-go v1.42.6 // indirect
 	github.com/envoyproxy/go-control-plane v0.10.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.2 // indirect
@@ -26,12 +26,8 @@ require (
 	github.com/stretchr/testify v1.7.1
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.27.0
-	go.opentelemetry.io/otel v1.2.0
-	go.opentelemetry.io/otel/sdk v1.2.0
-	go.opentelemetry.io/otel/trace v1.2.0
+	go.opentelemetry.io/otel v1.6.3
+	go.opentelemetry.io/otel/sdk v1.6.2
+	go.opentelemetry.io/otel/trace v1.6.3
 	golang.org/x/net v0.0.0-20220526153639-5463443f8c37
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	google.golang.org/api v0.60.0 // indirect
-	google.golang.org/genproto v0.0.0-20211117155847-120650a500bb // indirect
-	google.golang.org/grpc v1.42.0 // indirect
 )
