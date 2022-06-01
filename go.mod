@@ -16,7 +16,7 @@ require (
 	github.com/hamba/avro v1.6.0
 	github.com/oklog/ulid v1.3.1
 	github.com/omeid/uconfig v1.2.0
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.12.2
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/rs/zerolog v1.26.1
 	github.com/splitio/go-client v6.1.1-0.20210611192632-af2ff877b14a+incompatible
