@@ -25,10 +25,10 @@ require (
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.1
 	go.opencensus.io v0.23.0
-	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.27.0
-	go.opentelemetry.io/otel v1.2.0
-	go.opentelemetry.io/otel/sdk v1.2.0
-	go.opentelemetry.io/otel/trace v1.2.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.32.0
+	go.opentelemetry.io/otel v1.7.0
+	go.opentelemetry.io/otel/sdk v1.7.0
+	go.opentelemetry.io/otel/trace v1.7.0
 	golang.org/x/net v0.0.0-20220531201128-c960675eff93
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	google.golang.org/api v0.60.0 // indirect
