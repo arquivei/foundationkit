@@ -5,7 +5,7 @@ go 1.12
 require (
 	cloud.google.com/go/logging v1.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.12
-	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.0.0
+	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.7.0
 	github.com/aws/aws-sdk-go v1.42.6 // indirect
 	github.com/envoyproxy/go-control-plane v0.10.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.2 // indirect
