@@ -5,7 +5,7 @@ go 1.17
 require (
 	cloud.google.com/go/logging v1.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.12
-	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.7.0
+	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.8.0
 	github.com/go-kit/kit v0.12.0
 	github.com/go-kit/log v0.2.1
 	github.com/gorilla/mux v1.8.0
@@ -29,7 +29,7 @@ require (
 	cloud.google.com/go/compute v1.5.0 // indirect
 	cloud.google.com/go/monitoring v1.1.0 // indirect
 	cloud.google.com/go/trace v1.2.0 // indirect
-	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.31.0 // indirect
+	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.32.0 // indirect
 	github.com/aws/aws-sdk-go v1.42.6 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
@@ -61,6 +61,8 @@ require (
 	github.com/splitio/go-split-commons v3.1.1-0.20210714173613-90097f92c8af+incompatible // indirect
 	github.com/splitio/go-toolkit v4.2.1-0.20210714181516-85e7c471376a+incompatible // indirect
 	github.com/stretchr/objx v0.3.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
