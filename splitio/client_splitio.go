@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/arquivei/foundationkit/errors"
-	"github.com/splitio/go-client/splitio/client"
-	"github.com/splitio/go-client/splitio/conf"
+	"github.com/splitio/go-client/v6/splitio/client"
+	"github.com/splitio/go-client/v6/splitio/conf"
 )
 
 type sdkclient struct {

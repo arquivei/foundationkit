@@ -14,7 +14,7 @@ require (
 	github.com/omeid/uconfig v1.2.0
 	github.com/prometheus/client_golang v1.12.2
 	github.com/rs/zerolog v1.26.1
-	github.com/splitio/go-client v6.1.1-0.20210611192632-af2ff877b14a+incompatible
+	github.com/splitio/go-client/v6 v6.1.5
 	github.com/stretchr/testify v1.7.2
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.32.0
@@ -35,11 +35,12 @@ require (
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-redis/redis v6.15.9+incompatible // indirect
+	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
@@ -51,14 +52,13 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/prometheus/prometheus v0.36.0 // indirect
-	github.com/splitio/go-split-commons v3.1.1-0.20210714173613-90097f92c8af+incompatible // indirect
-	github.com/splitio/go-toolkit v4.2.1-0.20210714181516-85e7c471376a+incompatible // indirect
+	github.com/splitio/go-split-commons/v4 v4.0.5 // indirect
+	github.com/splitio/go-toolkit/v5 v5.0.3 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
