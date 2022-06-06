@@ -30,7 +30,7 @@ require (
 	cloud.google.com/go/monitoring v1.1.0 // indirect
 	cloud.google.com/go/trace v1.2.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.32.0 // indirect
-	github.com/aws/aws-sdk-go v1.42.6 // indirect
+	github.com/aws/aws-sdk-go v1.43.31 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
