@@ -39,7 +39,8 @@ func New(c Config) (endpoint.Middleware, error) {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			begin := time.Now()
 
-			l, ctx := initLoggerContext(ctx, *c.Logger)
+			ctx = initLoggerContext(ctx, *c.Logger)
+			l := log.Ctx(ctx)
 
 			enrichLoggerContext(ctx, l, c, req)
 			ctx = doCustomEnrichRequest(ctx, c, l, req)
