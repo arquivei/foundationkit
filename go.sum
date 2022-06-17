@@ -98,10 +98,10 @@ github.com/Azure/go-autorest/tracing v0.6.0/go.mod h1:+vhtPC754Xsa23ID7GlGsrdKBp
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.8.1 h1:Tn/3pMqRSsI09jFVdGEuMqLIBNOmRHVqKp9DSQg4HPM=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.8.1/go.mod h1:KddM1vG3MS+CRfmoFBqeUIICfd9nS8pLHKtwJ/kt0QQ=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.32.1 h1:SixyMKTOWhEWISdA7PB7vOxkvOP8BIgW5uzbyIf0kXM=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.32.1/go.mod h1:j+FS9VBW3mwtHBmm9KOJEy5Tq68fCp7fE/R9bV/flIM=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.8.2 h1:Dg+BIoU7Xz5QAj9VgDyhl5sz8Uz1IE1O6NAdJ1/Lmyk=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.8.2/go.mod h1:vCKAVz9WbhvBYuqNignSpjoyMtBT/CFELC3z98onw4o=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.32.2 h1:lw6BPuBgZKGwl4jm8xrU7AGnK8ohy7UT9hPM1+S16ts=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.32.2/go.mod h1:j+FS9VBW3mwtHBmm9KOJEy5Tq68fCp7fE/R9bV/flIM=
 github.com/HdrHistogram/hdrhistogram-go v1.1.0/go.mod h1:yDgFjdqOqDEKOvasDdhWNXYg9BVp4O+o5f6V/ehm6Oo=
 github.com/HdrHistogram/hdrhistogram-go v1.1.2/go.mod h1:yDgFjdqOqDEKOvasDdhWNXYg9BVp4O+o5f6V/ehm6Oo=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
