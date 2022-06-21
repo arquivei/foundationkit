@@ -15,7 +15,7 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/rs/zerolog v1.27.0
 	github.com/splitio/go-client/v6 v6.1.5
-	github.com/stretchr/testify v1.7.3
+	github.com/stretchr/testify v1.7.4
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.32.0
 	go.opentelemetry.io/otel v1.7.0
