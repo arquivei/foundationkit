@@ -31,7 +31,8 @@ func (s *Span) End(err error) {
 // empty Span ID will be returned otherwise.
 func (s *Span) GetID() SpanID {
 	if s.span != nil {
-		// Force a copy of SpanID so that there is can't be changed
+		// Force a copy of SpanID so that there is a guarantee that
+		// the source span ID can't be changed by accident
 		var retID SpanID
 		spanID := s.span.SpanContext().SpanID
 		copy(retID[0:7], spanID[0:7])
