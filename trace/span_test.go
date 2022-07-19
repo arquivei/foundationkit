@@ -154,3 +154,12 @@ func TestEnd(t *testing.T) {
 	_, s = StartSpan(ctx, "test")
 	assert.NotPanics(t, func() { s.End(errors.New("error label")) })
 }
+
+func TestGetID(t *testing.T) {
+	var s Span
+	assert.Empty(t, s.GetID(), "Returned span id should be empty")
+
+	ctx := WithLabels(context.Background(), map[string]string{"key": "value"})
+	_, s = StartSpan(ctx, "test")
+	assert.NotEmpty(t, s.GetID(), "Returned span id should not be empty")
+}
