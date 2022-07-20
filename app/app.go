@@ -101,8 +101,9 @@ func New(ctx context.Context, adminPort string) (*App, error) {
 		mux.HandleFunc("/debug/dump/memstats", dumpMemStats)
 
 		server := http.Server{
-			Addr:    ":" + adminPort,
-			Handler: mux,
+			Addr:              ":" + adminPort,
+			Handler:           mux,
+			ReadHeaderTimeout: 60 * time.Second,
 		}
 		//nolint:errcheck
 		go server.ListenAndServe()
