@@ -20,8 +20,8 @@ var (
 
 // NewDefaultApp creates and sets the default app. The default app is controlled by
 // public functions in app package
-func NewDefaultApp(ctx context.Context) (err error) {
-	defaultApp, err = New(ctx, DefaultAdminPort)
+func NewDefaultApp(ctx context.Context, adminServerOptions ...ServerOption) (err error) {
+	defaultApp, err = New(ctx, DefaultAdminPort, adminServerOptions...)
 	if err != nil {
 		return err
 	}

@@ -29,12 +29,12 @@ type App struct {
 	GracePeriod      time.Duration
 	ShutdownTimeout  time.Duration
 
-	mainReadinessProbe  Probe
-	mainHealthnessProbe Probe
+	mainReadinessProbe   Probe
+	mainHealthinessProbe Probe
 }
 
 // New returns a new App.
-func New(ctx context.Context, adminPort string) (*App, error) {
+func New(ctx context.Context, adminPort string, adminServerOptions ...ServerOption) (*App, error) {
 	log.Trace().Msg("[app] Creating new app")
 
 	app := &App{
@@ -54,9 +54,9 @@ func New(ctx context.Context, adminPort string) (*App, error) {
 	}
 
 	app.mainReadinessProbe = mainReadinessProbe
-	app.mainHealthnessProbe = mainHealthnessProbe
+	app.mainHealthinessProbe = mainHealthnessProbe
 
-	{ // This spwans an admin HTTP server for this
+	{ // This spawns an admin HTTP server for this app instance
 		mux := http.NewServeMux()
 
 		mux.Handle("/metrics", promhttp.Handler())
@@ -100,11 +100,20 @@ func New(ctx context.Context, adminPort string) (*App, error) {
 		mux.HandleFunc("/debug/dump/memory", dumpMemProfile)
 		mux.HandleFunc("/debug/dump/memstats", dumpMemStats)
 
+		//nolint:gosec
 		server := http.Server{
-			Addr:              ":" + adminPort,
-			Handler:           mux,
+			Addr:    ":" + adminPort,
+			Handler: mux,
+
+			// ReadHeaderTimeout is set to satisfy gosec request to add the Timeout
+			// as a vulnerability fix. This value can be changed with server options.
 			ReadHeaderTimeout: 60 * time.Second,
 		}
+
+		if err := SetupServer(&server, adminServerOptions...); err != nil {
+			return nil, err
+		}
+
 		//nolint:errcheck
 		go server.ListenAndServe()
 	}
@@ -221,7 +230,7 @@ func (a *App) RunAndWait(mainLoop MainLoopFunc) {
 	}
 
 	// This forces kubernetes kills the pod if some other code is holding the main func.
-	a.mainHealthnessProbe.SetNotOk()
+	a.mainHealthinessProbe.SetNotOk()
 }
 
 // RegisterShutdownHandler adds a handler in the end of the list. During shutdown all handlers are executed in the order they were added
