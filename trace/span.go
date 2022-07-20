@@ -8,6 +8,10 @@ import (
 	"go.opencensus.io/trace"
 )
 
+// SpanID is an 8 bytes identifier that can be used to "name" spans
+// in a hierarchy of spans that belongs to a trace
+type SpanID [8]byte
+
 // Span represents a span of a trace
 type Span struct {
 	span *trace.Span
@@ -21,6 +25,22 @@ func (s *Span) End(err error) {
 			s.span.AddAttributes(trace.StringAttribute("error_code", errors.GetCode(err).String()))
 		}
 	}
+}
+
+// GetID will return the Span ID of this span, if it is not nil. An
+// empty Span ID will be returned otherwise.
+func (s *Span) GetID() SpanID {
+	if s.span != nil {
+		// Force a copy of SpanID so that there is a guarantee that
+		// the source span ID can't be changed by accident
+		var retID SpanID
+		spanID := s.span.SpanContext().SpanID
+		copy(retID[0:7], spanID[0:7])
+
+		return retID
+	}
+
+	return SpanID{}
 }
 
 // StartSpanWithParent returns a context and a span with the name @spanNameArgs.
