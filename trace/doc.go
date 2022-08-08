@@ -1,7 +1,7 @@
 /*
 Package trace provides distributed tracing.
 
-Initialization
+# Initialization
 
 In the config variable, add the "Config" struct:
 
@@ -27,7 +27,7 @@ Now, initialize your trace exporter using "trace.SetupTrace":
 
 	trace.SetupTrace(config.Trace)
 
-Service
+# Service
 
 It will be used the following service as example:
 
@@ -52,7 +52,7 @@ And will be used the following job as example of job/event:
 		trace.Trace
 	}
 
-HTTP Layer
+# HTTP Layer
 
 Retrieve the Trace from the HTTP request and pass it along:
 
@@ -89,7 +89,8 @@ Encode the trace in the HTTP respose:
 		trace.SetInHTTPResponse(response.Trace, w)
 		// (...)
 	}
-Using spans
+
+# Using spans
 
 Inside a service function:
 
@@ -122,7 +123,7 @@ Inside a service function:
 		//(...)
 	}
 
-Logging
+# Logging
 
 Use the function "GetIDFromContext" to log the Trace ID:
 
@@ -132,7 +133,5 @@ Use the function "GetIDFromContext" to log the Trace ID:
 			Logger()
 		// (...)
 	}
-
-
 */
 package trace

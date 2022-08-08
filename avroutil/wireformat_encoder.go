@@ -23,10 +23,10 @@ type wireFormatEncoder struct {
 // NewWireFormatEncoder returns a concrete implementation of WireFormatEncoder, that
 // fetches schemas in schema registry
 // Parameters:
-// - @schemaRepository: repository for avro schemas.
-// - @writerSchemaStr: avro schema, in the avsc format, used to marshall the
-//   objects. This schema must be previously registered in the schema registry
-//   exactly as provided.
+//   - @schemaRepository: repository for avro schemas.
+//   - @writerSchemaStr: avro schema, in the avsc format, used to marshall the
+//     objects. This schema must be previously registered in the schema registry
+//     exactly as provided.
 func NewWireFormatEncoder(
 	ctx context.Context,
 	schemaRepository schemaregistry.Repository,

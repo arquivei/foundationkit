@@ -1,7 +1,7 @@
 /*
 Package request provides helper functions to handle Request ID propagation.
 
-Basics
+# Basics
 
 It will be used the following service as example:
 
@@ -13,7 +13,7 @@ It will be used the following service as example:
 		RequestID request.ID
 	}
 
-HTTP Layer
+# HTTP Layer
 
 Use the function "WithID" to create and put a Request ID in context:
 
@@ -26,7 +26,7 @@ Use the function "WithID" to create and put a Request ID in context:
 		}
 	}
 
-Logging
+# Logging
 
 Use the function "GetIDFromContext" to log the Request ID:
 
@@ -36,6 +36,5 @@ Use the function "GetIDFromContext" to log the Request ID:
 			Logger()
 		// (...)
 	}
-
 */
 package request

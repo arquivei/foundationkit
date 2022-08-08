@@ -2,7 +2,7 @@ package avroutil
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -70,7 +70,7 @@ func TestDecode(t *testing.T) {
 }
 
 func loadFile(name string) []byte {
-	content, err := ioutil.ReadFile(filepath.Join("testdata", name))
+	content, err := os.ReadFile(filepath.Join("testdata", name))
 	if err != nil {
 		panic(err)
 	}
