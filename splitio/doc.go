@@ -1,7 +1,7 @@
 /*
 Package splitio provides integration with https://www.split.io/.
 
-Basics
+# Basics
 
 Using the client directly:
 
@@ -13,7 +13,7 @@ Using the client directly:
 		// do stuff
 	}
 
-Using the middleware
+# Using the middleware
 
 In the service:
 
@@ -57,6 +57,5 @@ attributes specified in the "MultiUserDecodeFn". The behavior is
 stored in the context, so that it is possible to check anywhere
 in the service if the feature is enabled without caring about
 which user or attributes should be used.
-
 */
 package splitio

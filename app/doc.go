@@ -7,7 +7,7 @@ The recommended way to use the `app` package is to rely on the 'default app'. Th
 
 There is a running example on `app/examples/servefiles`
 
-Basics
+# Basics
 
 The first thing you should do is setup a configuration and logger. The app uses the foundation's kit log package and expects a zerolog's logger in the context.
 
@@ -40,11 +40,11 @@ Finally you can run the application by calling RunAndWait:
 
 At this point the application will run until the given function returns or it receives an termination signal.
 
-Updating From Previous Version
+# Updating From Previous Version
 
 On the previous version,the NewDefaultApp received the main loop:
 
-   func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error)
+	func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error)
 
 This was a problem because the main loop normally depends on various resources that must be created before the main loop can be called. But the creation of this resourced involves registering shutdown handlers, that requires an already created app.
 
@@ -52,7 +52,7 @@ This cycle forced the application to rely on lazy initialization of the resource
 
 To break this cycle the main loop was moved from the NewDefaultApp and was placed on the RunAndWait function. So to update to this version you could only change these two functions calls. But, to really take advantage of this new way to start an app, you should refactor the code to remove the laziness part before the RunAndWait is called.
 
-Using Probes
+# Using Probes
 
 A Probe is a boolean that indicates if something is OK or not. There are two groups of probes in an app: The Healthiness an Readiness groups. Kubernetes checks on there two probes to decide what to do to the pod, like, from stop sending requests to just kill the pod, sending a signal the app will capture and start a graceful shutdown.
 
@@ -79,7 +79,6 @@ If a single probe of a group is not ok, than the whole group is not ok. In this 
 		}
 	})
 
-
 If the application is unhealthy kubernetes will send a signal that will trigger the graceful shutdown. All registered shutdown handlers will be executed ordered by priority (highest first) and the pod will be restarted. Only set an application as unhealthy if it reached an unworkable state and should be restarted. We have an example of this on `gokitmiddlewares/stalemiddleware/`. This is a middleware that was developed to be used in workers. It checks if the endpoint is being called (messages are being fetched and processed) and if not, it assumes there could be a problem with the queue and sets the application to unready, causing the application to restart. This mitigated a problem we had with kafka when a change of brokers made the worker stop receiving messages forever.
 
 If the application is unready kubernetes will stop sending requests, but if the application becomes ready again, it will start receiving requests. This is used during initialization to signalize to kubernetes when the application is ready and can receive requests. If we can identify that the the application is degraded we can use this probe to temporary remove the application from the kubernetes service until it recovers.
@@ -95,6 +94,5 @@ The state of a probe can be altered at any time using SetOk and SetNotOk:
 
 	readinessProbe.SetOk()
 	readinessProbe.SetNotOk()
-
 */
 package app

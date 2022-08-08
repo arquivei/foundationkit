@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -277,7 +276,7 @@ func communicateWithHTTPRequest(
 	details.RequestID = request.GetFromHTTPResponse(httpResponse)
 
 	limitedReader := io.LimitReader(httpResponse.Body, maxAcceptedBodySize+1)
-	contents, err := ioutil.ReadAll(limitedReader)
+	contents, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return details, nil, errors.E(
 			ErrCodeDecodeError,
