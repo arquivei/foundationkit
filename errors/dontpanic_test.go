@@ -15,14 +15,14 @@ func TestDontPanic(t *testing.T) {
 	}{
 		{
 			name:     "panic()",
-			expected: "errors/dontpanic_test.go:20: panic: panic message aaaaaah!",
+			expected: "panic: panic message aaaaaah!",
 			panicFunc: func() {
 				panic("panic message aaaaaah!")
 			},
 		},
 		{
 			name:     "index out of range",
-			expected: "errors/dontpanic_test.go:28: panic: runtime error: index out of range [1] with length 0",
+			expected: "panic: runtime error: index out of range [1] with length 0",
 			panicFunc: func() {
 				var s []string
 				ss := s[1]
@@ -31,7 +31,7 @@ func TestDontPanic(t *testing.T) {
 		},
 		{
 			name:     "invalid memory address or nil pointer dereference",
-			expected: "errors/dontpanic_test.go:40: panic: runtime error: invalid memory address or nil pointer dereference",
+			expected: "panic: runtime error: invalid memory address or nil pointer dereference",
 			panicFunc: func() {
 				type a struct {
 					b string
@@ -42,7 +42,7 @@ func TestDontPanic(t *testing.T) {
 		},
 		{
 			name:     "panic() inside a func inside a func",
-			expected: "errors/dontpanic_test.go:48: panic: panic message aaaaaah!",
+			expected: "panic: panic message aaaaaah!",
 			panicFunc: func() {
 				anotherFunc1 := func() {
 					panic("panic message aaaaaah!")
@@ -55,7 +55,7 @@ func TestDontPanic(t *testing.T) {
 		},
 		{
 			name:     "integer divide by zero",
-			expected: "errors/dontpanic_test.go:63: panic: runtime error: integer divide by zero",
+			expected: "panic: runtime error: integer divide by zero",
 			panicFunc: func() {
 				d := func(i int) {
 					fmt.Println(2 / i)
@@ -65,7 +65,7 @@ func TestDontPanic(t *testing.T) {
 		},
 		{
 			name:     "send on closed channel",
-			expected: "errors/dontpanic_test.go:72: panic: send on closed channel",
+			expected: "panic: send on closed channel",
 			panicFunc: func() {
 				c := make(chan int)
 				close(c)
@@ -94,8 +94,12 @@ func TestDontPanic(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			actual := func1(test.panicFunc)
-			assert.EqualError(t, actual, test.expected)
+			assert.NotPanics(t, func() {
+				actual := func1(test.panicFunc)
+				assert.NotNil(t, actual)
+				assert.NotEmpty(t, actual.Error())
+				assert.Contains(t, actual.Error(), test.expected)
+			})
 		})
 	}
 }
