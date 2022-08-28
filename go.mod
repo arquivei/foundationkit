@@ -13,7 +13,7 @@ require (
 	github.com/oklog/ulid v1.3.1
 	github.com/omeid/uconfig v1.2.0
 	github.com/prometheus/client_golang v1.13.0
-	github.com/rs/zerolog v1.27.0
+	github.com/rs/zerolog v1.28.0
 	github.com/splitio/go-client/v6 v6.1.6
 	github.com/stretchr/testify v1.8.0
 	go.opencensus.io v0.23.0
