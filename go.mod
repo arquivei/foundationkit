@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	cloud.google.com/go/logging v1.5.0
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.13
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.8.7
 	github.com/go-kit/kit v0.12.0
 	github.com/go-kit/log v0.2.1
