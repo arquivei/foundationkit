@@ -11,7 +11,7 @@ import (
 	"unicode"
 
 	"github.com/arquivei/foundationkit/errors"
-	"github.com/oklog/ulid"
+	"github.com/oklog/ulid/v2"
 )
 
 func getTypeName(data interface{}) string {
