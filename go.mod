@@ -14,7 +14,7 @@ require (
 	github.com/omeid/uconfig v1.2.0
 	github.com/prometheus/client_golang v1.13.0
 	github.com/rs/zerolog v1.28.0
-	github.com/splitio/go-client/v6 v6.1.8
+	github.com/splitio/go-client/v6 v6.2.0
 	github.com/stretchr/testify v1.8.1
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.36.3
@@ -32,6 +32,8 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.34.1 // indirect
 	github.com/aws/aws-sdk-go v1.44.28 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bits-and-blooms/bitset v1.3.1 // indirect
+	github.com/bits-and-blooms/bloom/v3 v3.3.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -60,8 +62,8 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/prometheus/prometheus v0.36.0 // indirect
-	github.com/splitio/go-split-commons/v4 v4.1.3 // indirect
-	github.com/splitio/go-toolkit/v5 v5.2.1 // indirect
+	github.com/splitio/go-split-commons/v4 v4.2.0 // indirect
+	github.com/splitio/go-toolkit/v5 v5.2.2 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
