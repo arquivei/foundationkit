@@ -240,19 +240,25 @@ func isValidMonthDay(month string, day string) bool {
 }
 
 func isValidModel(model string) bool {
-	return model == "01" || model == "1A" ||
-		model == "02" || model == "04" ||
-		model == "06" || model == "07" ||
-		model == "08" || model == "09" ||
-		model == "10" || model == "11" ||
-		model == "13" || model == "14" ||
-		model == "15" || model == "16" ||
-		model == "18" || model == "21" ||
-		model == "22" || model == "26" ||
-		model == "55" || model == "57" ||
-		model == "59" || model == "60" ||
-		model == "63" || model == "65" ||
-		model == "67"
+	switch model {
+	case "1A",
+		"01", "02",
+		"04",
+		"06", "07", "08", "09", "10", "11",
+		"13", "14", "15", "16",
+		"18",
+		"21", "22",
+		"26",
+		"55",
+		"57",
+		"59", "60",
+		"63",
+		"65",
+		"67":
+		return true
+	default:
+		return false
+	}
 }
 
 var validationDigitMultipliers = []int{
