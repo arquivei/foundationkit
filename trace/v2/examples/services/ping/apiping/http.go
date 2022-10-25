@@ -67,6 +67,6 @@ func getHTTPStatus(err error) (s int) {
 		return http.StatusBadRequest
 	}
 
-	// If we don't know what happend...
+	// If we don't know what happened...
 	return http.StatusInternalServerError
 }
