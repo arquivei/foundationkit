@@ -5,9 +5,6 @@ import (
 )
 
 var (
-	// ErrCodeInvalidAccessKey is an error code used to imply that an access key provided was not valid
-	// Deprecated: prefer using the more specific error codes and the Check function
-	ErrCodeInvalidAccessKey = errors.Code("INVALID_ACCESS_KEY")
 	// ErrCodeEmptyAccessKey is an error code used to imply that an access key provided was empty
 	ErrCodeEmptyAccessKey = errors.Code("EMPTY_ACCESS_KEY")
 	// ErrCodeInvalidLength is an error code used to imply that an access key does not contains 44 digits
@@ -38,8 +35,6 @@ var (
 	ErrEmptyAccessKey = errors.New("access key is empty")
 	// ErrInvalidLength the access key does not contains 44 digits
 	ErrInvalidLength = errors.New("access key does not have 44 characters")
-	// Deprecated: prefer ErrInvalidLength
-	ErrInvalidLenght = errors.New("access key does not have 44 characters")
 	// ErrInvalidCharacter the access key has non-numeric character(s)
 	ErrInvalidCharacter = errors.New("access key contains non-number characters")
 	// ErrInvalidUF the access key does not contain a valid IBGE UF code
