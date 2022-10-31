@@ -160,18 +160,19 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 			if ctx.Err() != nil {
 				done <- errors.E(op, "shutdow deadline has been reached")
 			}
-			trace := log.Trace().
+			logger := log.With().
 				Str("shutdown_handler_name", h.Name).
 				Uint8("shutdown_handler_priority", uint8(h.Priority)).
 				Dur("shutdown_handler_timeout", h.Timeout).
-				Str("shutdown_handler_policy", ErrorPolicyString(h.Policy))
+				Str("shutdown_handler_policy", ErrorPolicyString(h.Policy)).
+				Logger()
 
-			trace.Msg("[app] Executing shutdown handler.")
+			logger.Trace().Msg("[app] Executing shutdown handler.")
 			if err := h.Execute(ctx); err != nil {
-				trace.Msg("[app] Shutdown handler failed.")
+				logger.Trace().Msg("[app] Shutdown handler failed.")
 				done <- errors.E(op, err)
 			}
-			trace.Msg("[app] Shutdown handler finished.")
+			logger.Trace().Msg("[app] Shutdown handler finished.")
 		}
 	}()
 	return done

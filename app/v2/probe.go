@@ -1,0 +1,128 @@
+package app
+
+import (
+	"net/http"
+	"regexp"
+	"strings"
+	"sync"
+
+	"github.com/arquivei/foundationkit/errors"
+	"github.com/rs/zerolog/log"
+)
+
+// Probe stores the state of a probe (`true` or `false` for ok and not ok respectively).
+type Probe struct {
+	ok *bool
+}
+
+// Set changes the state of a probe. Use `true` for ok and `false` for not ok.
+func (p *Probe) Set(ok bool) {
+	*p.ok = ok
+}
+
+// SetOk sets the probe as ok. Same as `Set(true)`.
+func (p *Probe) SetOk() {
+	*p.ok = true
+}
+
+// SetNotOk sets the probe as not ok. Same as `Set(false)`.
+func (p *Probe) SetNotOk() {
+	*p.ok = false
+}
+
+// IsOk returns the state of the probe  (`true` or `false` for ok and not ok respectively).
+func (p *Probe) IsOk() bool {
+	return *p.ok
+}
+
+// ProbeGroup aggregates and manages probes. Probes inside a group must have a unique name.
+type ProbeGroup struct {
+	name   string
+	lock   *sync.RWMutex
+	probes map[string]*bool
+}
+
+// NewProbeGroup returns a new ProbeGroup.
+func NewProbeGroup(name string) ProbeGroup {
+	return ProbeGroup{
+		name:   name,
+		lock:   &sync.RWMutex{},
+		probes: make(map[string]*bool),
+	}
+}
+
+// NewProbe returns a new Probe with the given name.
+// The name must satisfy the following regular expression: [a-zA-Z0-9_/-]{3,}
+func (m *ProbeGroup) NewProbe(name string, ok bool) (Probe, error) {
+	if _, ok := m.probes[name]; ok {
+		return Probe{}, errors.Errorf("probe '%s' already registered", name)
+	}
+
+	if err := m.checkName(name); err != nil {
+		return Probe{}, err
+	}
+
+	s := ok
+	m.probes[name] = &s
+	return Probe{&s}, nil
+}
+
+// MustNewProbe returns a new Probe with the given name and panics in case of error.
+func (m *ProbeGroup) MustNewProbe(name string, ok bool) Probe {
+	p, err := m.NewProbe(name, ok)
+	if err != nil {
+		panic(err)
+	}
+	return p
+}
+
+// ServeHTTP serves the Probe Group as an HTTP handler.
+func (m *ProbeGroup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ok, cause := m.CheckProbes()
+	if ok {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+	//nolint:errcheck
+	w.Write([]byte(cause))
+	log.Trace().Str("probe_group", m.name).Bool("probe_is_ok", ok).Str("cause", cause).Msg("[app] App was probed.")
+}
+
+var reIsValidProbeName = regexp.MustCompile("[a-zA-Z0-9_/-]{3,}")
+
+func (ProbeGroup) checkName(name string) error {
+	if !reIsValidProbeName.MatchString(name) {
+		return errors.Errorf("name '%s' doesn't conform to '[a-zA-Z0-9_-]{3,}'", name)
+	}
+	return nil
+}
+
+// CheckProbes range through the probes and returns the state of the group.
+// If any probe is not ok (false) the group state is not ok (false).
+// If the group is not ok, it's also returned the cause in the second return parameter.
+// If all probes are ok (true) the cause is returned as OK.
+// If more than one probe is not ok, the causes are concatenated by a comma.
+func (m *ProbeGroup) CheckProbes() (bool, string) {
+	cause := strings.Builder{}
+
+	cause.Grow(len(m.name) + 3)
+	cause.WriteString(m.name)
+	cause.WriteString(":")
+
+	ok := true
+	for name, probeOk := range m.probes {
+		if !*probeOk {
+			if !ok { // There is already a probe that is not ok
+				cause.WriteString(",")
+			}
+			cause.WriteString(name)
+			ok = false
+		}
+	}
+	if ok {
+		cause.WriteString("OK")
+	}
+
+	return ok, cause.String()
+}
