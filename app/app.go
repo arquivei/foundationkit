@@ -5,13 +5,13 @@ import (
 	"context"
 	"net/http"
 	"net/http/pprof" // Sadly, this also changes the DefaultMux to have the pprof URLs
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -20,7 +20,7 @@ type MainLoopFunc func() error
 
 // App represents an application with a main loop and a shutdown routine
 type App struct {
-	ctx context.Context
+	logger *zerolog.Logger
 
 	Ready   ProbeGroup
 	Healthy ProbeGroup
@@ -34,11 +34,13 @@ type App struct {
 }
 
 // New returns a new App.
+// If ctx contains a zerolog logger it is used for logging.
+// adminPort must be a valid port number or it will fail silently.
 func New(ctx context.Context, adminPort string) (*App, error) {
 	log.Trace().Msg("[app] Creating new app")
 
 	app := &App{
-		ctx:     ctx,
+		logger:  log.Ctx(ctx),
 		Ready:   NewProbeGroup(),
 		Healthy: NewProbeGroup(),
 	}
@@ -182,7 +184,7 @@ func (a *App) RunAndWait(mainLoop MainLoopFunc) {
 	errs := make(chan error)
 
 	go func() {
-		log.Ctx(a.ctx).Info().Msg("Application main loop starting now!")
+		a.logger.Info().Msg("Application main loop starting now!")
 		if mainLoop == nil {
 			errs <- errors.New("main loop is nil")
 			return
@@ -191,33 +193,29 @@ func (a *App) RunAndWait(mainLoop MainLoopFunc) {
 		errs <- mainLoop()
 	}()
 
-	signals := make(chan os.Signal, 2)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	notifyCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
 	var err error
-	ctx := log.Ctx(a.ctx).WithContext(context.Background())
+	ctx := a.logger.WithContext(context.Background())
 	select {
-	case <-a.ctx.Done():
+	case <-notifyCtx.Done():
 		a.mainReadinessProbe.SetNotOk()
-		log.Ctx(a.ctx).Info().Msg("App context canceled, initialing shutdown procedures...")
-		err = a.Shutdown(ctx)
-	case s := <-signals:
-		a.mainReadinessProbe.SetNotOk()
-		log.Ctx(a.ctx).Info().
-			Str("signal", s.String()).
+		a.logger.Info().
 			Dur("grace_period", a.GracePeriod).
-			Msg("Signal received. Waiting grace period...")
+			Msg("Graceful shutdown signal received! Awaiting for grace period to end.")
 		time.Sleep(a.GracePeriod)
-		log.Ctx(a.ctx).Info().Msg("Grace period is over, initiating shutdown procedures...")
+		a.logger.Info().Msg("Grace period is over, initiating shutdown procedures...")
 		err = a.Shutdown(ctx)
 	case err = <-errs:
 		a.mainReadinessProbe.SetNotOk()
-		log.Ctx(a.ctx).Info().Err(err).Msg("App finished by itself, initialing shutdown procedures...")
+		a.logger.Info().Err(err).Msg("Main Loop finished by itself, initiating shutdown procedures...")
 		err = a.Shutdown(ctx)
 	}
 	if err == nil {
-		log.Ctx(a.ctx).Info().Msg("App exited")
+		a.logger.Info().Msg("App gracefully terminated.")
 	} else {
-		log.Ctx(a.ctx).Error().Err(err).Msg("App exited with error")
+		a.logger.Error().Err(err).Msg("App terminated with error.")
 	}
 
 	// This forces kubernetes kills the pod if some other code is holding the main func.
