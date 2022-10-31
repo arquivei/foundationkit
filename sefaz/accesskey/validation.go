@@ -77,22 +77,6 @@ func validate(accessKey AccessKey) error {
 	return nil
 }
 
-// Deprecated: prefer using the Check function
-func (v *validator) Check(accessKey AccessKey) error {
-	const op errors.Op = "accesskey.validator.Check"
-
-	err := validate(accessKey)
-	if err == nil {
-		return nil
-	}
-
-	if code := errors.GetCode(err); code != ErrCodeEmptyAccessKey && code != ErrCodeInvalidAccessKey {
-		return errors.E(op, err, ErrCodeInvalidAccessKey)
-	}
-
-	return errors.E(op, err)
-}
-
 func isNFF(accessKey AccessKey) bool {
 	/*model = 55 && tpEmis = 3 && AAMM more recent than April 2021*/
 	if accessKey[20:22] == "55" && accessKey[34] == '3' && accessKey[2:6] >= "2104" {
@@ -201,9 +185,8 @@ func isValidMonth(month string) bool {
 		default:
 			return false
 		}
-	} else {
-		return false
 	}
+	return false
 }
 
 func isValidMonthDay(month string, day string) bool {

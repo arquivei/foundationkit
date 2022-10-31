@@ -81,13 +81,6 @@ func NewID() ID {
 	return traceIDGen.NewTraceID()
 }
 
-// NewTraceID generates a new random trace id
-//
-// Deprecated: use NewID instead
-func NewTraceID() ID {
-	return NewID()
-}
-
 // EnsureIDNotEmpty checks if the ID is not empty and return it, else it returns NewID().
 // The empty check follows the same rules as the IDIsEmpty function.
 func EnsureIDNotEmpty(id ID) ID {

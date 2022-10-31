@@ -39,7 +39,7 @@ func (i *implDecoder) Decode(
 	ctx, span := trace.StartSpan(ctx, "AvroDecode")
 	defer span.End(nil)
 
-	schemaID, data, err := SplitAvroWireFormatMessage(data)
+	schemaID, data, err := splitAvroWireFormatMessage(data)
 	if err != nil {
 		return errors.E(op, err, errors.SeverityInput)
 	}
@@ -53,13 +53,11 @@ func (i *implDecoder) Decode(
 	return errors.E(op, err, errors.SeverityInput)
 }
 
-// SplitAvroWireFormatMessage extracts the schema ID and the data from a
+// splitAvroWireFormatMessage extracts the schema ID and the data from a
 // message written with the wire format.
 // The header is a 5-byte slice, where the first byte is equal to x00, and
 // the last four represent the ID in a 32-bit big endian integer encoding.
-// Deprecated: This is a low level implementation detail of avro decoding. Use
-// the high-level avroutil.Decoder instead
-func SplitAvroWireFormatMessage(msg []byte) (schemaregistry.ID, []byte, error) {
+func splitAvroWireFormatMessage(msg []byte) (schemaregistry.ID, []byte, error) {
 	const op = errors.Op("avroutil.SplitAvroWireFormatMessage")
 	if len(msg) < 5 {
 		return 0, nil, errors.E(op, "invalid message length")

@@ -17,10 +17,6 @@ func (c Code) MarshalZerologObject(e *zerolog.Event) {
 }
 
 const (
-	// ErrorCodeEmpty is an empty error code
-	// Deprecated: prefer CodeEmpty
-	ErrorCodeEmpty = CodeEmpty
-
 	// CodeEmpty is the zero-value for error codes
 	CodeEmpty = Code("")
 )
@@ -33,20 +29,13 @@ func GetCode(err error) Code {
 		if !ok {
 			break
 		}
-		if e.Code != ErrorCodeEmpty {
+		if e.Code != CodeEmpty {
 			return e.Code
 		}
 		err = e.Err
 	}
 
-	return ErrorCodeEmpty
-}
-
-// GetErrorCode returns the error code. If the error doesn't contains an error code, returns ErrorCodeEmpty.
-//
-// Deprecated: use GetCode instead.
-func GetErrorCode(err error) Code {
-	return GetCode(err)
+	return CodeEmpty
 }
 
 // EqualsCode returns true if @lCode and @rCode holds the same value, and
@@ -61,5 +50,5 @@ func EqualsCode(lCode, rCode Code) bool {
 func SameCode(lError, rError error) bool {
 	lCode := GetCode(lError)
 	rCode := GetCode(rError)
-	return (lCode == rCode && lCode != ErrorCodeEmpty)
+	return (lCode == rCode && lCode != CodeEmpty)
 }

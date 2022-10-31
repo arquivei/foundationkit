@@ -110,7 +110,7 @@ func TestSplitAvroWireFormatMessage(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		id, data, err := SplitAvroWireFormatMessage(test.data)
+		id, data, err := splitAvroWireFormatMessage(test.data)
 		assert.NoError(t, err, test.name)
 		assert.Equal(t, test.expectedID, id, test.name)
 		assert.Equal(t, test.expectedData, data, test.name)
@@ -118,9 +118,9 @@ func TestSplitAvroWireFormatMessage(t *testing.T) {
 }
 
 func TestSplitAvroWireFormatMessageError(t *testing.T) {
-	_, _, err := SplitAvroWireFormatMessage([]byte{0x00, 0x00, 0x00, 0x00})
+	_, _, err := splitAvroWireFormatMessage([]byte{0x00, 0x00, 0x00, 0x00})
 	assert.Error(t, err)
 
-	_, _, err = SplitAvroWireFormatMessage([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00})
+	_, _, err = splitAvroWireFormatMessage([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00})
 	assert.Error(t, err)
 }

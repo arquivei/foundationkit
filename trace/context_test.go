@@ -99,13 +99,3 @@ func TestLabelsOperations(t *testing.T) {
 	assert.Equal(t, "v22", labels["k2"])
 	assert.Equal(t, "v3", labels["k3"])
 }
-
-// [DEPRECATED] Testing a Deprecated Methods
-func TestTraceIDContextOperations(t *testing.T) {
-	ctx := context.Background()
-	assert.True(t, IDIsEmpty(GetTraceIDFromContext(ctx)))
-
-	id := NewID()
-	ctx = WithTraceID(ctx, id)
-	assert.Equal(t, id.String(), GetTraceIDFromContext(ctx).String())
-}

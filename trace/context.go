@@ -11,8 +11,6 @@ type contextKeyType int
 const (
 	contextKeyTrace contextKeyType = iota
 	contextKeyLabels
-	// Deprecated: Only used in Deprecated Methods
-	contextKeyTraceID
 )
 
 // WithTrace if there is no trace in the context, returns the @ctx with the @trace
@@ -40,13 +38,6 @@ func GetFromContext(ctx context.Context) Trace {
 		Str("method", "trace.GetFromContext").
 		Msg("[FoundationKit] There is no Trace in context. Use trace.WithTrace(context.Context, trace.Trace)")
 	return Trace{}
-}
-
-// GetTraceFromContext returns the Trace saved in @ctx
-//
-// Deprecated: use GetFromContext instead
-func GetTraceFromContext(ctx context.Context) Trace {
-	return GetFromContext(ctx)
 }
 
 // WithLabels returns the @parent context with the labels @labels
@@ -81,23 +72,4 @@ func GetIDFromContext(ctx context.Context) ID {
 func WithTraceAndLabels(parent context.Context, trace Trace, labels map[string]string) context.Context {
 	parent = WithTrace(parent, trace)
 	return WithLabels(parent, labels)
-}
-
-// WithTraceID instantiates a new child context from @parent with the
-// given @traceID value set
-//
-// Deprecated: Should use WithTrace instead
-func WithTraceID(parent context.Context, traceID ID) context.Context {
-	return context.WithValue(parent, contextKeyTraceID, traceID)
-}
-
-// GetTraceIDFromContext returns the trace ID set in the context, if any,
-// or an empty trace id if none is set
-//
-// Deprecated: Should use GetFromContext instead
-func GetTraceIDFromContext(ctx context.Context) ID {
-	if id, ok := ctx.Value(contextKeyTraceID).(ID); ok {
-		return id
-	}
-	return ID{}
 }
