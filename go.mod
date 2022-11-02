@@ -12,7 +12,7 @@ require (
 	github.com/hamba/avro v1.8.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/omeid/uconfig v1.2.0
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.13.1
 	github.com/rs/zerolog v1.28.0
 	github.com/splitio/go-client/v6 v6.2.1
 	github.com/stretchr/testify v1.8.1
