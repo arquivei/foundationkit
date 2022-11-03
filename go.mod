@@ -16,7 +16,7 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/splitio/go-client/v6 v6.2.1
 	github.com/stretchr/testify v1.8.1
-	go.opencensus.io v0.23.0
+	go.opencensus.io v0.24.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.36.4
 	go.opentelemetry.io/otel v1.11.1
 	go.opentelemetry.io/otel/sdk v1.11.1
