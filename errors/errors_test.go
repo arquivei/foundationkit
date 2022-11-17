@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -70,4 +71,26 @@ func TestErrorString_NoError(t *testing.T) {
 	err := Error{}
 	stringError = err.Error()
 	assert.FailNow(t, "panic didn't occurred")
+}
+
+func TestErrorWrap(t *testing.T) {
+	rootError := testError("root error")
+
+	err := E(Op("a"), rootError)
+	assert.Equal(t, rootError, errors.Unwrap(err))
+	err = E(Op("b"), err)
+	err = E(Op("c"), err)
+	err = E(Op("d"), err)
+
+	assert.True(t, errors.Is(err, rootError))
+
+	var destError testError
+	assert.True(t, errors.As(err, &destError))
+	assert.Equal(t, rootError, destError)
+}
+
+type testError string
+
+func (e testError) Error() string {
+	return string(e)
 }

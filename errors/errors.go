@@ -71,6 +71,10 @@ func (e Error) String() string {
 	return e.Error()
 }
 
+func (e Error) Unwrap() error {
+	return e.Err
+}
+
 // E is a helper function for builder errors
 func E(args ...interface{}) error {
 	e := Error{}
