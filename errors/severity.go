@@ -1,6 +1,10 @@
 package errors
 
-import "github.com/rs/zerolog"
+import (
+	"errors"
+
+	"github.com/rs/zerolog"
+)
 
 // Severity is the error severity. It's used to classify errors in groups to be easily handled by the code. For example,
 // a retry layer should be only checking for Runtime errors to retry. Or in an HTTP layer, errors of input type are always
@@ -31,7 +35,9 @@ func (s Severity) MarshalZerologObject(e *zerolog.Event) {
 // GetSeverity returns the error severity. If there is not severity, SeverityUnset is returned.
 func GetSeverity(err error) Severity {
 	for {
-		e, ok := err.(Error)
+		var e Error
+
+		ok := errors.As(err, &e)
 		if !ok {
 			break
 		}

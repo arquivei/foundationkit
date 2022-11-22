@@ -1,6 +1,10 @@
 package errors
 
-import "github.com/rs/zerolog"
+import (
+	"errors"
+
+	"github.com/rs/zerolog"
+)
 
 // Code is the error code
 type Code string
@@ -25,7 +29,9 @@ const (
 // an error code, returns ErrorCodeEmpty
 func GetCode(err error) Code {
 	for {
-		e, ok := err.(Error)
+		var e Error
+
+		ok := errors.As(err, &e)
 		if !ok {
 			break
 		}
