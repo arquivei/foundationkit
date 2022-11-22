@@ -94,3 +94,13 @@ type testError string
 func (e testError) Error() string {
 	return string(e)
 }
+
+func TestErrorWrapMixed(t *testing.T) {
+	err := E("root error", Code("CODE"), SeverityFatal)
+
+	err = fmt.Errorf("wrapped: %w", err)
+	err = E(Op("a"), err)
+
+	assert.Equal(t, Code("CODE"), GetCode(err))
+	assert.Equal(t, SeverityFatal, GetSeverity(err))
+}
