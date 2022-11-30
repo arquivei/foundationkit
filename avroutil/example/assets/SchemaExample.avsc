@@ -1,0 +1,15 @@
+{
+    "name": "simple",
+    "type": "record",
+    "namespace" : "com.arquivei",
+    "fields": [
+        {
+            "name": "Field1",
+            "type": "long"
+        },
+        {
+            "name": "Field2",
+            "type": "string"
+        }
+    ]
+}
