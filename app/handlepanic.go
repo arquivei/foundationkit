@@ -8,9 +8,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// HandlePanic executes the function and, if the function panics, recovers from the panic
+// PanicHandler executes the function and, if the function panics, recovers from the panic
 // and if panic persists, logs it.
-func HandlePanic(f func()) {
+func PanicHandler(f func()) {
 	panicErr := errors.DontPanic(f)
 	if panicErr != nil {
 		log.Fatal().
