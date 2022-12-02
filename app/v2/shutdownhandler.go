@@ -107,6 +107,9 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 			sh.err = err
 			// No need for logging here, this will happen latter
 		case ErrorPolicyFatal:
+			// KLUDGE: golang-ci linter is complaining about the log.Fatal() causing
+			// the `defer cancel()` not to run. But on this case this is fine.
+			//nolint:gocritic
 			log.Fatal().
 				Err(err).
 				Str("handler", sh.Name).

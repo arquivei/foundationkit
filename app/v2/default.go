@@ -45,7 +45,7 @@ func Shutdown(ctx context.Context) error {
 
 // RegisterShutdownHandler adds a shutdown handler to the app. Shutdown Handlers are executed
 // one at a time from the highest priority to the lowest priority. Shutdown handlers of the same
-// priority are normaly executed in the added order but this is not guaranteed.
+// priority are normally executed in the added order but this is not guaranteed.
 func RegisterShutdownHandler(sh *ShutdownHandler) {
 	if defaultApp == nil {
 		panic("default app not initialized")
