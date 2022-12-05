@@ -10,11 +10,10 @@ import (
 
 // PanicHandler executes the function and, if the function panics, recovers from the panic
 // and if panic persists, logs it.
-func PanicHandler(f func()) {
-	panicErr := errors.DontPanic(f)
-	if panicErr != nil {
+func PanicHandler() {
+	if r := recover(); r != nil {
 		log.Fatal().
-			Err(panicErr).
+			Err(errors.NewFromRecover(r)).
 			Str("panic_stack", stringsutil.Truncate(string(debug.Stack()), 1024)).
 			Msg("App panicked!")
 	}
