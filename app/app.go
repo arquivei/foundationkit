@@ -184,6 +184,8 @@ func (a *App) RunAndWait(mainLoop MainLoopFunc) {
 	errs := make(chan error)
 
 	go func() {
+		defer Recover()
+
 		a.logger.Info().Msg("Application main loop starting now!")
 		if mainLoop == nil {
 			errs <- errors.New("main loop is nil")
