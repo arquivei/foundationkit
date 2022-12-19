@@ -16,7 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// MainLoopFunc is the functions runned by app. If it finishes, it will trigger a shutdown.
+// MainLoopFunc is the function runned by app. If it finishes, it will trigger a shutdown.
 // The context will be canceled when application is gracefully shutting down.
 type MainLoopFunc func(context.Context) error
 
@@ -36,9 +36,7 @@ type App struct {
 	mainHealthnessProbe Probe
 }
 
-// New returns a new App.
-// If ctx contains a zerolog logger it is used for logging.
-// adminPort must be a valid port number or it will fail silently.
+// New returns a new App using the app.Config struct for configuration.
 func New(c Config) *App {
 	log.Trace().Msg("[app] Creating new app")
 
@@ -101,7 +99,8 @@ func (app *App) startAdminServer(c Config) {
 	}()
 }
 
-// Shutdown calls all shutdown methods, in order they were added.
+// Shutdown calls all shutdown methods ordered by priority.
+// Handlers are processed from higher priority to lower priority.
 func (app *App) Shutdown(ctx context.Context) (err error) {
 	log.Trace().Int("shutdown_handlers", app.shutdownHandlers.Len()).Msg("[app] Starting graceful shutdown.")
 
@@ -139,6 +138,7 @@ func (app *App) shutdownAllHandlers(ctx context.Context) chan error {
 			h := heap.Pop(&app.shutdownHandlers).(*ShutdownHandler)
 			if ctx.Err() != nil {
 				done <- errors.E(op, "shutdown deadline has been reached")
+				return
 			}
 
 			logger := log.With().
@@ -151,6 +151,7 @@ func (app *App) shutdownAllHandlers(ctx context.Context) chan error {
 			if err := h.Execute(ctx); err != nil {
 				logger.Trace().Msg("[app] Shutdown handler failed.")
 				done <- errors.E(op, err)
+				return
 			}
 			logger.Trace().Msg("[app] Shutdown handler finished.")
 		}

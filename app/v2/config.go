@@ -17,7 +17,7 @@ type Config struct {
 	App struct {
 		Log         fkitlog.Config
 		AdminServer struct {
-			// Enabled sets te admin server
+			// Enabled sets the admin server
 			Enabled bool `default:"true"`
 			// DefaultAdminPort is the default port the app will bind the admin HTTP interface.
 			Port string `default:"9000"`
