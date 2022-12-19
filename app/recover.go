@@ -9,7 +9,8 @@ import (
 )
 
 // Recover recovers from the panic and if panic persists, logs
-// it with trace error.
+// it with trace error. Should be called at the first line in
+// the main function.
 func Recover() {
 	if r := recover(); r != nil {
 		log.Fatal().

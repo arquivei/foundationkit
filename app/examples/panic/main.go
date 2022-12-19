@@ -29,7 +29,7 @@ func main() {
 	app.NewDefaultApp(ctx)
 
 	// Comment this next line to see the other panic
-	thisWillPanic()
+	// thisWillPanic()
 
 	app.RunAndWait(func() error {
 		panic("panics inside run and wait will trigger a graceful shutdown")
