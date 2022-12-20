@@ -80,10 +80,12 @@ func (e Error) Error() string {
 	return s.String()
 }
 
+// String is required to implement the stringer interface
 func (e Error) String() string {
 	return e.Error()
 }
 
+// Unwrap returns the previous error
 func (e Error) Unwrap() error {
 	return e.Err
 }
@@ -93,9 +95,8 @@ func (e Error) Unwrap() error {
 // If called with no arguments, it returns an error solely containing a message
 // informing that.
 //
-// It requires either an error, to be used as previous error or a string, that
-// will be used to instantiate an error, that will in turn be used as previous
-// error, otherwise it will return nil.
+// This method can be called with any set of parameters of any type, but it
+// requires either an error or a string at least, otherwise it will return nil.
 //
 // Parameters can be passed in any order and even be of repeated types, although
 // only the last value of each type will be considered, except for KeyValue and
@@ -141,7 +142,8 @@ func E(args ...interface{}) error {
 	return e
 }
 
-// New returns a new error
+// New returns a new error. It is a wrap of Go's errors.New method that when
+// given an empty string, returns nil
 func New(s string) error {
 	if s == "" {
 		return nil
@@ -149,7 +151,8 @@ func New(s string) error {
 	return errors.New(s)
 }
 
-// Errorf returns a error based on given params
+// Errorf returns a error based on given params. It is a wrap of the fmt.Errorf
+// method that returns nil when given an empty string
 func Errorf(s string, params ...interface{}) error {
 	if s == "" {
 		return nil
@@ -157,7 +160,9 @@ func Errorf(s string, params ...interface{}) error {
 	return fmt.Errorf(s, params...)
 }
 
-// GetRootError returns the Err field of Error struct or the error itself if it is of another type
+// GetRootError returns the deepest error in the Err stack. That is, while an
+// Error has a previous Error, keep getting the previous and returns when
+// previous no longer has an Err
 func GetRootError(err error) error {
 	for {
 		if myErr, ok := err.(Error); ok && myErr.Err != nil {
@@ -181,7 +186,8 @@ func ConcatErrorsMessage(errs ...error) string {
 	return s.String()
 }
 
-// ConcatErrors concatenates all errors
+// ConcatErrors returns an error with a message that is the concatenation of all
+// messages of the given errors
 func ConcatErrors(errs ...error) error {
 	return New(ConcatErrorsMessage(errs...))
 }

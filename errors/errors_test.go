@@ -117,7 +117,7 @@ func ExampleE() {
 
 	// E requires either a string or an err to return an error
 	withString := E("This string will be used to build an error")
-	previous := errors.New("PRevious error")
+	previous := errors.New("Previous error")
 	withError := E(previous)
 	fmt.Println(withString, withError)
 
@@ -134,4 +134,13 @@ func ExampleE() {
 	// Values of unexpected types will be ignored
 	intErr := E("Int err", 1, 2, 3)
 	fmt.Println(intErr)
+
+	// Full example
+	op := Op("errors.errorExample")
+	code := Code("ERROR_EXAMPLE")
+	sev := SeverityRuntime
+	kv = KeyValue{Key: "key", Value: "val"}
+
+	err := E("Error example", op, code, sev, kv)
+	fmt.Println(err)
 }
