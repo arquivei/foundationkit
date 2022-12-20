@@ -7,16 +7,29 @@ import (
 	"strings"
 )
 
-// Error represents the error struct that should be returned in all functions
-// Error implements the Go's error interface
+// Error is the error struct that should be returned in all functions. It
+// is ready to hold useful data about the error and has methods that make
+// building and extracting information very easy.
+// It also implements the Go's error interface
 type Error struct {
+	// Severity contains information about the nature of the error so you can
+	// decide what to do
 	Severity Severity
-	Err      error
-	Code     Code
-	Op       Op
-	KVs      []KeyValue
+	// Err is the previous error, usually given by a lower level layer to be
+	// wrapped
+	Err error
+	// Code is an application friendly way to describe the error
+	Code Code
+	// Op is the operation that was happening when the error occurred. In other
+	// words, is where the error happened
+	Op Op
+	// KVs is a map os values you can use to enrich your error with relevant
+	// information
+	KVs []KeyValue
 }
 
+// Error formats the error information into a string. By implementing this
+// method, we implement Go's error interface
 func (e Error) Error() string {
 	const sep = ": "
 	s := strings.Builder{}
@@ -75,7 +88,21 @@ func (e Error) Unwrap() error {
 	return e.Err
 }
 
-// E is a helper function for builder errors
+// E is a helper function for building errors.
+//
+// If called with no arguments, it returns an error solely containing a message
+// informing that.
+//
+// It requires either an error, to be used as previous error or a string, that
+// will be used to instantiate an error, that will in turn be used as previous
+// error, otherwise it will return nil.
+//
+// Parameters can be passed in any order and even be of repeated types, although
+// only the last value of each type will be considered, except for KeyValue and
+// []KeyValue, which will be concatenated to the struct's KVs value.
+//
+// Types other than string, Code, Severity, error, Op, KeyValue, or []KeyValue
+// will simply be ignored.
 func E(args ...interface{}) error {
 	e := Error{}
 	if len(args) == 0 {

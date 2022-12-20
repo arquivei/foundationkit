@@ -104,3 +104,34 @@ func TestErrorWrapMixed(t *testing.T) {
 	assert.Equal(t, Code("CODE"), GetCode(err))
 	assert.Equal(t, SeverityFatal, GetSeverity(err))
 }
+
+func ExampleE() {
+	// Calling E with no arguments results in an error with a message saying
+	// that the function was called with no arguments
+	errNoArgs := E()
+	fmt.Println(errNoArgs)
+
+	// Calling E without a string or an error will result in a nil return
+	errNil := E(Op("Error Example"), Code("ERROR_EXAMPLE_NIL"))
+	fmt.Println(errNil)
+
+	// E requires either a string or an err to return an error
+	withString := E("This string will be used to build an error")
+	previous := errors.New("PRevious error")
+	withError := E(previous)
+	fmt.Println(withString, withError)
+
+	// We can pass parameters of the same type more than once, but only the last
+	// one will be considered
+	multiOp := E("Multi op", Op("Op 1"), Op("Op 2"), Op("Op 3"))
+	fmt.Println(multiOp)
+
+	// Except for KeyValue and []KeyValue which will be concatenated
+	kv := KeyValue{Key: "key1", Value: "val1"}
+	multiKv := E("Multi kv", kv, kv, kv)
+	fmt.Println(multiKv)
+
+	// Values of unexpected types will be ignored
+	intErr := E("Int err", 1, 2, 3)
+	fmt.Println(intErr)
+}
