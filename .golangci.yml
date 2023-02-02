@@ -1,4 +1,11 @@
-# Full list on https://golangci-lint.run/usage/linters/
+# Full list of linters:
+#   https://golangci-lint.run/usage/linters/
+# Configuration file example:
+#   https://github.com/golangci/golangci-lint/blob/master/.golangci.reference.yml
+
+run:
+  timeout: 5m
+  allow-parallel-runners: true
 linters:
   disable-all: true
   enable:

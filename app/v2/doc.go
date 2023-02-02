@@ -9,13 +9,11 @@ There is a running example on `app/examples/servefiles`
 
 # Basics
 
-The first thing you should do is setup a configuration and logger. The app uses the foundation's kit log package and expects a zerolog's logger in the context.
+The first thing you should do bootstrap the application. This will initialize the configuration, reading it from the commandline or environment, initialize zerolog (based on the Config) and initialize the default global app.
 
-	app.SetupConfig(&config)
-	ctx := log.SetupLoggerWithContext(context.Background(), config.Log, version)
-	app.NewDefaultApp(ctx)
+	app.Bootstrap(version, &cfg)
 
-At this point, the app will already be exposing the admin port and the readiness probe will be returning error, indicating that the application is not yet ready to receive requests.
+After the bootstrap, the app will already be exposing the admin port and the readiness probe will be returning error, indicating that the application is not yet ready to receive requests. But the liveless probe will be returning success, indicating the app is alive.
 
 Then you should start initializing all the program dependencies. Because the application is not yet ready, kubernetes will refrain from sending requests (that would fail at this point). Also we already have some metrics and the debug handlers.
 
@@ -34,29 +32,34 @@ They are executed in order by priority. The Highest priority first (in case of t
 
 Finally you can run the application by calling RunAndWait:
 
-	app.RunAndWait(func() error {
-		return httpServer.ListenAndServe()
-	})
+	app.RunAndWait(func(ctx context.Context) error {...})
 
 At this point the application will run until the given function returns or it receives an termination signal.
 
 # Updating From Previous Version
 
-On the previous version,the NewDefaultApp received the main loop:
+Version 2 is a major overhaul over version 1. One of the main breaking changes is how the Config struct is used. Now, all app related configuration is inside an App field and new configuration were added. Now the Config struct is expected to be embedded in your application's configuration:
 
-	func NewDefaultApp(ctx context.Context, mainLoop MainLoopFunc) (err error)
+	type config struct {
+		// App is the app specific configuration
+		app.Config
 
-This was a problem because the main loop normally depends on various resources that must be created before the main loop can be called. But the creation of this resourced involves registering shutdown handlers, that requires an already created app.
+		// Programs can have any configuration the want.
+		HTTP struct {
+			Port string `default:"8000"`
+		}
+		Dir string `default:"."`
+	}
 
-This cycle forced the application to rely on lazy initialization of the resources. Lazy initialization is not a bad thing but in this particular case this means that when we call RunAndWait and the readiness probe is set return success, the application is still initializing and could start receiving requests before it was really ready.
+All the initialization now occurs on the Bootstrap functions and you need to initialize logs manually anymore.
 
-To break this cycle the main loop was moved from the NewDefaultApp and was placed on the RunAndWait function. So to update to this version you could only change these two functions calls. But, to really take advantage of this new way to start an app, you should refactor the code to remove the laziness part before the RunAndWait is called.
+RunAndWait was also changed in a couple of ways. Now it does not return anything and will panic if called incorrectly. The error returned by the MainLoopFunc is handled my logging it and triggering a graceful shutdown. The MainLoopFunc was changed to receve a context. The context will be canceled when Shutdown is called.
 
 # Using Probes
 
 A Probe is a boolean that indicates if something is OK or not. There are two groups of probes in an app: The Healthiness an Readiness groups. Kubernetes checks on there two probes to decide what to do to the pod, like, from stop sending requests to just kill the pod, sending a signal the app will capture and start a graceful shutdown.
 
-If a single probe of a group is not ok, than the whole group is not ok. In this event, the HTTP handler returns the name of all the probes that are not ok for the given group.
+If a single probe of a group is not OK, than the whole group is not OK. In this event, the HTTP handler returns the name of all the probes that are not OK for the given group.
 
 	mux.HandleFunc("/healthy", func(w http.ResponseWriter, _ *http.Request) {
 		isHealthy, cause := app.Healthy.CheckProbes()

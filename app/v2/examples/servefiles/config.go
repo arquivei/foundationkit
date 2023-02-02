@@ -3,7 +3,7 @@ package main
 import "github.com/arquivei/foundationkit/app/v2"
 
 type config struct {
-	// App is the app scpecific configuration
+	// App is the app specific configuration
 	app.Config
 
 	// Programs can have any configuration the want.

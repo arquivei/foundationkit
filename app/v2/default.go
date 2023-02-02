@@ -27,7 +27,8 @@ func Bootstrap(appVersion string, config AppConfig) {
 	defaultApp = New(appConfig)
 }
 
-// RunAndWait calls the main loop function and awaits until it finishes by itself or Shutdown is called.
+// RunAndWait executes the main loop on a go-routine and listens to SIGINT and SIGKILL to start the shutdown.
+// This is expected to be called only once and will panic if called a second time.
 func RunAndWait(f MainLoopFunc) {
 	if defaultApp == nil {
 		panic("default app not initialized")
@@ -35,7 +36,8 @@ func RunAndWait(f MainLoopFunc) {
 	defaultApp.RunAndWait(f)
 }
 
-// Shutdown initiates the graceful shutdown of the app.
+// Shutdown calls all shutdown methods ordered by priority.
+// Handlers are processed from higher priority to lower priority.
 func Shutdown(ctx context.Context) error {
 	if defaultApp == nil {
 		panic("default app not initialized")

@@ -50,39 +50,36 @@ type ShutdownFunc func(context.Context) error
 // ShutdownHandler is a shutdown structure that allows configuring
 // and storing shutdown information of an orchestrated shutdown flow.
 type ShutdownHandler struct {
-	Name    string
-	Timeout time.Duration
-	Handler ShutdownFunc
-	Policy  ErrorPolicy
+	Name     string
+	Handler  ShutdownFunc
+	Policy   ErrorPolicy
+	Priority ShutdownPriority
+	Timeout  time.Duration
 
-	err   error
 	index int
 	order int
-	mu    sync.Mutex
-
-	Priority ShutdownPriority
-
-	executed bool
+	err   error
+	once  sync.Once
 }
 
 // Execute runs the shutdown functions and handles timeout and error policy
 func (sh *ShutdownHandler) Execute(ctx context.Context) error {
+	sh.once.Do(func() {
+		sh.doExecute(ctx)
+		if sh.err != nil {
+		}
+	})
+	return sh.err
+}
+
+func (sh *ShutdownHandler) doExecute(ctx context.Context) {
 	const op = errors.Op("app.shutdownHandler.Execute")
 
-	sh.mu.Lock()
-	defer sh.mu.Unlock()
-
-	// The shutdown should run only once
-	// Future calls will return the result of the first call
-	if sh.executed {
-		return sh.err
-	}
-	sh.executed = true
-
 	// Avoid running if the context is already closed
-	if ctx.Err() != nil {
-		sh.err = errors.E(op, errors.E(errors.Op(sh.Name), "skipping handler as deadline has been reached"))
-		return sh.err
+	if err := ctx.Err(); err != nil {
+		sh.err = errors.E(errors.Op(sh.Name), err)
+		sh.err = errors.E(op, sh.err)
+		return
 	}
 
 	// Set the configured timeout, if any
@@ -93,41 +90,45 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 	}
 
 	// Execute the shutdown function and process the result
-	err := sh.Handler(ctx)
-	if err != nil {
-		err = errors.E(op, errors.E(errors.Op(sh.Name), err))
-		switch sh.Policy {
-		case ErrorPolicyWarn:
-			log.Warn().
-				Err(err).
-				Str("handler", sh.Name).
-				Uint8("shutdown_priority", uint8(sh.Priority)).
-				Msg("Shutdown handler failed")
-		case ErrorPolicyAbort:
-			sh.err = err
-			// No need for logging here, this will happen latter
-		case ErrorPolicyFatal:
-			// KLUDGE: golang-ci linter is complaining about the log.Fatal() causing
-			// the `defer cancel()` not to run. But on this case this is fine.
-			//nolint:gocritic
-			log.Fatal().
-				Err(err).
-				Str("handler", sh.Name).
-				Uint8("shutdown_priority", uint8(sh.Priority)).
-				Msg("Shutdown handler failed")
-		case ErrorPolicyPanic:
-			panic(err)
-		default:
-			panic(errors.Errorf("invalid error policy: %v", sh.Policy))
-		}
+	sh.err = sh.Handler(ctx)
+	if sh.err != nil {
+		sh.err = errors.E(errors.Op(sh.Name), sh.err)
+		sh.err = errors.E(op, sh.err)
+		sh.applyErrorPolicy()
+		return
 	}
 
 	log.Info().
 		Str("handler", sh.Name).
 		Uint8("shutdown_priority", uint8(sh.Priority)).
-		Msg("Shutdown successful")
+		Msg("[app] Shutdown successful.")
+}
 
-	return sh.err
+func (sh *ShutdownHandler) applyErrorPolicy() {
+	switch sh.Policy {
+	case ErrorPolicyWarn:
+		log.Warn().
+			Err(sh.err).
+			Str("handler", sh.Name).
+			Uint8("shutdown_priority", uint8(sh.Priority)).
+			Msg("[app] Shutdown handler failed but graceful shutdown will continue.")
+		sh.err = nil
+	case ErrorPolicyAbort:
+		// No need for logging here, this will happen latter
+	case ErrorPolicyFatal:
+		// KLUDGE: golang-ci linter is complaining about the log.Fatal() causing
+		// the `defer cancel()` not to run. But on this case this is fine.
+		//nolint:gocritic
+		log.Fatal().
+			Err(sh.err).
+			Str("handler", sh.Name).
+			Uint8("shutdown_priority", uint8(sh.Priority)).
+			Msg("[app] Shutdown handler failed.")
+	case ErrorPolicyPanic:
+		panic(sh.err)
+	default:
+		panic(errors.Errorf("invalid error policy: %v", sh.Policy))
+	}
 }
 
 // shutdownHeap is a heap implementation for the *shutdownHandler type

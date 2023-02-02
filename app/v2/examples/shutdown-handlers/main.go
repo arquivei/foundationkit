@@ -36,6 +36,7 @@ func main() {
 		Name:    "first",
 		Timeout: time.Second,
 		Handler: func(ctx context.Context) error {
+			time.Sleep(time.Second)
 			log.Info().Msg("First shutdown handler executed.")
 			return nil
 		},
@@ -46,6 +47,7 @@ func main() {
 		Name:    "second",
 		Timeout: time.Second,
 		Handler: func(ctx context.Context) error {
+			time.Sleep(time.Second)
 			log.Info().Msg("Second handler will fail but will only cause a warn.")
 			return errors.New("some error")
 		},
@@ -57,6 +59,7 @@ func main() {
 		Name:    "third",
 		Timeout: time.Second,
 		Handler: func(ctx context.Context) error {
+			time.Sleep(time.Second)
 			log.Info().Msg("Third handler executed.")
 			return nil
 		},
@@ -64,7 +67,22 @@ func main() {
 		Priority: app.ShutdownPriority(10),
 	})
 
+	// We will trigger a second call to Shutdown just to show how it is handled.
+	// You should not do this in production code.
+	secondaryShutdown, secondaryShutdownCancel := context.WithCancel(context.Background())
+	defer secondaryShutdownCancel()
+
 	app.RunAndWait(func(ctx context.Context) error {
+		// triggering the second shutdown after the functions ends and on a goroutine.
+		defer func() {
+			go func() {
+				log.Info().Msg("Triggering another Shutdown. This should emit a warning but it will wait and yield the same result as the original Shutdown call.")
+				defer secondaryShutdownCancel()
+				err := app.Shutdown(context.Background())
+				log.Warn().Err(err).Msg("Second Shutdown finished.")
+			}()
+		}()
+
 		select {
 		case <-ctx.Done():
 			return nil
@@ -72,5 +90,6 @@ func main() {
 			return errors.New("app timeout reached")
 		}
 	})
-
+	// Just wait for the secondary shutdown to finish so we can read it in the logs.
+	<-secondaryShutdown.Done()
 }

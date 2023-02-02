@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/pprof" // Sadly, this also changes the DefaultMux to have the pprof URLs
 	"os/signal"
+	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -28,12 +30,17 @@ type App struct {
 	mainLoopCtx       context.Context
 	cancelMainLoopCtx func()
 
-	shutdownHandlers shutdownHeap
-	gracePeriod      time.Duration
-	shutdownTimeout  time.Duration
-
 	mainReadinessProbe  Probe
 	mainHealthnessProbe Probe
+
+	isRunning atomic.Bool
+	shutdown  struct {
+		handlers    shutdownHeap
+		timeout     time.Duration
+		gracePeriod time.Duration
+		err         error
+		once        sync.Once
+	}
 }
 
 // New returns a new App using the app.Config struct for configuration.
@@ -46,12 +53,20 @@ func New(c Config) *App {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	app := &App{
-		Ready:               readinessProbeGroup,
-		Healthy:             healthnessProbeGroup,
-		mainLoopCtx:         ctx,
-		cancelMainLoopCtx:   cancel,
-		gracePeriod:         c.App.Shutdown.GracePeriod,
-		shutdownTimeout:     c.App.Shutdown.Timeout,
+		Ready:             readinessProbeGroup,
+		Healthy:           healthnessProbeGroup,
+		mainLoopCtx:       ctx,
+		cancelMainLoopCtx: cancel,
+		shutdown: struct {
+			handlers    shutdownHeap
+			timeout     time.Duration
+			gracePeriod time.Duration
+			err         error
+			once        sync.Once
+		}{
+			gracePeriod: c.App.Shutdown.GracePeriod,
+			timeout:     c.App.Shutdown.Timeout,
+		},
 		mainReadinessProbe:  readinessProbeGroup.MustNewProbe("fkit/app", false),
 		mainHealthnessProbe: healthnessProbeGroup.MustNewProbe("fkit/app", true),
 	}
@@ -101,32 +116,38 @@ func (app *App) startAdminServer(c Config) {
 
 // Shutdown calls all shutdown methods ordered by priority.
 // Handlers are processed from higher priority to lower priority.
-func (app *App) Shutdown(ctx context.Context) (err error) {
-	log.Trace().Int("shutdown_handlers", app.shutdownHandlers.Len()).Msg("[app] Starting graceful shutdown.")
-
-	app.cancelMainLoopCtx()
-
+func (app *App) Shutdown(ctx context.Context) error {
 	const op = errors.Op("app.App.Shutdown")
 
-	if app.shutdownTimeout > 0 {
-		log.Trace().Dur("shutdown_timeout", app.shutdownTimeout).Msg("[app] Configuring a timeout for the shutdown.")
+	app.shutdown.once.Do(func() {
+		log.Trace().Int("shutdown_handlers", app.shutdown.handlers.Len()).Msg("[app] Starting graceful shutdown.")
+		app.doShutdown(ctx)
+		if app.shutdown.err != nil {
+			app.shutdown.err = errors.E(op, app.shutdown.err)
+			log.Error().Err(app.shutdown.err).Msg("[app] Graceful shutdown failed.")
+			return
+		}
+		log.Info().Msg("[app] Graceful shutdown successful.")
+	})
+
+	return app.shutdown.err
+}
+
+func (app *App) doShutdown(ctx context.Context) {
+	app.cancelMainLoopCtx()
+
+	if app.shutdown.timeout > 0 {
+		log.Trace().Dur("shutdown_timeout", app.shutdown.timeout).Msg("[app] Configuring a timeout for the shutdown.")
 		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, app.shutdownTimeout)
+		ctx, cancel = context.WithTimeout(ctx, app.shutdown.timeout)
 		defer cancel()
 	}
 
 	select {
 	case <-ctx.Done():
-		err = errors.E(op, "shutdown deadline has been reached")
-	case err = <-app.shutdownAllHandlers(ctx):
+		app.shutdown.err = ctx.Err()
+	case app.shutdown.err = <-app.shutdownAllHandlers(ctx):
 	}
-	if err != nil {
-		log.Trace().Err(err).Msg("[app] Graceful shutdown failed.")
-		return errors.E(op, err)
-	}
-
-	log.Trace().Msg("[app] Graceful shutdown finished successfully.")
-	return nil
 }
 
 func (app *App) shutdownAllHandlers(ctx context.Context) chan error {
@@ -134,8 +155,8 @@ func (app *App) shutdownAllHandlers(ctx context.Context) chan error {
 	done := make(chan error, 1)
 	go func() {
 		defer close(done)
-		for app.shutdownHandlers.Len() > 0 {
-			h := heap.Pop(&app.shutdownHandlers).(*ShutdownHandler)
+		for app.shutdown.handlers.Len() > 0 {
+			h := heap.Pop(&app.shutdown.handlers).(*ShutdownHandler)
 			if ctx.Err() != nil {
 				done <- errors.E(op, "shutdown deadline has been reached")
 				return
@@ -148,56 +169,35 @@ func (app *App) shutdownAllHandlers(ctx context.Context) chan error {
 				Str("shutdown_handler_policy", ErrorPolicyString(h.Policy)).Logger()
 
 			logger.Trace().Msg("[app] Executing shutdown handler.")
-			if err := h.Execute(ctx); err != nil {
-				logger.Trace().Msg("[app] Shutdown handler failed.")
+			err := h.Execute(ctx)
+			logger.Trace().Err(err).Msg("[app] Shutdown handler finished.")
+			if err != nil {
 				done <- errors.E(op, err)
-				return
 			}
-			logger.Trace().Msg("[app] Shutdown handler finished.")
 		}
 	}()
 	return done
 }
 
-// RunAndWait executes the main loop on a go-routine and listens to SIGINT and SIGKILL to start the shutdown
+// RunAndWait executes the main loop on a go-routine and listens to SIGINT and SIGKILL to start the shutdown.
+// This is expected to be called only once and will panic if called a second time.
 func (app *App) RunAndWait(mainLoop MainLoopFunc) {
+	if alreadyRunning := app.isRunning.Swap(true); alreadyRunning {
+		panic("[app] RunAndWait called more than once")
+	}
+
 	log.Trace().Msg("[app] Starting run and wait.")
 
+	// Run main loop on a go-routine
 	errs := make(chan error, 1)
-
 	go app.runMainLoop(mainLoop, errs)
+	app.waitMainLoopOrSignal(errs)
 
-	notifyCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
-	// Await for OS signal or main loop to finishes by itself
-	select {
-	case err := <-errs:
-		if err != nil {
-			log.Error().Err(err).Msg("[app] Main Loop finished by itself with error.")
-		} else {
-			log.Warn().Msg("[app] Main Loop finished by itself without error. Ideally the main loop should be finished by a graceful shutdown handler.")
-		}
-	case <-notifyCtx.Done():
-		log.Info().
-			Dur("grace_period", app.gracePeriod).
-			Msg("[app] Graceful shutdown signal received.")
-	}
-
+	// App is shutting down...
 	app.mainReadinessProbe.SetNotOk()
-	log.Info().
-		Dur("grace_period", app.gracePeriod).
-		Msg("[app] Awaiting for grace period to end.")
-	time.Sleep(app.gracePeriod)
-	log.Info().Msg("[app] Grace period is over, initiating shutdown procedures...")
-
-	app.logAppTerminated(app.Shutdown(context.Background()))
-
-	select {
-	case <-app.mainLoopCtx.Done():
-	case <-time.After(10 * time.Second):
-		log.Error().Msg("[app] Main loop didn't finished by itself.")
-	}
+	app.waitGracePeriod()
+	app.Shutdown(context.Background())
+	app.waitMainLoopFinish(10 * time.Second)
 
 	// This forces kubernetes kills the pod if some other code is holding the main func.
 	app.mainHealthnessProbe.SetNotOk()
@@ -220,11 +220,41 @@ func (app *App) runMainLoop(mainLoop MainLoopFunc, errs chan<- error) {
 	errs <- mainLoop(app.mainLoopCtx)
 }
 
-func (app *App) logAppTerminated(err error) {
-	if err == nil {
-		log.Info().Msg("[app] App gracefully terminated.")
-	} else {
-		log.Error().Err(err).Msg("[app] App terminated with error.")
+func (app *App) waitMainLoopOrSignal(errs <-chan error) {
+	gracefulShutdownCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	select {
+	case err := <-errs:
+		if err != nil {
+			log.Error().Err(err).Msg("[app] Main Loop finished by itself with error.")
+		} else {
+			log.Warn().Msg("[app] Main Loop finished by itself without error. Ideally the main loop should be finished by a graceful shutdown handler.")
+		}
+	case <-gracefulShutdownCtx.Done():
+		log.Info().
+			Dur("grace_period", app.shutdown.gracePeriod).
+			Msg("[app] Graceful shutdown signal received.")
+	}
+}
+
+func (app *App) waitGracePeriod() {
+	if app.shutdown.gracePeriod <= 0 {
+		return
+	}
+
+	log.Info().
+		Dur("grace_period", app.shutdown.gracePeriod).
+		Msg("[app] Awaiting for grace period to end.")
+	time.Sleep(app.shutdown.gracePeriod)
+	log.Info().Msg("[app] Grace period is over, initiating shutdown procedures...")
+}
+
+func (app *App) waitMainLoopFinish(timeout time.Duration) {
+	select {
+	case <-app.mainLoopCtx.Done():
+	case <-time.After(timeout):
+		log.Error().Msg("[app] Main loop is shutting down but the main loop didn't finish.")
 	}
 }
 
@@ -235,15 +265,15 @@ func (app *App) RegisterShutdownHandler(sh *ShutdownHandler) {
 	if sh.Name == "" {
 		panic("shutdown handler name must not be an empty string")
 	}
-	if len(app.shutdownHandlers) == 0 {
-		heap.Init(&app.shutdownHandlers)
+	if len(app.shutdown.handlers) == 0 {
+		heap.Init(&app.shutdown.handlers)
 	}
-	heap.Push(&app.shutdownHandlers, sh)
+	heap.Push(&app.shutdown.handlers, sh)
 
 	log.Trace().
 		Str("shutdown_handler_name", sh.Name).
 		Uint8("shutdown_handler_priority", uint8(sh.Priority)).
 		Dur("shutdown_handler_timeout", sh.Timeout).
 		Str("shutdown_handler_policy", ErrorPolicyString(sh.Policy)).
-		Msg("[app] Shutdown handler registered")
+		Msg("[app] Shutdown handler registered.")
 }
