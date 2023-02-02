@@ -169,7 +169,7 @@ func Test_communicateWithJSON_CommunicationErrors(t *testing.T) {
 						assert.FailNow(tt, "Received request integer does not match", "Integer: expected %d, received %d", testCase.requestInteger, request.Integer)
 					}
 
-					w.WriteHeader(tc.serverResponseStatus)
+					w.WriteHeader(testCase.serverResponseStatus)
 					fmt.Fprintln(w, testCase.serverResponseContents)
 				},
 			))
