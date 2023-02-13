@@ -7,6 +7,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPtr(t *testing.T) {
+	strPtr := Ptr("some string")
+
+	assert.NotNil(t, strPtr)
+	assert.Equal(t, "some string", *strPtr)
+}
+
+func TestPtrNil(t *testing.T) {
+	nilStr := PtrNil("")
+	assert.Nil(t, nilStr)
+
+	someString := PtrNil("some string")
+	assert.NotNil(t, someString)
+	assert.Equal(t, "some string", *someString)
+}
+
+func TestVal(t *testing.T) {
+	var nilStr *string
+	assert.Equal(t, "", nilStr)
+
+	someString := "some string"
+	assert.Equal(t, "some string", Val(&someString))
+}
+
+// Deprecated tests
+
 func TestStr(t *testing.T) {
 	value := "abcde"
 	assert.Equal(t, Str(value), &value)
