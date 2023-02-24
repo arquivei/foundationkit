@@ -196,7 +196,7 @@ func (app *App) RunAndWait(mainLoop MainLoopFunc) {
 	// App is shutting down...
 	app.mainReadinessProbe.SetNotOk()
 	app.waitGracePeriod()
-	app.Shutdown(context.Background())
+	_ = app.Shutdown(context.Background())
 	app.waitMainLoopFinish(10 * time.Second)
 
 	// This forces kubernetes kills the pod if some other code is holding the main func.

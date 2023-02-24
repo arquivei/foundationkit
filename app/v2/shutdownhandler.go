@@ -66,8 +66,6 @@ type ShutdownHandler struct {
 func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 	sh.once.Do(func() {
 		sh.doExecute(ctx)
-		if sh.err != nil {
-		}
 	})
 	return sh.err
 }

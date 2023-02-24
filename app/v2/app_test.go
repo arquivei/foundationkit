@@ -41,7 +41,6 @@ func TestRunAndWait(t *testing.T) {
 		a.RunAndWait(func(ctx context.Context) error {
 			return nil
 		})
-
 	}, "Calling RunAndWait once should not Panic.")
 }
 
