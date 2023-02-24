@@ -76,13 +76,11 @@ func TestShutdownHandlerExecute(t *testing.T) {
 		},
 	}
 
-	assert.False(t, sh.executed)
 	assert.NoError(t, sh.err)
 
 	err := sh.Execute(context.TODO())
 	assert.NoError(t, err)
 	assert.NoError(t, sh.err)
-	assert.True(t, sh.executed)
 
 	sh = &ShutdownHandler{
 		Name: "my_failed_shutdown_handler",
@@ -112,8 +110,7 @@ func TestShutdownHandlerExecute_CanceledContext(t *testing.T) {
 	}
 
 	err := sh.Execute(ctx)
-	assert.True(t, sh.executed)
-	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: skipping handler as deadline has been reached")
+	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: context canceled")
 }
 
 func TestShutdownHandlerExecute_Timeout(t *testing.T) {
@@ -133,6 +130,5 @@ func TestShutdownHandlerExecute_Timeout(t *testing.T) {
 
 	ctx := context.Background()
 	err := sh.Execute(ctx)
-	assert.True(t, sh.executed)
 	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: custom handler error on deadline exceeded")
 }
