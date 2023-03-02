@@ -3,7 +3,6 @@ package app
 import (
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/arquivei/foundationkit/errors"
 )
@@ -35,14 +34,12 @@ func (p *Probe) IsOk() bool {
 
 // ProbeGroup aggregates and manages probes.
 type ProbeGroup struct {
-	lock   *sync.RWMutex
 	probes map[string]*bool
 }
 
 // NewProbeGroup returns a new ProbeGroup.
 func NewProbeGroup() ProbeGroup {
 	return ProbeGroup{
-		lock:   &sync.RWMutex{},
 		probes: make(map[string]*bool),
 	}
 }

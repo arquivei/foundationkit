@@ -30,8 +30,8 @@ type App struct {
 	mainLoopCtx       context.Context
 	cancelMainLoopCtx func()
 
-	mainReadinessProbe  Probe
-	mainHealthnessProbe Probe
+	readinessProbe   Probe
+	healthinessProbe Probe
 
 	isRunning atomic.Bool
 	shutdown  struct {
@@ -48,13 +48,13 @@ func New(c Config) *App {
 	log.Trace().Msg("[app] Creating new app")
 
 	readinessProbeGroup := NewProbeGroup("readiness")
-	healthnessProbeGroup := NewProbeGroup("healthness")
+	healthinessProbeGroup := NewProbeGroup("healthiness")
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	app := &App{
 		Ready:             readinessProbeGroup,
-		Healthy:           healthnessProbeGroup,
+		Healthy:           healthinessProbeGroup,
 		mainLoopCtx:       ctx,
 		cancelMainLoopCtx: cancel,
 		shutdown: struct {
@@ -67,8 +67,8 @@ func New(c Config) *App {
 			gracePeriod: c.App.Shutdown.GracePeriod,
 			timeout:     c.App.Shutdown.Timeout,
 		},
-		mainReadinessProbe:  readinessProbeGroup.MustNewProbe("fkit/app", false),
-		mainHealthnessProbe: healthnessProbeGroup.MustNewProbe("fkit/app", true),
+		readinessProbe:   readinessProbeGroup.MustNewProbe("fkit/app", false),
+		healthinessProbe: healthinessProbeGroup.MustNewProbe("fkit/app", true),
 	}
 
 	app.startAdminServer(c)
@@ -194,13 +194,13 @@ func (app *App) RunAndWait(mainLoop MainLoopFunc) {
 	app.waitMainLoopOrSignal(errs)
 
 	// App is shutting down...
-	app.mainReadinessProbe.SetNotOk()
+	app.readinessProbe.SetNotOk()
 	app.waitGracePeriod()
 	_ = app.Shutdown(context.Background())
 	app.waitMainLoopFinish(10 * time.Second)
 
 	// This forces kubernetes kills the pod if some other code is holding the main func.
-	app.mainHealthnessProbe.SetNotOk()
+	app.healthinessProbe.SetNotOk()
 }
 
 func (app *App) runMainLoop(mainLoop MainLoopFunc, errs chan<- error) {
@@ -215,7 +215,7 @@ func (app *App) runMainLoop(mainLoop MainLoopFunc, errs chan<- error) {
 		return
 	}
 	log.Info().Msg("[app] Application main loop starting now!")
-	app.mainReadinessProbe.SetOk()
+	app.readinessProbe.SetOk()
 
 	errs <- mainLoop(app.mainLoopCtx)
 }

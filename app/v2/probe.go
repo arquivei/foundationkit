@@ -53,23 +53,36 @@ func NewProbeGroup(name string) ProbeGroup {
 
 // NewProbe returns a new Probe with the given name.
 // The name must satisfy the following regular expression: [a-zA-Z0-9_/-]{3,}
-func (m *ProbeGroup) NewProbe(name string, ok bool) (Probe, error) {
-	if _, ok := m.probes[name]; ok {
-		return Probe{}, errors.Errorf("probe '%s' already registered", name)
-	}
-
-	if err := m.checkName(name); err != nil {
+func (g *ProbeGroup) NewProbe(name string, ok bool) (Probe, error) {
+	if err := g.checkName(name); err != nil {
 		return Probe{}, err
 	}
 
-	s := ok
-	m.probes[name] = &s
-	return Probe{&s}, nil
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	if err := g.checkProbeAlreadyExists(name); err != nil {
+		return Probe{}, err
+	}
+
+	return g.newProbe(name, ok)
+}
+
+func (g *ProbeGroup) checkProbeAlreadyExists(name string) error {
+	if _, ok := g.probes[name]; ok {
+		return errors.Errorf("probe '%s' already registered", name)
+	}
+	return nil
+}
+
+func (g *ProbeGroup) newProbe(name string, ok bool) (Probe, error) {
+	g.probes[name] = &ok
+	return Probe{&ok}, nil
 }
 
 // MustNewProbe returns a new Probe with the given name and panics in case of error.
-func (m *ProbeGroup) MustNewProbe(name string, ok bool) Probe {
-	p, err := m.NewProbe(name, ok)
+func (g *ProbeGroup) MustNewProbe(name string, ok bool) Probe {
+	p, err := g.NewProbe(name, ok)
 	if err != nil {
 		panic(err)
 	}
@@ -77,8 +90,8 @@ func (m *ProbeGroup) MustNewProbe(name string, ok bool) Probe {
 }
 
 // ServeHTTP serves the Probe Group as an HTTP handler.
-func (m *ProbeGroup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ok, cause := m.CheckProbes()
+func (g *ProbeGroup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ok, cause := g.CheckProbes()
 	if ok {
 		w.WriteHeader(http.StatusOK)
 	} else {
@@ -86,7 +99,7 @@ func (m *ProbeGroup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	//nolint:errcheck
 	w.Write([]byte(cause))
-	log.Trace().Str("probe_group", m.name).Bool("probe_is_ok", ok).Str("cause", cause).Msg("[app] App was probed.")
+	log.Trace().Str("probe_group", g.name).Bool("probe_is_ok", ok).Str("cause", cause).Msg("[app] App was probed.")
 }
 
 var reIsValidProbeName = regexp.MustCompile("[a-zA-Z0-9_/-]{3,}")
@@ -103,15 +116,18 @@ func (ProbeGroup) checkName(name string) error {
 // If the group is not ok, it's also returned the cause in the second return parameter.
 // If all probes are ok (true) the cause is returned as OK.
 // If more than one probe is not ok, the causes are concatenated by a comma.
-func (m *ProbeGroup) CheckProbes() (bool, string) {
+func (g *ProbeGroup) CheckProbes() (bool, string) {
 	cause := strings.Builder{}
 
-	cause.Grow(len(m.name) + 3)
-	cause.WriteString(m.name)
+	cause.Grow(len(g.name) + 3)
+	cause.WriteString(g.name)
 	cause.WriteString(":")
 
+	g.lock.RLock()
+	defer g.lock.RUnlock()
+
 	ok := true
-	for name, probeOk := range m.probes {
+	for name, probeOk := range g.probes {
 		if !*probeOk {
 			if !ok { // There is already a probe that is not ok
 				cause.WriteString(",")
