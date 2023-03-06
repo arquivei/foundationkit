@@ -1,12 +1,12 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
 	"sync"
 
-	"github.com/arquivei/foundationkit/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -70,7 +70,7 @@ func (g *ProbeGroup) NewProbe(name string, ok bool) (Probe, error) {
 
 func (g *ProbeGroup) checkProbeAlreadyExists(name string) error {
 	if _, ok := g.probes[name]; ok {
-		return errors.Errorf("probe '%s' already registered", name)
+		return fmt.Errorf("probe '%s' already registered", name)
 	}
 	return nil
 }
@@ -106,7 +106,7 @@ var reIsValidProbeName = regexp.MustCompile("[a-zA-Z0-9_/-]{3,}")
 
 func (ProbeGroup) checkName(name string) error {
 	if !reIsValidProbeName.MatchString(name) {
-		return errors.Errorf("name '%s' doesn't conform to '[a-zA-Z0-9_-]{3,}'", name)
+		return fmt.Errorf("name '%s' doesn't conform to '[a-zA-Z0-9_-]{3,}'", name)
 	}
 	return nil
 }

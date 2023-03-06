@@ -1,7 +1,9 @@
 /*
 Package app provides an application framework that manages the live cycle of a running application.
 
-An app could be an HTTP server (or any kind of server), a worker or a simple program. Independently of the kind of the app, it always exposes an admin port at 9000 by default which serves metrics, debug information and kubernetes probes. It also is capable of graceful shutdown on receiving signals of terminating by itself.
+An app could be an HTTP server (or any kind of server), a worker or a simple program. Independently of the kind of the app, it always exposes an admin port at 9000 by default which serves metrics, debug information and kubernetes probes.
+
+An app is also capable of graceful shutdown on receiving signals of terminating by itself.
 
 The recommended way to use the `app` package is to rely on the 'default app'. The 'default app' is a global app that can be accessed by public functions on the app package (the app package can be seen as the application)
 
@@ -13,7 +15,7 @@ The first thing you should do bootstrap the application. This will initialize th
 
 	app.Bootstrap(version, &cfg)
 
-After the bootstrap, the app will already be exposing the admin port and the readiness probe will be returning error, indicating that the application is not yet ready to receive requests. But the liveless probe will be returning success, indicating the app is alive.
+After the bootstrap, the app will already be exposing the admin port and the readiness probe will be returning error, indicating that the application is not yet ready to receive requests. But the healthiness probe will be returning success, indicating the app is alive.
 
 Then you should start initializing all the program dependencies. Because the application is not yet ready, kubernetes will refrain from sending requests (that would fail at this point). Also we already have some metrics and the debug handlers.
 
@@ -38,7 +40,7 @@ At this point the application will run until the given function returns or it re
 
 # Updating From Previous Version
 
-Version 2 is a major overhaul over version 1. One of the main breaking changes is how the Config struct is used. Now, all app related configuration is inside an App field and new configuration were added. Now the Config struct is expected to be embedded in your application's configuration:
+This package is a major overhaul over `arquivei/foundationkit/app`. One of the main breaking changes is how the Config struct is used. Now, all app related configuration is inside an App field and new configuration were added. Now the Config struct is expected to be embedded in your application's configuration:
 
 	type config struct {
 		// App is the app specific configuration

@@ -3,8 +3,7 @@ package app
 import (
 	"time"
 
-	fkitlog "github.com/arquivei/foundationkit/log"
-	"github.com/arquivei/foundationkit/trace"
+	"github.com/arquivei/foundationkit/app/v2/logger"
 
 	"github.com/omeid/uconfig"
 	"github.com/omeid/uconfig/plugins/defaults"
@@ -15,7 +14,7 @@ import (
 
 type Config struct {
 	App struct {
-		Log         fkitlog.Config
+		Log         logger.Config
 		AdminServer struct {
 			// Enabled sets the admin server
 			Enabled bool `default:"true"`
@@ -38,7 +37,6 @@ type Config struct {
 			// DefaultShutdownTimeout is the default value for the timeout during shutdown.
 			Timeout time.Duration `default:"5s"`
 		}
-		Trace trace.Config
 	}
 }
 
@@ -54,6 +52,6 @@ func SetupConfig(config any) {
 	}
 	if err != nil {
 		c.Usage()
-		log.Fatal().Err(err).Msg("Failed to setup config!")
+		log.Fatal().Err(err).Msg("[app] Failed to setup config!")
 	}
 }

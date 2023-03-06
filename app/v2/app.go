@@ -3,6 +3,8 @@ package app
 import (
 	"container/heap"
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/pprof" // Sadly, this also changes the DefaultMux to have the pprof URLs
 	"os/signal"
@@ -10,9 +12,6 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
-
-	"github.com/arquivei/foundationkit/errors"
-	"github.com/arquivei/foundationkit/trace"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
@@ -73,10 +72,6 @@ func New(c Config) *App {
 
 	app.startAdminServer(c)
 
-	if c.App.Trace.Exporter != "" {
-		trace.SetupTrace(c.App.Trace)
-	}
-
 	return app
 }
 
@@ -109,7 +104,7 @@ func (app *App) startAdminServer(c Config) {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to start admin server.")
+			log.Fatal().Err(err).Msg("[app] Failed to start admin server.")
 		}
 	}()
 }
@@ -117,13 +112,11 @@ func (app *App) startAdminServer(c Config) {
 // Shutdown calls all shutdown methods ordered by priority.
 // Handlers are processed from higher priority to lower priority.
 func (app *App) Shutdown(ctx context.Context) error {
-	const op = errors.Op("app.App.Shutdown")
-
 	app.shutdown.once.Do(func() {
 		log.Trace().Int("shutdown_handlers", app.shutdown.handlers.Len()).Msg("[app] Starting graceful shutdown.")
 		app.doShutdown(ctx)
 		if app.shutdown.err != nil {
-			app.shutdown.err = errors.E(op, app.shutdown.err)
+			app.shutdown.err = fmt.Errorf("app.App.Shutdown: %w", app.shutdown.err)
 			log.Error().Err(app.shutdown.err).Msg("[app] Graceful shutdown failed.")
 			return
 		}
@@ -151,14 +144,13 @@ func (app *App) doShutdown(ctx context.Context) {
 }
 
 func (app *App) shutdownAllHandlers(ctx context.Context) chan error {
-	const op = errors.Op("shutdownAllHandlers")
 	done := make(chan error, 1)
 	go func() {
 		defer close(done)
 		for app.shutdown.handlers.Len() > 0 {
 			h := heap.Pop(&app.shutdown.handlers).(*ShutdownHandler)
 			if ctx.Err() != nil {
-				done <- errors.E(op, "shutdown deadline has been reached")
+				done <- fmt.Errorf("shutdownAllHandlers: %w", ctx.Err())
 				return
 			}
 
@@ -172,7 +164,7 @@ func (app *App) shutdownAllHandlers(ctx context.Context) chan error {
 			err := h.Execute(ctx)
 			logger.Trace().Err(err).Msg("[app] Shutdown handler finished.")
 			if err != nil {
-				done <- errors.E(op, err)
+				done <- fmt.Errorf("shutdownAllHandlers: %w", err)
 			}
 		}
 	}()
@@ -206,7 +198,7 @@ func (app *App) RunAndWait(mainLoop MainLoopFunc) {
 func (app *App) runMainLoop(mainLoop MainLoopFunc, errs chan<- error) {
 	defer func() {
 		if r := recover(); r != nil {
-			errs <- errors.NewFromRecover(r)
+			errs <- recoverErr(r)
 		}
 	}()
 

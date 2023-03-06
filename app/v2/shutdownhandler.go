@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
-	"github.com/arquivei/foundationkit/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -71,12 +71,9 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 }
 
 func (sh *ShutdownHandler) doExecute(ctx context.Context) {
-	const op = errors.Op("app.shutdownHandler.Execute")
-
 	// Avoid running if the context is already closed
 	if err := ctx.Err(); err != nil {
-		sh.err = errors.E(errors.Op(sh.Name), err)
-		sh.err = errors.E(op, sh.err)
+		sh.err = fmt.Errorf("shutdown handler '%s' failed: %w", sh.Name, err)
 		return
 	}
 
@@ -90,8 +87,7 @@ func (sh *ShutdownHandler) doExecute(ctx context.Context) {
 	// Execute the shutdown function and process the result
 	sh.err = sh.Handler(ctx)
 	if sh.err != nil {
-		sh.err = errors.E(errors.Op(sh.Name), sh.err)
-		sh.err = errors.E(op, sh.err)
+		sh.err = fmt.Errorf("shutdown handler '%s' failed: %w", sh.Name, sh.err)
 		sh.applyErrorPolicy()
 		return
 	}
@@ -125,7 +121,7 @@ func (sh *ShutdownHandler) applyErrorPolicy() {
 	case ErrorPolicyPanic:
 		panic(sh.err)
 	default:
-		panic(errors.Errorf("invalid error policy: %v", sh.Policy))
+		panic(fmt.Errorf("invalid error policy: %v", sh.Policy))
 	}
 }
 

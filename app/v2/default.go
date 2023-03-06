@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	fkitlog "github.com/arquivei/foundationkit/log"
+	"github.com/arquivei/foundationkit/app/v2/logger"
 
 	"github.com/rs/zerolog/log"
 )
@@ -21,9 +21,9 @@ type AppConfig interface {
 func Bootstrap(appVersion string, config AppConfig) {
 	SetupConfig(config)
 	appConfig := config.GetAppConfig()
-	fkitlog.SetupLogger(appConfig.App.Log, appVersion)
+	logger.Setup(appConfig.App.Log, appVersion)
 
-	log.Info().Str("config", fkitlog.Flatten(config)).Msg("[app] Configuration loaded and global logger configured.")
+	log.Info().Str("config", logger.Flatten(config)).Msg("[app] Configuration loaded and global logger configured.")
 	defaultApp = New(appConfig)
 }
 

@@ -3,10 +3,10 @@ package app
 import (
 	"container/heap"
 	"context"
+	"errors"
 	"testing"
 	"time"
 
-	"github.com/arquivei/foundationkit/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -91,7 +91,7 @@ func TestShutdownHandlerExecute(t *testing.T) {
 	}
 
 	err = sh.Execute(context.TODO())
-	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: my error")
+	assert.EqualError(t, err, "shutdown handler 'my_failed_shutdown_handler' failed: my error")
 
 	err2 := sh.Execute(context.TODO())
 	assert.Equal(t, err, err2, "a second execution of handler should return the first error")
@@ -110,7 +110,8 @@ func TestShutdownHandlerExecute_CanceledContext(t *testing.T) {
 	}
 
 	err := sh.Execute(ctx)
-	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: context canceled")
+
+	assert.EqualError(t, err, "shutdown handler 'my_failed_shutdown_handler' failed: context canceled")
 }
 
 func TestShutdownHandlerExecute_Timeout(t *testing.T) {
@@ -130,5 +131,5 @@ func TestShutdownHandlerExecute_Timeout(t *testing.T) {
 
 	ctx := context.Background()
 	err := sh.Execute(ctx)
-	assert.EqualError(t, err, "app.shutdownHandler.Execute: my_failed_shutdown_handler: custom handler error on deadline exceeded")
+	assert.EqualError(t, err, "shutdown handler 'my_failed_shutdown_handler' failed: custom handler error on deadline exceeded")
 }
