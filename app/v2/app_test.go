@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arquivei/foundationkit/log"
+	"github.com/arquivei/foundationkit/app/v2/logger"
+
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +17,7 @@ func init() {
 
 func newAppTestingConfig() Config {
 	cfg := Config{}
-	cfg.App.Log = log.Config{
+	cfg.App.Log = logger.Config{
 		Level: "disabled",
 	}
 	cfg.App.AdminServer.Enabled = false
