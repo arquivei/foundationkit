@@ -14,7 +14,7 @@ require (
 	github.com/omeid/uconfig v1.2.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rs/zerolog v1.29.0
-	github.com/splitio/go-client/v6 v6.2.1
+	github.com/splitio/go-client/v6 v6.3.1
 	github.com/stretchr/testify v1.8.2
 	go.opencensus.io v0.24.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.40.0
@@ -44,7 +44,6 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
@@ -64,8 +63,9 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/prometheus/prometheus v0.36.0 // indirect
-	github.com/splitio/go-split-commons/v4 v4.2.0 // indirect
-	github.com/splitio/go-toolkit/v5 v5.2.2 // indirect
+	github.com/redis/go-redis/v9 v9.0.2 // indirect
+	github.com/splitio/go-split-commons/v4 v4.3.1 // indirect
+	github.com/splitio/go-toolkit/v5 v5.3.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
