@@ -13,7 +13,6 @@ linters:
     #- lll           # Reports long lines
     #- scopelint     # Scopelint checks for unpinned variables in go programs
     - bodyclose # checks whether HTTP response body is closed successfully
-    - depguard # Go linter that checks if package imports are in a list of acceptable packages
     - dupl # Tool for code clone detection
     - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases
     - exportloopref # checks for pointers to enclosing loop variables
