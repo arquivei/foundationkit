@@ -14,7 +14,7 @@ require (
 	github.com/omeid/uconfig v1.2.0
 	github.com/prometheus/client_golang v1.15.1
 	github.com/rs/zerolog v1.29.1
-	github.com/splitio/go-client/v6 v6.3.2
+	github.com/splitio/go-client/v6 v6.3.3
 	github.com/stretchr/testify v1.8.4
 	go.opencensus.io v0.24.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.42.0
@@ -64,7 +64,7 @@ require (
 	github.com/prometheus/prometheus v0.36.0 // indirect
 	github.com/redis/go-redis/v9 v9.0.4 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	github.com/splitio/go-split-commons/v4 v4.3.3 // indirect
+	github.com/splitio/go-split-commons/v4 v4.3.5 // indirect
 	github.com/splitio/go-toolkit/v5 v5.3.1 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect

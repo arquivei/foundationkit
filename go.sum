@@ -150,10 +150,10 @@ github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/f
 github.com/rs/xid v1.4.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
 github.com/rs/zerolog v1.29.1 h1:cO+d60CHkknCbvzEWxP0S9K6KqyTjrCNUy1LdQLCGPc=
 github.com/rs/zerolog v1.29.1/go.mod h1:Le6ESbR7hc+DP6Lt1THiV8CQSdkkNrd3R0XbEgp3ZBU=
-github.com/splitio/go-client/v6 v6.3.2 h1:9WJ40CtwuY3YJK90O6y4zpbZrtqPB/+T2s/1cvdsO3c=
-github.com/splitio/go-client/v6 v6.3.2/go.mod h1:c18nWZ0MC/ZOcdrRZTv7J50sezFsewwqwmx2ZEphabM=
-github.com/splitio/go-split-commons/v4 v4.3.3 h1:9L8Q+0hW2LEmWOuTeiWik3OgQfI4LvK32AFnKifvFhA=
-github.com/splitio/go-split-commons/v4 v4.3.3/go.mod h1:hj+ota77quCRuyK1cK8EOZANGDIlwCMBosF27I158S8=
+github.com/splitio/go-client/v6 v6.3.3 h1:L6QYecokxF+kgnT4XGiuMzIV+q86YsNqrj6YRW3bgIc=
+github.com/splitio/go-client/v6 v6.3.3/go.mod h1:pq/fc9rChXH3McxWd/GsT3vZ2sdZabq6KXALA82QY2Y=
+github.com/splitio/go-split-commons/v4 v4.3.5 h1:APl589+rtk2Y864C0CkutJWtQkRciLFL+/hVTN86Ss0=
+github.com/splitio/go-split-commons/v4 v4.3.5/go.mod h1:hj+ota77quCRuyK1cK8EOZANGDIlwCMBosF27I158S8=
 github.com/splitio/go-toolkit/v5 v5.3.1 h1:9J/byd0fRxWj5/Zg0QZOnUxKBDIAMCGr7rySYzJKdJg=
 github.com/splitio/go-toolkit/v5 v5.3.1/go.mod h1:xYhUvV1gga9/1029Wbp5pjnR6Cy8nvBpjw99wAbsMko=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
