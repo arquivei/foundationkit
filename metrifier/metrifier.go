@@ -3,7 +3,6 @@ package metrifier
 import (
 	"time"
 
-	"github.com/arquivei/foundationkit/errors"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 )
@@ -42,13 +41,6 @@ func MustNew(c Config) Metrifier {
 
 // New returns a new Metrifier.
 func New(c Config) (Metrifier, error) {
-	if c.System == "" {
-		return Metrifier{}, errors.New("System is empty")
-	}
-	if c.Subsystem == "" {
-		return Metrifier{}, errors.New("Subsystem is empty")
-	}
-
 	labelKeys := []string{labelErrorCode}
 	if len(c.ExtraLabels) > 0 {
 		labelKeys = append(labelKeys, c.ExtraLabels...)
