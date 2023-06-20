@@ -1,4 +1,20 @@
 {
-  "extends": ["config:base"],
-  "postUpdateOptions": ["gomodTidy"]
+  "onboarding": true,
+  "onboardingConfig": {
+    "extends": ["config:base"]
+  },
+  "extends": ["config:base", ":semanticCommits"],
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "packageRules": [
+    {
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "schedule": ["before 8am on Monday"]
+    }
+  ],
+  "git-submodules": {
+    "enabled": true
+  }
 }

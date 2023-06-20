@@ -31,7 +31,7 @@ To read the godoc documentation run:
 godoc -http=localhost:6060
 ```
 
-and open `http://localhost:6060` on yout browser.
+and open `http://localhost:6060` on your browser.
 
 ## Contributing
 
