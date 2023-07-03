@@ -9,7 +9,7 @@ import (
 
 	"github.com/arquivei/foundationkit/schemaregistry"
 
-	"github.com/hamba/avro"
+	"github.com/hamba/avro/v2"
 	"github.com/stretchr/testify/assert"
 )
 

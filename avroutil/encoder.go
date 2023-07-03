@@ -6,7 +6,7 @@ import (
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/arquivei/foundationkit/schemaregistry"
 
-	"github.com/hamba/avro"
+	"github.com/hamba/avro/v2"
 )
 
 // Encoder is able to transform golang's concrete types into avro's wire format
