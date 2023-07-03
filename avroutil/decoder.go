@@ -8,7 +8,7 @@ import (
 	"github.com/arquivei/foundationkit/schemaregistry"
 	"github.com/arquivei/foundationkit/trace"
 
-	"github.com/hamba/avro"
+	"github.com/hamba/avro/v2"
 )
 
 // Decoder is able to transform avro's wire format data into golang's

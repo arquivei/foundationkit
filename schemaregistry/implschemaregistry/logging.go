@@ -3,7 +3,7 @@ package implschemaregistry
 import (
 	"context"
 
-	"github.com/hamba/avro"
+	"github.com/hamba/avro/v2"
 	"github.com/rs/zerolog/log"
 
 	"github.com/arquivei/foundationkit/schemaregistry"

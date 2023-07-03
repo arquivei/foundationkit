@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/hamba/avro"
+	"github.com/hamba/avro/v2"
 	"github.com/rs/zerolog"
 )
 
