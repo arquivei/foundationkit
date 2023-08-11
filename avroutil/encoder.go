@@ -18,6 +18,7 @@ type Encoder interface {
 type implEncoder struct {
 	wireFormatEncoder WireFormatEncoder
 	writerSchema      avro.Schema
+	avroAPI           avro.API
 }
 
 // NewEncoder returns a concrete implementation of Decoder, that
@@ -32,6 +33,7 @@ func NewEncoder(
 	schemaRepository schemaregistry.Repository,
 	subject schemaregistry.Subject,
 	writerSchemaStr string,
+	options ...option,
 ) (Encoder, error) {
 	const op = errors.Op("avroutil.NewEncoder")
 
@@ -48,13 +50,14 @@ func NewEncoder(
 	return &implEncoder{
 		wireFormatEncoder: encoder,
 		writerSchema:      parsedAvroSchema,
+		avroAPI:           newConfig(options...).Freeze(),
 	}, nil
 }
 
 func (e *implEncoder) Encode(input interface{}) ([]byte, error) {
 	const op = errors.Op("avroutil.implEncoder.Encode")
 
-	avroData, err := avro.Marshal(e.writerSchema, input)
+	avroData, err := e.avroAPI.Marshal(e.writerSchema, input)
 	if err != nil {
 		return nil, errors.E(op, err)
 	}

@@ -20,13 +20,15 @@ type Decoder interface {
 
 type implDecoder struct {
 	schemaRepository schemaregistry.Repository
+	avroAPI          avro.API
 }
 
 // NewDecoder returns a concrete implementation of Decoder, that
 // fetches schemas in schema registry
-func NewDecoder(schemaRepository schemaregistry.Repository) Decoder {
+func NewDecoder(schemaRepository schemaregistry.Repository, options ...option) Decoder {
 	return &implDecoder{
 		schemaRepository: schemaRepository,
+		avroAPI:          newConfig(options...).Freeze(),
 	}
 }
 
@@ -49,7 +51,7 @@ func (i *implDecoder) Decode(
 		return errors.E(op, err)
 	}
 
-	err = avro.Unmarshal(schema, data, output)
+	err = i.avroAPI.Unmarshal(schema, data, output)
 	return errors.E(op, err, errors.SeverityInput)
 }
 
