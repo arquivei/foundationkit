@@ -1,6 +1,8 @@
 module github.com/arquivei/foundationkit
 
-go 1.19
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	cloud.google.com/go/logging v1.8.1
