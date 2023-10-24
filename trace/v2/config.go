@@ -1,9 +1,9 @@
 package trace
 
 import (
+	"errors"
 	"strings"
 
-	stackdriverexporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	"github.com/arquivei/foundationkit/app"
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"
@@ -15,28 +15,29 @@ import (
 type Config struct {
 	Exporter          string  `default:""`
 	ProbabilitySample float64 `default:"0"`
-	Stackdriver       struct {
-		ProjectID string
-	}
+	Stackdriver       StackdriverConfig
+	OTLP              OTLPConfig
 }
 
 // Setup use Config to setup an trace exporter and returns a shutdown handler
 func Setup(c Config) app.ShutdownFunc {
 	var exporter trace.SpanExporter
+	var err error
 
-	switch e := strings.ToLower(c.Exporter); e {
+	exporterName := strings.ToLower(c.Exporter)
+	switch exporterName {
 	case "stackdriver":
-		var err error
-		exporter, err = stackdriverexporter.New(
-			stackdriverexporter.WithProjectID(c.Stackdriver.ProjectID),
-		)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to create exporter")
-		}
+		exporter, err = newStackdriverExporter(c.Stackdriver)
+	case "otlp":
+		exporter, err = newOTLPExporter(c.OTLP)
 	case "":
 		// No trace will be exported, but will be created
 	default:
-		log.Fatal().Str("exporter", e).Msg("This exporter is not supported")
+		err = errors.New("invalid exporter")
+	}
+
+	if err != nil {
+		log.Fatal().Str("exporter", exporterName).Err(err).Msg("Failed to create trace exporter")
 	}
 
 	tp := trace.NewTracerProvider(
