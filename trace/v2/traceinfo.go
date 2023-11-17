@@ -4,13 +4,9 @@ import (
 	"context"
 
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
-)
-
-type contextKeyType int
-
-const (
-	contextKeyTraceInfo contextKeyType = iota
 )
 
 // TraceInfo carries the trace informations
@@ -22,7 +18,13 @@ type TraceInfo struct {
 // GetTraceInfoFromContext returns a TraceInfo from the context @ctx or logs
 // if there is no TraceInfo in context
 func GetTraceInfoFromContext(ctx context.Context) TraceInfo {
-	if t, ok := ctx.Value(contextKeyTraceInfo).(TraceInfo); ok {
+	sc := trace.SpanContextFromContext(ctx)
+	t := TraceInfo{
+		ID:        sc.TraceID().String(),
+		IsSampled: sc.IsSampled(),
+	}
+
+	if t.ID != "" {
 		return t
 	}
 	log.Warn().
@@ -31,15 +33,16 @@ func GetTraceInfoFromContext(ctx context.Context) TraceInfo {
 	return TraceInfo{}
 }
 
-func withTraceInfo(ctx context.Context, s trace.Span) context.Context {
-	if v := ctx.Value(contextKeyTraceInfo); v != nil {
-		return ctx
-	}
+// ToMap extracts the current trace from the context and put it on a map.
+// This can be used to serialize the trace context on json messages.
+func ToMap(ctx context.Context) map[string]string {
+	m := map[string]string{}
+	otel.GetTextMapPropagator().Inject(ctx, propagation.MapCarrier(m))
+	return m
+}
 
-	traceInfo := TraceInfo{
-		ID:        s.SpanContext().TraceID().String(),
-		IsSampled: s.SpanContext().IsSampled(),
-	}
-
-	return context.WithValue(ctx, contextKeyTraceInfo, traceInfo)
+// FromMap injects the trace context from the map into the context. This is the
+// inverse of ToMap and could be used to extract trace context form json messages.
+func FromMap(ctx context.Context, m map[string]string) context.Context {
+	return otel.GetTextMapPropagator().Extract(ctx, propagation.MapCarrier(m))
 }

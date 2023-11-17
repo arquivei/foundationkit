@@ -9,7 +9,8 @@ This lib provides a `Config` struct and this section will explain how to properl
 ### Provider
 
 1. `stackdriver` to export the trace to stackdriver
-2. Empty string to not export the trace, but the trace will be created
+2. `otlp` to export using OpenTelemetry Protocol.
+3. Empty string to not export the trace, but the trace will be created
 
 ### Probability sample
 
@@ -74,7 +75,7 @@ ctx, span := trace.Start(ctx, "SPAN-NAME")
 defer span.End()
 ```
 
-Recovering trace informations and logging it
+Recovering trace information and logging it
 
 ```golang
 type TraceInfo struct {
@@ -87,6 +88,8 @@ type TraceInfo struct {
 t := trace.GetTraceInfoFromContext(ctx)
 log.Ctx(ctx).Info().EmbedObject(t).Msg("Hello")
 ```
+
+Refer to `examples/` directory for a working example.
 
 ## Propagating the trace
 
@@ -138,4 +141,4 @@ func encodeResponse(
 
 ### Workers
 
-[WIP]
+For exporting the trace you can use `trace.ToMap` and `trace.FromMap` to export the necessary information to a `map[string]string` that could be marshaled into messages or used as message metadata if you broker supports it.

@@ -6,6 +6,7 @@ import (
 
 	"github.com/arquivei/foundationkit/request"
 	"github.com/arquivei/foundationkit/trace"
+	tracev2 "github.com/arquivei/foundationkit/trace/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -36,13 +37,17 @@ func enrichLoggerContext(ctx context.Context, l *zerolog.Logger, c Config, req i
 		if rid := request.GetIDFromContext(ctx); !rid.IsEmpty() {
 			zctx = zctx.EmbedObject(request.GetIDFromContext(ctx))
 		} else {
-			log.Warn().Msg("Request doesn't have a Request ID! Did you forget to use trackingmiddleware on the transport layer?")
+			log.Warn().Msg("[foundationkit:loggingmiddleware] Request doesn't have a Request ID! Did you forget to use trackingmiddleware on the transport layer?")
 		}
 
-		if t := trace.GetFromContext(ctx); !trace.IDIsEmpty(t.ID) {
-			zctx = zctx.EmbedObject(trace.GetFromContext(ctx))
+		if t := tracev2.GetTraceInfoFromContext(ctx); traceInfoIsEmpty(t) {
+			zctx = zctx.EmbedObject(t)
 		} else {
-			log.Warn().Msg("Request doesn't have a trace! Did you forget to use trackingmiddleware on the transport layer?")
+			if t := trace.GetFromContext(ctx); !trace.IDIsEmpty(t.ID) {
+				zctx = zctx.EmbedObject(trace.GetFromContext(ctx))
+			} else {
+				log.Warn().Msg("[foundationkit:loggingmiddleware] Request doesn't have a trace! Did you forget to use trackingmiddleware on the transport layer?")
+			}
 		}
 
 		return zctx.Str("endpoint_name", c.Name)
@@ -56,4 +61,8 @@ func enrichLoggerAfterResponse(l *zerolog.Logger, c Config, begin time.Time, res
 		}
 		return zctx.Dur("endpoint_took", time.Since(begin))
 	})
+}
+
+func traceInfoIsEmpty(t tracev2.TraceInfo) bool {
+	return t.ID != "00000000000000000000000000000000"
 }

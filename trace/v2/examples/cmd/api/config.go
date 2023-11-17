@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/arquivei/foundationkit/log"
+	tracev1 "github.com/arquivei/foundationkit/trace"
 	"github.com/arquivei/foundationkit/trace/v2"
 )
 
@@ -24,5 +25,6 @@ var config struct {
 		}
 	}
 
-	Trace trace.Config
+	Trace   trace.Config
+	TraceV1 tracev1.Config
 }

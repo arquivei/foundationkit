@@ -13,6 +13,8 @@ import (
 // MuxHTTPMiddleware sets up a handler to start tracing the incoming
 // requests. The service parameter should describe the name of the
 // (virtual) server handling the request.
+// This will be set in the tag 'net.host.name'. It defaults to the
+// ip.
 func MuxHTTPMiddleware(service string) mux.MiddlewareFunc {
 	return otelmux.Middleware(service)
 }

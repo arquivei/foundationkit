@@ -1,0 +1,43 @@
+services:
+  api:
+    container_name: trace_example_api
+    build:
+      context: "../../../"
+      dockerfile: "trace/v2/examples/cmd/api/Dockerfile"
+    depends_on:
+      - jaeger
+    environment:
+      LOG_LEVEL: trace
+      LOG_HUMAN: "true"
+      HTTP_PORT: "80"
+      PONG_HTTP_URL: "http://localhost/ping/v1"
+      PONG_HTTP_TIMEOUT: "10s"
+
+      TRACE_EXPORTER: "otlp"
+      TRACE_PROBABILITYSAMPLE: "1"
+      TRACE_OTLP_ENDPOINT: "jaeger:4318"
+      TRACE_OTLP_COMPRESSION: "gzip"
+      TRACE_OTLP_INSECURE: "true"
+
+      # Only used for compatibility
+      TRACEV1_EXPORTER: ""
+      TRACEV1_PROBABILITYSAMPLE: "1"
+
+  sender:
+    image: curlimages/curl
+    depends_on:
+      - api
+    command:
+      - "http://api/ping/v1"
+      - "-vsd"
+      - '{"num": 3, "sleep": 500}'
+
+  # jaeger: A tool for collection and inspecting tracing. This is the all-in-one container.
+  # http://localhost:16686/
+  # https://www.jaegertracing.io/docs/1.6/getting-started/
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 16686:16686
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"

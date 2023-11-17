@@ -18,6 +18,8 @@ const (
 
 func main() {
 	app.SetupConfig(&config)
+	config.Trace.ServiceName = "ping-pong"
+	config.Trace.ServiceVersion = version
 	ctx := fklog.SetupLoggerWithContext(context.Background(), config.Log, version)
 
 	log.Ctx(ctx).Info().Str("config", fklog.Flatten(config)).Msg("Configuration")
