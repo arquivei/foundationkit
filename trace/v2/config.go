@@ -1,56 +1,41 @@
 package trace
 
 import (
-	"errors"
-	"fmt"
-	"strings"
+	"context"
+	"os"
 
 	"github.com/arquivei/foundationkit/app"
+
+	"github.com/go-logr/zerologr"
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 )
 
-// Config represents all trace's configuration
-type Config struct {
-	ServiceName       string
-	ServiceVersion    string
-	Exporter          string
-	ProbabilitySample float64
-	Stackdriver       StackdriverConfig
-	OTLP              OTLPConfig
-}
-
 // Setup use Config to setup an trace exporter and returns a shutdown handler
-func Setup(c Config) app.ShutdownFunc {
-	exporter, err := newExporter(c)
+func Setup(ctx context.Context) app.ShutdownFunc {
+	lintOtelEnvVariables()
 
+	// Set the OpenTelemetry to use foundation's kit default logger.
+	otel.SetLogger(zerologr.New(&log.Logger))
+
+	otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) {
+		log.Warn().Err(err).Msg("[foundationkit:trace/v2] OpenTelemetry raised an error!")
+	}))
+
+	exporter, err := otlptracehttp.New(ctx)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to create trace exporter")
+		log.Fatal().Err(err).Msg("[foundationkit:trace/v2] Failed to create trace exporter")
 	}
 
-	res, err := newResource(c.ServiceName, c.ServiceVersion)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to create trace resource")
-	}
-
-	tp := newTraceProvider(res, c.ProbabilitySample, exporter)
+	tp := trace.NewTracerProvider(trace.WithBatcher(exporter))
 
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(newPropagator())
 
 	return tp.ForceFlush
-}
-
-func newResource(serviceName, serviceVersion string) (*resource.Resource, error) {
-	return resource.Merge(resource.Default(),
-		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(serviceName),
-			semconv.ServiceVersion(serviceVersion),
-		))
 }
 
 func newPropagator() propagation.TextMapPropagator {
@@ -60,34 +45,37 @@ func newPropagator() propagation.TextMapPropagator {
 	)
 }
 
-func newTraceProvider(res *resource.Resource, prob float64, exporter trace.SpanExporter) *trace.TracerProvider {
+func newTraceProvider(exporter trace.SpanExporter) *trace.TracerProvider {
 	return trace.NewTracerProvider(
-		trace.WithResource(res),
-		trace.WithSampler(
-			trace.ParentBased(trace.TraceIDRatioBased(prob)),
-		),
 		trace.WithBatcher(exporter),
 	)
 }
 
-func newExporter(c Config) (trace.SpanExporter, error) {
-	var exporter trace.SpanExporter
-	var err error
-
-	switch exporterName := strings.ToLower(c.Exporter); exporterName {
-	case "stackdriver":
-		exporter, err = newStackdriverExporter(c.Stackdriver)
-	case "otlp":
-		exporter, err = newOTLPExporter(c.OTLP)
-	case "":
-		// No trace will be exported, but will be created
-	default:
-		err = errors.New("invalid exporter name: " + exporterName)
+// lintOtelEnvVariables logs a warning if an important variable is empty
+// If any of these variables are empty, the OpenTelemetry SDK may not
+// work as expected. This will not break the code, but could lead
+// to loses of traces.
+//
+// Linted variables:
+//   - OTEL_SERVICE_NAME: Because defaults to 'unkown_service' and this says nothing about the service.
+//   - OTEL_EXPORTER_OTLP_ENDPOINT: because it defaults to localhost and could lose exported traces.
+//
+// Variables that are probably OK being empty:
+//   - OTEL_TRACES_SAMPLER_ARG - It defaults to "1.0"
+//   - OTEL_TRACES_SAMPLER - Ut defaults to "parentbased_always_on"
+//
+// Other variables don't seems to make too much of a difference.
+func lintOtelEnvVariables() {
+	for _, env := range []string{
+		"OTEL_SERVICE_NAME",
+		"OTEL_EXPORTER_OTLP_ENDPOINT",
+	} {
+		lintEnvVariable(env)
 	}
+}
 
-	if err != nil {
-		return nil, fmt.Errorf("creating trace exporter: %w", err)
+func lintEnvVariable(env string) {
+	if os.Getenv(env) == "" {
+		log.Warn().Str("env", env).Msg("[foundationkit:trace/v2] An OpenTelemetry environment variable is empty but it probably shouldn't be. OpenTelemetry will use it's default, but this can lead to traces not being exported or recorded with a wrong name. Please read the docs at https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/.")
 	}
-
-	return exporter, nil
 }

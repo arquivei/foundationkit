@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/arquivei/foundationkit/app"
@@ -19,9 +20,10 @@ import (
 
 func setupTrace() {
 	// This is only to show that v1 and v2 can coexist
+	// This is not recommended in production.
 	tracev1.SetupTrace(config.TraceV1)
 
-	traceShutdown := trace.Setup(config.Trace)
+	traceShutdown := trace.Setup(context.Background())
 	app.RegisterShutdownHandler(
 		&app.ShutdownHandler{
 			Name:     "opentelemetry_trace",

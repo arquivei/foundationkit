@@ -74,7 +74,7 @@ func SetInHTTPResponse(id ID, response http.ResponseWriter) {
 // HTTPMiddleware returns an http middleware that adds a request id
 // to the context of the request and the same id in the header of the
 // http response. If there is an active trace span, the request id is
-// also registred as an attribute 'request.id'. It's importante that
+// also registered as an attribute 'request.id'. It's important that
 // this middleware comes after the trace middleware.
 func HTTPMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(
