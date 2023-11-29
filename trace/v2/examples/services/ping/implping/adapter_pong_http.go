@@ -12,7 +12,7 @@ import (
 	"github.com/arquivei/foundationkit/trace/v2/examples/services/ping"
 )
 
-type adapterPongHttp struct {
+type adapterPongHTTP struct {
 	client *http.Client
 	url    string
 }
@@ -27,14 +27,13 @@ func NewHTTPPongAdapter(
 	client *http.Client,
 	url string,
 ) ping.PongGateway {
-
-	return &adapterPongHttp{
+	return &adapterPongHTTP{
 		client: client,
 		url:    url,
 	}
 }
 
-func (a *adapterPongHttp) Pong(
+func (a *adapterPongHTTP) Pong(
 	ctx context.Context,
 	num int,
 	sleep time.Duration,

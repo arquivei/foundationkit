@@ -45,12 +45,6 @@ func newPropagator() propagation.TextMapPropagator {
 	)
 }
 
-func newTraceProvider(exporter trace.SpanExporter) *trace.TracerProvider {
-	return trace.NewTracerProvider(
-		trace.WithBatcher(exporter),
-	)
-}
-
 // lintOtelEnvVariables logs a warning if an important variable is empty
 // If any of these variables are empty, the OpenTelemetry SDK may not
 // work as expected. This will not break the code, but could lead
