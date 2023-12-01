@@ -7,9 +7,9 @@ services:
     working_dir: /go/src
     volumes:
       - ../../../:/go/src:ro
-      # Uncomment this line and the ones at the botton
+      # Uncomment this line and the ones at the bottom
       # if you want to enable caching go modules.
-      - go-mod-cache:/go/pkg/mod
+      # - go-mod-cache:/go/pkg/mod
     environment:
       LOG_LEVEL: trace
       LOG_HUMAN: "true"
@@ -25,7 +25,7 @@ services:
       OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
       OTEL_TRACES_SAMPLER_ARG: "0.5"
 
-      # TraceV1 is only used for compatibility demontration
+      # TraceV1 is only used for compatibility demonstration
       TRACEV1_EXPORTER: ""
       TRACEV1_PROBABILITYSAMPLE: "1"
     entrypoint:
@@ -52,7 +52,6 @@ services:
       - 16686:16686
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
-
 # Uncomment the following lines if you want to cache modules
-volumes:
-  go-mod-cache:
+# volumes:
+#   go-mod-cache:
