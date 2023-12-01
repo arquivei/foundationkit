@@ -18,6 +18,7 @@ const (
 
 func main() {
 	app.SetupConfig(&config)
+
 	ctx := fklog.SetupLoggerWithContext(context.Background(), config.Log, version)
 
 	log.Ctx(ctx).Info().Str("config", fklog.Flatten(config)).Msg("Configuration")

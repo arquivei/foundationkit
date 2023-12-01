@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/arquivei/foundationkit/errors"
-	"github.com/arquivei/foundationkit/trace/v2"
 
 	"github.com/go-kit/kit/endpoint"
 	kithttp "github.com/go-kit/kit/transport/http"
@@ -27,7 +26,7 @@ func MakeHTTPHandler(e endpoint.Endpoint) http.Handler {
 	)
 
 	r := mux.NewRouter()
-	r.Use(trace.MuxHTTPMiddleware("ga-trace-go-api"))
+
 	r.Handle("/ping/v1", httpHandler).Methods("POST")
 
 	return r
@@ -48,7 +47,6 @@ func encodeResponse(
 	r interface{},
 ) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	trace.SetTraceInResponse(ctx, w)
 	return json.NewEncoder(w).Encode(r)
 }
 

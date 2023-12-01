@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/arquivei/foundationkit/app"
 	"github.com/arquivei/foundationkit/gokitmiddlewares/loggingmiddleware"
 	"github.com/arquivei/foundationkit/httpmiddlewares/enrichloggingmiddleware"
+	"github.com/arquivei/foundationkit/request"
+	tracev1 "github.com/arquivei/foundationkit/trace"
 	"github.com/arquivei/foundationkit/trace/v2"
 	"github.com/arquivei/foundationkit/trace/v2/examples/services/ping"
 	"github.com/arquivei/foundationkit/trace/v2/examples/services/ping/apiping"
@@ -16,7 +19,11 @@ import (
 )
 
 func setupTrace() {
-	traceShutdown := trace.Setup(config.Trace)
+	// This is only to show that v1 and v2 can coexist
+	// This is not recommended in production.
+	tracev1.SetupTrace(config.TraceV1)
+
+	traceShutdown := trace.Setup(context.Background())
 	app.RegisterShutdownHandler(
 		&app.ShutdownHandler{
 			Name:     "opentelemetry_trace",
@@ -35,6 +42,7 @@ func getEndpoint() endpoint.Endpoint {
 	)
 
 	pingEndpoint := endpoint.Chain(
+		trace.EndpointMiddleware("ping-pong-endpoint"),
 		loggingmiddleware.MustNew(loggingConfig),
 	)(apiping.MakeAPIPingEndpoint(
 		ping.NewService(pongAdapter),
@@ -46,9 +54,16 @@ func getEndpoint() endpoint.Endpoint {
 func getHTTPServer() *http.Server {
 	r := mux.NewRouter()
 
-	r.PathPrefix("/ping/").Handler(apiping.MakeHTTPHandler(getEndpoint()))
+	r.Use(
+		// This is deprecated. Used when we can't ditch trace v1.
+		// trackingmiddleware.New,
+		// This is the preferred way
+		trace.MuxHTTPMiddleware(""),
+		request.HTTPMiddleware,
+		enrichloggingmiddleware.New,
+	)
 
-	r.Use(enrichloggingmiddleware.New)
+	r.PathPrefix("/ping/").Handler(apiping.MakeHTTPHandler(getEndpoint()))
 
 	httpAddr := ":" + config.HTTP.Port
 	httpServer := &http.Server{Addr: httpAddr, Handler: r}

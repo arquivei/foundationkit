@@ -12,7 +12,7 @@ import (
 	"github.com/arquivei/foundationkit/trace/v2/examples/services/ping"
 )
 
-type adapterPongHttp struct {
+type adapterPongHTTP struct {
 	client *http.Client
 	url    string
 }
@@ -27,19 +27,20 @@ func NewHTTPPongAdapter(
 	client *http.Client,
 	url string,
 ) ping.PongGateway {
-
-	return &adapterPongHttp{
+	return &adapterPongHTTP{
 		client: client,
 		url:    url,
 	}
 }
 
-func (a *adapterPongHttp) Pong(
+func (a *adapterPongHTTP) Pong(
 	ctx context.Context,
 	num int,
 	sleep time.Duration,
 ) (string, error) {
 	const op = errors.Op("implping.adapterPongHttp.Pong")
+	ctx, span := trace.Start(ctx, "implping.adapterPongHttp.Pong")
+	defer span.End()
 
 	body, err := json.Marshal(pongRequestResponse{
 		Num:   num,
@@ -61,14 +62,12 @@ func (a *adapterPongHttp) Pong(
 
 	trace.SetTraceInRequest(request)
 
-	response, err := a.client.Do(request)
+	httpResponse, err := a.client.Do(request)
 	if err != nil {
 		return "", errors.E(op, err)
 	}
-	defer response.Body.Close()
+	defer httpResponse.Body.Close()
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-
-	return buf.String(), nil
+	var response string
+	return response, json.NewDecoder(httpResponse.Body).Decode(&response)
 }

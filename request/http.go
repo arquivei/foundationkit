@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -67,4 +69,28 @@ func SetInHTTPResponse(id ID, response http.ResponseWriter) {
 	}
 
 	response.Header().Set(HTTPHeaderID, id.String())
+}
+
+// HTTPMiddleware returns an http middleware that adds a request id
+// to the context of the request and the same id in the header of the
+// http response. If there is an active trace span, the request id is
+// also registered as an attribute 'request.id'. It's important that
+// this middleware comes after the trace middleware.
+func HTTPMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			id := newID()
+
+			ctx := r.Context()
+			ctx = WithID(ctx, id)
+			r = r.WithContext(ctx)
+
+			SetInHTTPResponse(id, w)
+
+			if span := trace.SpanFromContext(ctx); span.IsRecording() {
+				span.SetAttributes(attribute.String("request.id", id.String()))
+			}
+
+			next.ServeHTTP(w, r)
+		})
 }

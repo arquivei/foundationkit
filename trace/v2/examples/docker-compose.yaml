@@ -1,0 +1,57 @@
+services:
+  api:
+    image: golang:1.21-alpine
+    container_name: trace_example_api
+    depends_on:
+      - jaeger
+    working_dir: /go/src
+    volumes:
+      - ../../../:/go/src:ro
+      # Uncomment this line and the ones at the bottom
+      # if you want to enable caching go modules.
+      # - go-mod-cache:/go/pkg/mod
+    environment:
+      LOG_LEVEL: trace
+      LOG_HUMAN: "true"
+      HTTP_PORT: "80"
+      PONG_HTTP_URL: "http://localhost/ping/v1"
+      PONG_HTTP_TIMEOUT: "10s"
+
+      # Or official OpenTelemetry variables
+      # This allow for more control and features.
+      OTEL_SERVICE_NAME: "ping-pong-srv"
+      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=example,service.instance.id=trace_example_api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+      OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+      OTEL_TRACES_SAMPLER_ARG: "0.5"
+
+      # TraceV1 is only used for compatibility demonstration
+      TRACEV1_EXPORTER: ""
+      TRACEV1_PROBABILITYSAMPLE: "1"
+    entrypoint:
+      - go
+      - run
+      - ./trace/v2/examples/cmd/api
+
+  # sender sends a single request to the API.
+  sender:
+    image: curlimages/curl
+    depends_on:
+      - api
+    command:
+      - "http://api/ping/v1"
+      - "-vsd"
+      - '{"num": 3, "sleep": 500}'
+
+  # jaeger: A tool for collection and inspecting tracing. This is the all-in-one container.
+  # http://localhost:16686/
+  # https://www.jaegertracing.io/docs/1.6/getting-started/
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 16686:16686
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+# Uncomment the following lines if you want to cache modules
+# volumes:
+#   go-mod-cache:
