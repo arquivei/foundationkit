@@ -137,8 +137,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/oklog/ulid/v2 v2.1.0 h1:+9lhoxAP56we25tyYETBBY1YLA2SaoLvUFgrP2miPJU=
 github.com/oklog/ulid/v2 v2.1.0/go.mod h1:rcEKHmBBKfef9DhnvX7y1HZBYxjXb0cP5ExxNsTT1QQ=
-github.com/omeid/uconfig v1.2.0 h1:suUh//PBoUae5K4DJF5W5YAUWrj8ZJCAw4DqT8X2xag=
-github.com/omeid/uconfig v1.2.0/go.mod h1:NlsL5XW1GQF/W8r1N1tMZWQM3oqeXxQBFAlwUOCA9ys=
+github.com/omeid/uconfig v1.2.1 h1:7BU5x7OlvlVZw3OLuMCLFL4RUnYHdAjSjjUKe0vBW4k=
+github.com/omeid/uconfig v1.2.1/go.mod h1:YBoXtiqFwV94p7hVgjBV8pWCn0hhHtqcMGEctaJQPl8=
 github.com/pborman/getopt v0.0.0-20170112200414-7148bc3a4c30/go.mod h1:85jBQOZwpVEaDAr341tbn15RS4fCAsIst0qp7i8ex1o=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
@@ -162,8 +162,8 @@ github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncj
 github.com/rs/xid v1.5.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
 github.com/rs/zerolog v1.31.0 h1:FcTR3NnLWW+NnTwwhFWiJSZr4ECLpqCm6QsEnyvbV4A=
 github.com/rs/zerolog v1.31.0/go.mod h1:/7mN4D5sKwJLZQ2b/znpjC3/GQWY/xaDXUM0kKWRHss=
-github.com/splitio/go-client/v6 v6.5.0 h1:9l2iUCPiywm9pBY4tqR+u6uY2wggOnV+8Wy52cXiKDs=
-github.com/splitio/go-client/v6 v6.5.0/go.mod h1:WBOIM3+Nu3HuxJm7lq8EFZiqseNLvHDEp4DNk3Wu9gU=
+github.com/splitio/go-client/v6 v6.5.1 h1:tt6IdwrAAiRMajNncrUrE1nBHWKlM8q+zgR+YcVGim8=
+github.com/splitio/go-client/v6 v6.5.1/go.mod h1:WBOIM3+Nu3HuxJm7lq8EFZiqseNLvHDEp4DNk3Wu9gU=
 github.com/splitio/go-split-commons/v5 v5.1.0 h1:mki1235gjXwuxcXdv/bKVduX1Lv09uXJogds+BspqSM=
 github.com/splitio/go-split-commons/v5 v5.1.0/go.mod h1:9vAZrlhKvhensyRC11hyVFdgLIBrkX9D5vdYc9qB13w=
 github.com/splitio/go-toolkit/v5 v5.3.2 h1:Yy9YBcHRmK5WVZjeA/klLGEdF38xpsL1ejnC3ro8a2M=

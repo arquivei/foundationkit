@@ -13,10 +13,10 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/hamba/avro/v2 v2.18.0
 	github.com/oklog/ulid/v2 v2.1.0
-	github.com/omeid/uconfig v1.2.0
+	github.com/omeid/uconfig v1.2.1
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rs/zerolog v1.31.0
-	github.com/splitio/go-client/v6 v6.5.0
+	github.com/splitio/go-client/v6 v6.5.1
 	github.com/stretchr/testify v1.8.4
 	go.opencensus.io v0.24.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.46.1
