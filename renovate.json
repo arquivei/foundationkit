@@ -5,6 +5,9 @@
   },
   "extends": ["config:base", ":semanticCommits"],
   "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "ignoreDeps": [
+    "github.com/omeid/uconfig@v1.2.1"
+  ],
   "packageRules": [
     {
       "groupName": "all non-major dependencies",
