@@ -163,3 +163,11 @@ func TestGetID(t *testing.T) {
 	_, s = StartSpan(ctx, "test")
 	assert.NotEmpty(t, s.GetID(), "Returned span id should not be empty")
 }
+
+func TestStartSpanWithParent(t *testing.T) {
+	assert.NotPanics(t, func() {
+		ctx := context.Background()
+		_, span := StartSpanWithParent(ctx, "tag1", "value1")
+		defer span.End(nil)
+	}, "starting a span when there is no trace in context should do panic")
+}
