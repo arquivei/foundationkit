@@ -19,10 +19,12 @@ func SetupConfig(config interface{}) {
 		files = []struct {
 			Path      string
 			Unmarshal file.Unmarshal
+			Optional  bool
 		}{
 			{
 				Path:      ConfigFilename,
 				Unmarshal: json.Unmarshal,
+				Optional:  true,
 			},
 		}
 	}
