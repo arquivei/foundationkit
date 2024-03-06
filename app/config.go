@@ -24,7 +24,7 @@ func SetupConfig(config interface{}) {
 			{
 				Path:      ConfigFilename,
 				Unmarshal: json.Unmarshal,
-				Optional:  false,
+				Optional:  true,
 			},
 		}
 	}
