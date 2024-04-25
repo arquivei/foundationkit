@@ -38,7 +38,7 @@ func NewDefaultConfig(endpoint string) Config {
 		Metrifier: metrifier.NewDefaultConfig("endpoint", ""),
 	}
 	config.Metrifier.ConstLabels = map[string]string{
-		"fikt_endpoint": endpoint,
+		"fkit_endpoint": endpoint,
 	}
 	return config
 }
