@@ -6,7 +6,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/arquivei/foundationkit/gokitmiddlewares/metricsmiddleware/v3"
+	"github.com/arquivei/foundationkit/gokitmiddlewares/metricsmiddleware/v4"
 
 	"github.com/go-kit/kit/endpoint"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
