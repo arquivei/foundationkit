@@ -81,7 +81,7 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 
 	// Avoid running if the context is already closed
 	if ctx.Err() != nil {
-		sh.err = errors.E(op, errors.E(errors.Op(sh.Name), "skipping handler as deadline has been reached"))
+		sh.err = errors.E(errors.New("skipping handler as deadline has been reached", errors.Op(sh.Name)), op)
 		return sh.err
 	}
 
@@ -95,7 +95,7 @@ func (sh *ShutdownHandler) Execute(ctx context.Context) error {
 	// Execute the shutdown function and process the result
 	err := sh.Handler(ctx)
 	if err != nil {
-		err = errors.E(op, errors.E(errors.Op(sh.Name), err))
+		err = errors.E(errors.E(err, errors.Op(sh.Name)), op)
 		switch sh.Policy {
 		case ErrorPolicyWarn:
 			log.Ctx(ctx).Warn().

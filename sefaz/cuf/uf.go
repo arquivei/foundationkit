@@ -21,7 +21,7 @@ func New(uf string) (CUF, error) {
 	ufInt, err := parseUF(uf)
 
 	if err != nil {
-		return CUF{}, errors.E(op, err)
+		return CUF{}, errors.E(err, op)
 	}
 	return CUF{true, ufInt}, nil
 }
@@ -47,7 +47,7 @@ func (c CUF) MarshalJSON() ([]byte, error) {
 	const op = errors.Op("CUF.MarshalJSON")
 
 	if !c.initialized {
-		return nil, errors.E(op, "CUF not initialized")
+		return nil, errors.New("CUF not initialized", op)
 	}
 	return json.Marshal(c.String())
 }
@@ -59,10 +59,10 @@ func (c *CUF) UnmarshalJSON(b []byte) error {
 
 	err := json.Unmarshal(b, &v)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 	if *c, err = New(v); err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 
 	return nil

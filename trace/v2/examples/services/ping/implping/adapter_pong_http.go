@@ -47,7 +47,7 @@ func (a *adapterPongHTTP) Pong(
 		Sleep: sleep,
 	})
 	if err != nil {
-		return "", errors.E(op, err)
+		return "", errors.E(err, op)
 	}
 
 	request, err := http.NewRequestWithContext(
@@ -57,14 +57,14 @@ func (a *adapterPongHTTP) Pong(
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return "", errors.E(op, err)
+		return "", errors.E(err, op)
 	}
 
 	trace.SetTraceInRequest(request)
 
 	httpResponse, err := a.client.Do(request)
 	if err != nil {
-		return "", errors.E(op, err)
+		return "", errors.E(err, op)
 	}
 	defer httpResponse.Body.Close()
 

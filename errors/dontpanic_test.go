@@ -108,14 +108,14 @@ func TestNewOpFromPanicStack_Recover(t *testing.T) {
 	op := newOpFromPanicStack()
 	assert.Equal(t, Op(""), op)
 
-	err := E(op, "new error without op")
+	err := New("new error without op", op)
 	assert.EqualError(t, err, "new error without op")
 }
 
 func TestNewFromRecover_UsingError(t *testing.T) {
-	err := NewFromRecover(E(
-		Op("TestNewFromRecover"),
+	err := NewFromRecover(New(
 		"new error",
+		Op("TestNewFromRecover"),
 		SeverityInput,
 		Code("CODE"),
 	))

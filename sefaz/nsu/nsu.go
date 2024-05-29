@@ -26,7 +26,7 @@ func (nsu NSU) MarshalJSON() ([]byte, error) {
 		const op = errors.Op("nsu.MarshalJSON")
 		b, err := json.Marshal(nsu.String())
 		if err != nil {
-			return nil, errors.E(op, err)
+			return nil, errors.E(err, op)
 		}
 		return b, nil
 	*/
@@ -38,11 +38,11 @@ func (nsu *NSU) UnmarshalJSON(b []byte) error {
 	var s string
 	err := json.Unmarshal(b, &s)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 	*nsu, err = Parse(s)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 
 	return nil
@@ -64,15 +64,15 @@ func Parse(nsu string) (NSU, error) {
 	const op = errors.Op("nsu.Parse")
 
 	if len(nsu) == 0 {
-		return "", errors.E(op, "nsu is empty")
+		return "", errors.New("nsu is empty", op)
 	}
 	if len(nsu) > 15 {
-		return "", errors.E(op, "nsu has more than 15 digits")
+		return "", errors.New("nsu has more than 15 digits", op)
 	}
 
 	for i := 0; i < len(nsu); i++ {
 		if nsu[i]-'0' > 9 {
-			return "", errors.E(op, ErrCannotParse)
+			return "", errors.E(ErrCannotParse, op)
 		}
 	}
 

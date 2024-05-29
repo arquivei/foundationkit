@@ -36,12 +36,12 @@ func ParseTypeAndDataVersion(data interface{}) (Type, DataVersion, error) {
 	vIdx := strings.LastIndex(typeName, "V")
 
 	if vIdx < 1 || vIdx == len(typeName)-1 {
-		return "", 0, errors.E(op, errors.Errorf("invalid type name, expected '<type>V<version>' but got '%s'", typeName))
+		return "", 0, errors.E(errors.Errorf("invalid type name, expected '<type>V<version>' but got '%s'", typeName), op)
 	}
 
 	v, err := strconv.Atoi(typeName[vIdx+1:])
 	if err != nil {
-		return "", 0, errors.E(op, err)
+		return "", 0, errors.E(err, op)
 	}
 
 	runes := []rune(typeName[0:vIdx])
@@ -76,11 +76,11 @@ func New(ctx context.Context, source Source, data interface{}) (Message, error) 
 	const op = errors.Op("message.New")
 	messageType, messageDataVersion, err := ParseTypeAndDataVersion(data)
 	if err != nil {
-		return Message{}, errors.E(op, err)
+		return Message{}, errors.E(err, op)
 	}
 	d, err := json.Marshal(data)
 	if err != nil {
-		return Message{}, errors.E(op, err)
+		return Message{}, errors.E(err, op)
 	}
 	return Message{
 		SchemaVersion: SchemaVersion3,

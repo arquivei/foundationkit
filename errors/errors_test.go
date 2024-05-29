@@ -3,7 +3,6 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,9 +14,9 @@ func TestNew(t *testing.T) {
 }
 
 func TestOpAppending(t *testing.T) {
-	err := E(SeverityFatal, "1st")
+	err := New("1st", SeverityFatal)
 	err = E(err, Op("2nd"))
-	err = E(Op("3rd"), err)
+	err = E(err, Op("3rd"))
 	err = E(err, Op("4th"))
 	assert.Equal(t, "4th: 3rd: 2nd: 1st", err.Error())
 }
@@ -30,10 +29,10 @@ func TestErrorf(t *testing.T) {
 }
 
 func TestGetRootError(t *testing.T) {
-	err := E("a", fmt.Errorf("err a"))
-	err = E(Op("b"), err)
-	err = E(Op("c"), err)
-	err = E(Op("d"), err)
+	err := E(fmt.Errorf("err a"))
+	err = E(err, Op("b"))
+	err = E(err, Op("c"))
+	err = E(err, Op("d"))
 	assert.Equal(t, New("err a"), GetRootError(err))
 }
 
@@ -52,12 +51,8 @@ func TestConcatErrors(t *testing.T) {
 	assert.EqualError(t, errs, "a: b: c: d: e: f")
 }
 
-func TestE_EmptyArgs(t *testing.T) {
-	assert.True(t, strings.HasPrefix(E().Error(), "errors.E called with 0 args"))
-}
-
 func TestE_NoError(t *testing.T) {
-	assert.NoError(t, E(Code("no error")))
+	assert.NoError(t, E(nil, Code("no error")))
 }
 
 func TestErrorString_NoError(t *testing.T) {
@@ -76,11 +71,11 @@ func TestErrorString_NoError(t *testing.T) {
 func TestErrorWrap(t *testing.T) {
 	rootError := testError("root error")
 
-	err := E(Op("a"), rootError)
+	err := E(rootError, Op("a"))
 	assert.Equal(t, rootError, errors.Unwrap(err))
-	err = E(Op("b"), err)
-	err = E(Op("c"), err)
-	err = E(Op("d"), err)
+	err = E(err, Op("b"))
+	err = E(err, Op("c"))
+	err = E(err, Op("d"))
 
 	assert.True(t, errors.Is(err, rootError))
 
@@ -96,10 +91,10 @@ func (e testError) Error() string {
 }
 
 func TestErrorWrapMixed(t *testing.T) {
-	err := E("root error", Code("CODE"), SeverityFatal)
+	err := New("root error", Code("CODE"), SeverityFatal)
 
 	err = fmt.Errorf("wrapped: %w", err)
-	err = E(Op("a"), err)
+	err = E(err, Op("a"))
 
 	assert.Equal(t, Code("CODE"), GetCode(err))
 	assert.Equal(t, SeverityFatal, GetSeverity(err))
@@ -108,32 +103,28 @@ func TestErrorWrapMixed(t *testing.T) {
 func ExampleE() {
 	// Calling E with no arguments results in an error with a message saying
 	// that the function was called with no arguments
-	errNoArgs := E()
+	errNoArgs := E(nil)
 	fmt.Println(errNoArgs)
 
-	// Calling E without a string or an error will result in a nil return
-	errNil := E(Op("Error Example"), Code("ERROR_EXAMPLE_NIL"))
+	// Calling E without an error will result in a nil return
+	errNil := E(nil, Op("Error Example"), Code("ERROR_EXAMPLE_NIL"))
 	fmt.Println(errNil)
 
 	// E requires either a string or an err to return an error
-	withString := E("This string will be used to build an error")
+	withString := New("This string will be used to build an error")
 	previous := errors.New("Previous error")
 	withError := E(previous)
 	fmt.Println(withString, withError)
 
 	// We can pass parameters of the same type more than once, but only the last
 	// one will be considered
-	multiOp := E("Multi op", Op("Op 1"), Op("Op 2"), Op("Op 3"))
+	multiOp := New("Multi op", Op("Op 1"), Op("Op 2"), Op("Op 3"))
 	fmt.Println(multiOp)
 
 	// Except for KeyValue and []KeyValue which will be concatenated
 	kv := KeyValue{Key: "key1", Value: "val1"}
-	multiKv := E("Multi kv", kv, kv, kv)
+	multiKv := New("Multi kv", kv, kv, kv)
 	fmt.Println(multiKv)
-
-	// Values of unexpected types will be ignored
-	intErr := E("Int err", 1, 2, 3)
-	fmt.Println(intErr)
 
 	// Full example
 	op := Op("errors.errorExample")
@@ -141,6 +132,6 @@ func ExampleE() {
 	sev := SeverityRuntime
 	kv = KeyValue{Key: "key", Value: "val"}
 
-	err := E("Error example", op, code, sev, kv)
+	err := New("Error example", op, code, sev, kv)
 	fmt.Println(err)
 }

@@ -138,12 +138,12 @@ func (a *App) Shutdown(ctx context.Context) (err error) {
 
 	select {
 	case <-ctx.Done():
-		err = errors.E(op, "shutdown deadline has been reached")
+		err = errors.New("shutdown deadline has been reached", op)
 	case err = <-a.shutdownAllHandlers(ctx):
 	}
 	if err != nil {
 		log.Trace().Err(err).Msg("[app] Graceful shutdown failed.")
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 
 	log.Trace().Msg("[app] Graceful shutdown finished successfully.")
@@ -158,7 +158,7 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 		for a.shutdownHandlers.Len() > 0 {
 			h := heap.Pop(&a.shutdownHandlers).(*ShutdownHandler)
 			if ctx.Err() != nil {
-				done <- errors.E(op, "shutdow deadline has been reached")
+				done <- errors.New("shutdow deadline has been reached", op)
 			}
 			trace := log.Trace().
 				Str("shutdown_handler_name", h.Name).
@@ -169,7 +169,7 @@ func (a *App) shutdownAllHandlers(ctx context.Context) chan error {
 			trace.Msg("[app] Executing shutdown handler.")
 			if err := h.Execute(ctx); err != nil {
 				trace.Msg("[app] Shutdown handler failed.")
-				done <- errors.E(op, err)
+				done <- errors.E(err, op)
 			}
 			trace.Msg("[app] Shutdown handler finished.")
 		}

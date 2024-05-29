@@ -14,11 +14,11 @@ func Compress(input []byte) ([]byte, error) {
 	zw := gzip.NewWriter(&buf)
 	_, err := zw.Write(input)
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 	err = zw.Close()
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 	return buf.Bytes(), nil
 }
@@ -28,7 +28,7 @@ func MustCompress(input []byte) []byte {
 	const op = errors.Op("gzip.MustCompress")
 	output, err := Compress(input)
 	if err != nil {
-		panic(errors.E(op, err))
+		panic(errors.E(err, op))
 	}
 	return output
 }
@@ -39,13 +39,13 @@ func Decompress(input []byte) ([]byte, error) {
 	b := bytes.NewReader(input)
 	r, err := gzip.NewReader(b)
 	if err != nil {
-		return nil, errors.E(op, err, errors.KV("step", "gzip.NewReader"))
+		return nil, errors.E(err, op, errors.KV("step", "gzip.NewReader"))
 	}
 
 	var responseBuffer bytes.Buffer
 	_, err = responseBuffer.ReadFrom(r)
 	if err != nil {
-		return nil, errors.E(op, err, errors.KV("step", "responseBuffer.ReadFrom"))
+		return nil, errors.E(err, op, errors.KV("step", "responseBuffer.ReadFrom"))
 	}
 
 	return responseBuffer.Bytes(), nil
@@ -56,7 +56,7 @@ func MustDecompress(input []byte) []byte {
 	const op = errors.Op("gzip.MustDecompress")
 	output, err := Decompress(input)
 	if err != nil {
-		panic(errors.E(op, err))
+		panic(errors.E(err, op))
 	}
 	return output
 }

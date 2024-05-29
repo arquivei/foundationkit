@@ -3,7 +3,6 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"runtime"
 	"strings"
 )
 
@@ -90,6 +89,10 @@ func (e Error) Unwrap() error {
 	return e.Err
 }
 
+type ErrorOption interface {
+	Apply(*Error)
+}
+
 // E is a helper function for building errors.
 //
 // If called with no arguments, it returns an error solely containing a message
@@ -104,39 +107,17 @@ func (e Error) Unwrap() error {
 //
 // Types other than string, Code, Severity, error, Op, KeyValue, or []KeyValue
 // will simply be ignored.
-func E(args ...interface{}) error {
-	e := Error{}
-	if len(args) == 0 {
-		msg := "errors.E called with 0 args"
-		_, file, line, ok := runtime.Caller(1)
-		if ok {
-			msg = fmt.Sprintf("%v - %v:%v", msg, file, line)
-		}
-		e.Err = errors.New(msg)
+func E(err error, opts ...ErrorOption) error {
+	if err == nil || len(opts) == 0 {
+		return err
 	}
 
-	for _, arg := range args {
-		switch a := arg.(type) {
-		case Code:
-			e.Code = a
-		case Severity:
-			e.Severity = a
-		case error:
-			e.Err = a
-		case string:
-			e.Err = New(a)
-		case Op:
-			e.Op = a
-		case KeyValue:
-			e.KVs = append(e.KVs, a)
-		case []KeyValue:
-			e.KVs = append(e.KVs, a...)
-		}
+	e := Error{
+		Err: err,
 	}
 
-	// If no error was provided, assume there was no error
-	if e.Err == nil {
-		return nil
+	for _, opt := range opts {
+		opt.Apply(&e)
 	}
 
 	return e
@@ -144,11 +125,12 @@ func E(args ...interface{}) error {
 
 // New returns a new error. It is a wrap of Go's errors.New method that when
 // given an empty string, returns nil
-func New(s string) error {
+func New(s string, opts ...ErrorOption) error {
 	if s == "" {
 		return nil
 	}
-	return errors.New(s)
+
+	return E(errors.New(s), opts...)
 }
 
 // Errorf returns a error based on given params. It is a wrap of the fmt.Errorf

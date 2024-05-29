@@ -10,14 +10,18 @@ import (
 type Code string
 
 // String returns the code as a string
-func (c Code) String() string {
-	return string(c)
+func (code Code) String() string {
+	return string(code)
 }
 
 // MarshalZerologObject allows for zerolog to
 // log the error code as 'error_code': '...'
-func (c Code) MarshalZerologObject(e *zerolog.Event) {
-	e.Str("error_code", string(c))
+func (code Code) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("error_code", string(code))
+}
+
+func (code Code) Apply(err *Error) {
+	err.Code = code
 }
 
 const (

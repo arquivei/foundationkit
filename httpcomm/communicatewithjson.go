@@ -55,7 +55,7 @@ func CommunicateWithJSON(
 		outResponse,
 	)
 	if err != nil {
-		return details.Trace, errors.E(op, err)
+		return details.Trace, errors.E(err, op)
 	}
 
 	return details.Trace, nil
@@ -104,7 +104,7 @@ func CommunicateWithJSONDetailed(
 		outResponse,
 	)
 	if err != nil {
-		return details, errors.E(op, err)
+		return details, errors.E(err, op)
 	}
 
 	return details, nil
@@ -155,7 +155,7 @@ func CommunicateWithJSONAndHeadersDetailed(
 		outResponse,
 	)
 	if err != nil {
-		return details, errors.E(op, err)
+		return details, errors.E(err, op)
 	}
 
 	return details, nil
@@ -173,10 +173,10 @@ func communicateWithJSON(
 	outResponse interface{},
 ) (ResponseDetails, error) {
 	if ctx.Err() != nil {
-		return ResponseDetails{}, errors.E(
+		return ResponseDetails{}, errors.New(
+			"refusing request due to expired context",
 			ErrCodeExpiredContext,
 			errors.SeverityRuntime,
-			"refusing request due to expired context",
 			errors.KV("CONTEXT_ERROR", ctx.Err().Error()),
 		)
 	}
@@ -198,9 +198,9 @@ func communicateWithJSON(
 		}
 
 		return details, errors.E(
+			fmt.Errorf("failed to decode received response: %v", err),
 			ErrCodeDecodeError,
 			errors.SeverityRuntime,
-			fmt.Errorf("failed to decode received response: %v", err),
 			errors.KV("HTTP", details.StatusCode),
 			errors.KV("BODY", contentsStr),
 		)
@@ -218,12 +218,12 @@ func makeHTTPRequest(
 ) (*http.Request, error) {
 	requestDataBody, err := json.Marshal(requestData)
 	if err != nil {
-		return nil, errors.E(ErrCodeRequestError, errors.SeverityFatal, err)
+		return nil, errors.E(err, ErrCodeRequestError, errors.SeverityFatal)
 	}
 
 	httpRequest, err := http.NewRequestWithContext(ctx, httpMethod, fullURL, bytes.NewReader(requestDataBody))
 	if err != nil {
-		return nil, errors.E(ErrCodeRequestError, errors.SeverityFatal, err)
+		return nil, errors.E(err, ErrCodeRequestError, errors.SeverityFatal)
 	}
 
 	if trace.IDIsEmpty(trace.GetIDFromContext(ctx)) {
@@ -256,13 +256,13 @@ func communicateWithHTTPRequest(
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
 		if isHTTPTimeoutError(err) {
-			return ResponseDetails{}, nil, errors.E(ErrCodeTimeout, errors.SeverityRuntime, err)
+			return ResponseDetails{}, nil, errors.E(err, ErrCodeTimeout, errors.SeverityRuntime)
 		}
 
 		return ResponseDetails{}, nil, errors.E(
+			err,
 			ErrCodeRequestError,
 			errors.SeverityRuntime,
-			err,
 		)
 	}
 
@@ -279,17 +279,17 @@ func communicateWithHTTPRequest(
 	contents, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return details, nil, errors.E(
+			err,
 			ErrCodeDecodeError,
 			errors.SeverityRuntime,
-			err,
 		)
 	}
 
 	if int64(len(contents)) > maxAcceptedBodySize {
 		return details, nil, errors.E(
+			errors.Errorf("received contents longer than the allowed %d bytes", maxAcceptedBodySize),
 			ErrCodeResponseTooLong,
 			errors.SeverityRuntime,
-			errors.Errorf("received contents longer than the allowed %d bytes", maxAcceptedBodySize),
 		)
 	}
 

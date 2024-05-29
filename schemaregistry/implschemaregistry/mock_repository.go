@@ -26,8 +26,8 @@ func MustNewMock(schemas map[schemaregistry.ID]string) schemaregistry.Repository
 		schema, err := avro.Parse(schemaStr)
 		if err != nil {
 			panic(errors.E(
-				op,
 				err,
+				op,
 				errors.KV("schema", truncateStr(schemaStr, 50)),
 			))
 		}
@@ -45,7 +45,7 @@ func (r mockRepository) GetSchemaByID(ctx context.Context, id schemaregistry.ID)
 		return schema, nil
 	}
 
-	return nil, errors.E(op, "could not find schema", errors.KV("id", id))
+	return nil, errors.New("could not find schema", errors.KV("id", id), op)
 }
 
 func (r mockRepository) GetIDBySchema(
@@ -57,14 +57,14 @@ func (r mockRepository) GetIDBySchema(
 
 	avroSchema, err := avro.Parse(schema)
 	if err != nil {
-		return 0, nil, errors.E(op, err)
+		return 0, nil, errors.E(err, op)
 	}
 
 	if id, ok := r.schemasToIDs[avroSchema.String()]; ok {
 		return id, avroSchema, nil
 	}
 
-	return 0, nil, errors.E(op, "could not find schema", errors.KV("subject", subject))
+	return 0, nil, errors.New("could not find schema", errors.KV("subject", subject), op)
 }
 
 func truncateStr(str string, size int) string {

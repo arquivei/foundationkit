@@ -6,22 +6,32 @@ import (
 
 // KeyValue is used to store a key-value pair within the error
 type KeyValue struct {
-	Key   interface{}
-	Value interface{}
+	Key   any
+	Value any
 }
 
 func (kv KeyValue) String() string {
 	return fmt.Sprintf("%v=%v", kv.Key, kv.Value)
 }
 
+func (kv KeyValue) Apply(err *Error) {
+	err.KVs = append(err.KVs, kv)
+}
+
+type KeyValues []KeyValue
+
+func (kvs KeyValues) Apply(err *Error) {
+	err.KVs = append(err.KVs, kvs...)
+}
+
 // KV is a constructor for KeyValue types
-func KV(k, v interface{}) KeyValue {
+func KV(k, v any) KeyValue {
 	return KeyValue{Key: k, Value: v}
 }
 
 // GetRootErrorWithKV returns the Err field of Error struct or the error itself if it is of another type
 func GetRootErrorWithKV(err error) error {
-	var kvs []KeyValue
+	var kvs KeyValues
 
 	for {
 		if myErr, ok := err.(Error); ok && myErr.Err != nil {

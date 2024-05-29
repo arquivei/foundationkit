@@ -32,6 +32,10 @@ func (s Severity) MarshalZerologObject(e *zerolog.Event) {
 	e.Str("error_severity", string(s))
 }
 
+func (s Severity) Apply(err *Error) {
+	err.Severity = s
+}
+
 // GetSeverity returns the error severity. If there is not severity, SeverityUnset is returned.
 func GetSeverity(err error) Severity {
 	for {

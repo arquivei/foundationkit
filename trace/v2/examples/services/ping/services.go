@@ -51,7 +51,7 @@ func (s *service) Ping(ctx context.Context, req Request) (string, error) {
 
 	pong, err := s.pongGateway.Pong(ctx, req.Num-1, req.Sleep)
 	if err != nil {
-		return "", errors.E(op, err)
+		return "", errors.E(err, op)
 	}
 
 	return pingpong + "-" + pong, nil
