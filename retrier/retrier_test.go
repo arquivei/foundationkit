@@ -48,7 +48,7 @@ func TestRetrier_ExecuteOperation_Success(t *testing.T) {
 	err := retrier.ExecuteOperation(func() error {
 		calls++
 		if calls <= 2 {
-			return errors.E(errors.SeverityRuntime, "some error")
+			return errors.New("some error", errors.SeverityRuntime)
 		}
 
 		return nil
@@ -75,7 +75,7 @@ func TestRetrier_ExecuteOperation_CorrectMaxRetriesAttempt(t *testing.T) {
 	calls := 0
 	err := retrier.ExecuteOperation(func() error {
 		calls++
-		return errors.E(errors.SeverityRuntime, "some error")
+		return errors.New("some error", errors.SeverityRuntime)
 	})
 
 	assert.Error(t, err, "Execute should return an error")

@@ -14,7 +14,7 @@ func DontPanic(f func()) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = NewFromRecover(r)
-			err = E(newOpFromPanicStack(), err)
+			err = E(err, newOpFromPanicStack())
 		}
 	}()
 

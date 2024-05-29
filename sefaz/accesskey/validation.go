@@ -12,7 +12,7 @@ func Check(accessKey AccessKey) error {
 
 	err := validate(accessKey)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 
 	return nil
@@ -25,13 +25,13 @@ func CheckNFF(accessKey AccessKey) error {
 
 	err := validate(accessKey)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 
 	if isNFF(accessKey) {
 		err := validateNFF(accessKey)
 		if err != nil {
-			return errors.E(op, err)
+			return errors.E(err, op)
 		}
 	}
 
@@ -43,35 +43,35 @@ func validate(accessKey AccessKey) error {
 	const op errors.Op = "validate"
 
 	if accessKey == "" {
-		return errors.E(op, ErrEmptyAccessKey, ErrCodeEmptyAccessKey)
+		return errors.E(ErrEmptyAccessKey, ErrCodeEmptyAccessKey, op)
 	}
 
 	if len(accessKey) != 44 {
-		return errors.E(op, ErrInvalidLength, ErrCodeInvalidLength)
+		return errors.E(ErrInvalidLength, ErrCodeInvalidLength, op)
 	}
 
 	if !isDigitOnly(accessKey) {
-		return errors.E(op, ErrInvalidCharacter, ErrCodeInvalidCharacter)
+		return errors.E(ErrInvalidCharacter, ErrCodeInvalidCharacter, op)
 	}
 
 	if !isValidUF(accessKey[0:2].String()) {
-		return errors.E(op, ErrInvalidUF, ErrCodeInvalidUF)
+		return errors.E(ErrInvalidUF, ErrCodeInvalidUF, op)
 	}
 
 	if !isValidMonth(accessKey[4:6].String()) {
-		return errors.E(op, ErrInvalidMonth, ErrCodeInvalidMonth)
+		return errors.E(ErrInvalidMonth, ErrCodeInvalidMonth, op)
 	}
 
 	if !isValidCPFCNPJ(accessKey[6:20].String()) {
-		return errors.E(op, ErrInvalidCPFCNPJ, ErrCodeInvalidCPFCNPJ)
+		return errors.E(ErrInvalidCPFCNPJ, ErrCodeInvalidCPFCNPJ, op)
 	}
 
 	if !isValidModel(accessKey[20:22].String()) {
-		return errors.E(op, ErrInvalidModel, ErrCodeInvalidModel)
+		return errors.E(ErrInvalidModel, ErrCodeInvalidModel, op)
 	}
 
 	if !isValidationDigitCorrect(accessKey.String()) {
-		return errors.E(op, ErrInvalidDigit, ErrCodeInvalidDigit)
+		return errors.E(ErrInvalidDigit, ErrCodeInvalidDigit, op)
 	}
 
 	return nil
@@ -90,26 +90,26 @@ func validateNFF(accessKey AccessKey) error {
 	const op errors.Op = "validateNFF"
 
 	if !isValidSerieForNFF(accessKey[22:25].String()) {
-		return errors.E(op, ErrInvalidSerieForNFF, ErrCodeInvalidSerieForNFF)
+		return errors.E(ErrInvalidSerieForNFF, ErrCodeInvalidSerieForNFF, op)
 	}
 
 	if !isValidNumeroForNFF(accessKey[25:34].String()) {
-		return errors.E(op, ErrInvalidNumeroForNFF, ErrCodeInvalidNumeroForNFF)
+		return errors.E(ErrInvalidNumeroForNFF, ErrCodeInvalidNumeroForNFF, op)
 	}
 
 	if accessKey[29] == '1' {
 		err := stakeholder.CheckCNPJ(accessKey[6:20].String())
 		if err != nil {
-			return errors.E(op, err, ErrCodeInvalidCNPJForNFF)
+			return errors.E(err, op, ErrCodeInvalidCNPJForNFF)
 		}
 	} else if accessKey[29] == '2' {
 		if accessKey[6:9] != "000" {
-			return errors.E(op, "cpf is not padded with 0", ErrCodeInvalidCPFForNFF)
+			return errors.New("cpf is not padded with 0", ErrCodeInvalidCPFForNFF, op)
 		}
 
 		err := stakeholder.CheckCPF(accessKey[9:20].String())
 		if err != nil {
-			return errors.E(op, err, ErrCodeInvalidCPFForNFF)
+			return errors.E(err, op, ErrCodeInvalidCPFForNFF)
 		}
 	}
 

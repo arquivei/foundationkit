@@ -25,11 +25,11 @@ func (s *Stakeholder) UnmarshalJSON(b []byte) error {
 	var v string
 	err := json.Unmarshal(b, &v)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 	*s, err = Parse(v)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 
 	return nil
@@ -62,7 +62,7 @@ func Parse(s string) (Stakeholder, error) {
 	case TypePerson:
 		return NewCPF(s)
 	default:
-		return "", errors.E(op, newInvalidStakeholderTypeError(t))
+		return "", errors.E(newInvalidStakeholderTypeError(t), op)
 	}
 }
 

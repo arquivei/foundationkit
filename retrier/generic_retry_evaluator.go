@@ -75,12 +75,12 @@ func (e *GenericRetryEvaluator) IsRetryable(attempt int, attemptError error) boo
 
 	canRetryOnErrorCode, err := isErrorCodeRetryable(errors.GetCode(attemptError), e.ErrorsCodesPolicy, e.ErrorsCodes)
 	if err != nil {
-		panic(errors.E(op, err))
+		panic(errors.E(err, op))
 	}
 
 	canRetryOnErrorSeverity, err := isErrorSeverityRetryable(errors.GetSeverity(attemptError), e.ErrorsSeveritiesPolicy, e.ErrorsSeverities)
 	if err != nil {
-		panic(errors.E(op, err))
+		panic(errors.E(err, op))
 	}
 
 	return canRetryOnErrorCode && canRetryOnErrorSeverity
@@ -112,7 +112,7 @@ func isErrorCodeRetryable(
 			return false, nil
 		}
 	default:
-		return false, errors.E(op, "bad evaluation policy")
+		return false, errors.New("bad evaluation policy", op)
 	}
 
 	return true, nil
@@ -144,7 +144,7 @@ func isErrorSeverityRetryable(
 			return false, nil
 		}
 	default:
-		return false, errors.E(op, "bad evaluation policy")
+		return false, errors.New("bad evaluation policy", op)
 	}
 
 	return true, nil

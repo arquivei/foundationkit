@@ -43,16 +43,16 @@ func (i *implDecoder) Decode(
 
 	schemaID, data, err := splitAvroWireFormatMessage(data)
 	if err != nil {
-		return errors.E(op, err, errors.SeverityInput)
+		return errors.E(err, op, errors.SeverityInput)
 	}
 
 	schema, err := i.schemaRepository.GetSchemaByID(ctx, schemaID)
 	if err != nil {
-		return errors.E(op, err)
+		return errors.E(err, op)
 	}
 
 	err = i.avroAPI.Unmarshal(schema, data, output)
-	return errors.E(op, err, errors.SeverityInput)
+	return errors.E(err, op, errors.SeverityInput)
 }
 
 // splitAvroWireFormatMessage extracts the schema ID and the data from a
@@ -62,10 +62,10 @@ func (i *implDecoder) Decode(
 func splitAvroWireFormatMessage(msg []byte) (schemaregistry.ID, []byte, error) {
 	const op = errors.Op("avroutil.SplitAvroWireFormatMessage")
 	if len(msg) < 5 {
-		return 0, nil, errors.E(op, "invalid message length")
+		return 0, nil, errors.New("invalid message length", op)
 	}
 	if msg[0] != 0x00 {
-		return 0, nil, errors.E(op, "invalid magic byte")
+		return 0, nil, errors.New("invalid magic byte", op)
 	}
 	schemaID := schemaregistry.ID(binary.BigEndian.Uint32(msg[1:5]))
 	data := msg[5:]

@@ -33,7 +33,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				MaxAttempts: 5,
 			},
 			attemptNumber:       4,
-			attemptError:        errors.E("any error"),
+			attemptError:        errors.New("any error"),
 			expectedIsRetryable: true,
 		},
 		{
@@ -42,7 +42,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				MaxAttempts: 5,
 			},
 			attemptNumber:       5,
-			attemptError:        errors.E("any error"),
+			attemptError:        errors.New("any error"),
 			expectedIsRetryable: true,
 		},
 		{
@@ -51,7 +51,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				MaxAttempts: 5,
 			},
 			attemptNumber:       6,
-			attemptError:        errors.E("any error"),
+			attemptError:        errors.New("any error"),
 			expectedIsRetryable: false,
 		},
 		{
@@ -60,7 +60,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				ErrorsCodesPolicy: EvaluationPolicyBlacklist,
 				ErrorsCodes:       []errors.Code{someErrCode},
 			},
-			attemptError:        errors.E(someErrCode, "some error"),
+			attemptError:        errors.New("some error", someErrCode),
 			expectedIsRetryable: false,
 		},
 		{
@@ -69,7 +69,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				ErrorsCodesPolicy: EvaluationPolicyWhitelist,
 				ErrorsCodes:       []errors.Code{someErrCode},
 			},
-			attemptError:        errors.E(otherErrCode, "other error"),
+			attemptError:        errors.New("other error", otherErrCode),
 			expectedIsRetryable: false,
 		},
 		{
@@ -78,7 +78,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				ErrorsSeveritiesPolicy: EvaluationPolicyBlacklist,
 				ErrorsSeverities:       []errors.Severity{errors.SeverityFatal},
 			},
-			attemptError:        errors.E(errors.SeverityFatal, "fatal error"),
+			attemptError:        errors.New("fatal error", errors.SeverityFatal),
 			expectedIsRetryable: false,
 		},
 		{
@@ -87,7 +87,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				ErrorsSeveritiesPolicy: EvaluationPolicyWhitelist,
 				ErrorsSeverities:       []errors.Severity{errors.SeverityRuntime},
 			},
-			attemptError:        errors.E(errors.SeverityInput, "input error"),
+			attemptError:        errors.New("input error", errors.SeverityInput),
 			expectedIsRetryable: false,
 		},
 		{
@@ -98,7 +98,7 @@ func TestGenericRetryEvaluator_IsRetryable(t *testing.T) {
 				ErrorsSeveritiesPolicy: EvaluationPolicyBlacklist,
 				ErrorsSeverities:       []errors.Severity{errors.SeverityFatal},
 			},
-			attemptError:        errors.E(someErrCode, errors.SeverityRuntime, "informative error"),
+			attemptError:        errors.New("informative error", someErrCode, errors.SeverityRuntime),
 			expectedIsRetryable: true,
 		},
 	}

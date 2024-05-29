@@ -36,7 +36,7 @@ func (r *cacheRepository) GetSchemaByID(ctx context.Context, id schemaregistry.I
 
 	schema, err := r.next.GetSchemaByID(ctx, id)
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	r.storeSchemaByID(id, schema)
@@ -75,7 +75,7 @@ func (r *cacheRepository) GetIDBySchema(
 
 	id, avroSchema, err := r.next.GetIDBySchema(ctx, subject, schema)
 	if err != nil {
-		return id, nil, errors.E(op, err)
+		return id, nil, errors.E(err, op)
 	}
 
 	r.storeIDBySchema(id, schema)

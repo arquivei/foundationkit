@@ -29,7 +29,7 @@ func MustNew(url string, httpClient *http.Client) schemaregistry.Repository {
 	const op = errors.Op("implschemaregistry.MustNew")
 
 	if url == "" {
-		panic(errors.E(op, "missing url"))
+		panic(errors.New("missing url", op))
 	}
 
 	if !strings.HasSuffix(url, "/") {
@@ -54,7 +54,7 @@ func (r repository) GetSchemaByID(ctx context.Context, id schemaregistry.ID) (av
 	// variable url" in this line, but the URL must be built from a config
 	httpResponse, err := http.Get(fullURL)
 	if err != nil {
-		return nil, errors.E(op, err, errors.SeverityRuntime)
+		return nil, errors.E(err, op, errors.SeverityRuntime)
 	}
 	defer httpResponse.Body.Close()
 
@@ -63,13 +63,13 @@ func (r repository) GetSchemaByID(ctx context.Context, id schemaregistry.ID) (av
 
 	err = decoder.Decode(&response)
 	if err != nil {
-		return nil, errors.E(op, err, errors.SeverityInput)
+		return nil, errors.E(err, op, errors.SeverityInput)
 	}
 	schema, err := avro.Parse(response.Schema)
 	if err != nil {
 		return nil, errors.E(
-			op,
 			err,
+			op,
 			errors.SeverityInput,
 			errors.KV("schema", truncateStr(response.Schema, 50)),
 		)
@@ -99,7 +99,7 @@ func (r repository) GetIDBySchema(
 
 	requestBody, err := makeGetIDBySchemaRequestBody(schema)
 	if err != nil {
-		return 0, nil, errors.E(op, errors.SeverityFatal, err)
+		return 0, nil, errors.E(err, op, errors.SeverityFatal)
 	}
 
 	fullURL := fmt.Sprintf(r.getIDBySchemaURL, subject)
@@ -112,7 +112,7 @@ func (r repository) GetIDBySchema(
 		strings.NewReader(requestBody),
 	)
 	if err != nil {
-		return 0, nil, errors.E(op, errors.SeverityRuntime, err)
+		return 0, nil, errors.E(err, op, errors.SeverityRuntime)
 	}
 	defer httpResponse.Body.Close()
 
@@ -121,34 +121,34 @@ func (r repository) GetIDBySchema(
 	// field in the body, if this level of information is needed.
 	case 200:
 	case 404:
-		return 0, nil, errors.E(
+		return 0, nil, errors.New(
+			"schema registry returned 404 - subject or schema not found",
 			op,
 			errors.SeverityInput,
-			"schema registry returned 404 - subject or schema not found",
 		)
 	case 500:
-		return 0, nil, errors.E(
+		return 0, nil, errors.New(
+			"internal server error",
 			op,
 			errors.SeverityRuntime,
-			"internal server error",
 		)
 	default:
-		return 0, nil, errors.E(
+		return 0, nil, errors.New(
+			"unexpected status code returned",
 			op,
 			errors.SeverityRuntime,
-			"unexpected status code returned",
 			errors.KV("statusCode", httpResponse.StatusCode),
 		)
 	}
 
 	var getResponse getIDFromSchemaResponse
 	if err = json.NewDecoder(httpResponse.Body).Decode(&getResponse); err != nil {
-		return 0, nil, errors.E(op, errors.SeverityInput, err)
+		return 0, nil, errors.E(err, op, errors.SeverityInput)
 	}
 
 	returnedSchema, err := avro.Parse(getResponse.Schema)
 	if err != nil {
-		return 0, nil, errors.E(op, err)
+		return 0, nil, errors.E(err, op)
 	}
 
 	return getResponse.ID, returnedSchema, nil
@@ -159,7 +159,7 @@ func makeGetIDBySchemaRequestBody(schema string) (string, error) {
 
 	buf := new(bytes.Buffer)
 	if err := json.Compact(buf, []byte(schema)); err != nil {
-		return "", errors.E(op, errors.SeverityFatal, err)
+		return "", errors.E(err, op, errors.SeverityFatal)
 	}
 
 	body := struct {
@@ -170,7 +170,7 @@ func makeGetIDBySchemaRequestBody(schema string) (string, error) {
 
 	marshaledBody, err := json.Marshal(&body)
 	if err != nil {
-		return "", errors.E(op, errors.SeverityFatal, err)
+		return "", errors.E(err, op, errors.SeverityFatal)
 	}
 
 	return string(marshaledBody), nil

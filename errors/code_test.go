@@ -33,9 +33,9 @@ func TestEqualsCode(t *testing.T) {
 }
 
 func TestSameCode(t *testing.T) {
-	errWithCodeTalker := E("Metal Gear Solid V: the Phantom Pain", Code("TALKER"))
-	anotherErrWithCodeTalker := E("Metal Gear Solid V: the Phantom Pain (goty)", Code("TALKER"))
-	errWithCodeVeronica := E("Resident Evil", Code("VERONICA"))
+	errWithCodeTalker := New("Metal Gear Solid V: the Phantom Pain", Code("TALKER"))
+	anotherErrWithCodeTalker := New("Metal Gear Solid V: the Phantom Pain (goty)", Code("TALKER"))
+	errWithCodeVeronica := New("Resident Evil", Code("VERONICA"))
 
 	assert.True(t, SameCode(errWithCodeTalker, anotherErrWithCodeTalker), "same code")
 	assert.False(t, SameCode(errWithCodeTalker, errWithCodeVeronica), "different codes")

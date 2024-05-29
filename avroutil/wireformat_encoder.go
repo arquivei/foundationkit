@@ -40,7 +40,7 @@ func NewWireFormatEncoder(
 		writerSchemaStr,
 	)
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 	return &wireFormatEncoder{
 		writerSchemaID: schemaID,
@@ -57,15 +57,15 @@ func (e *wireFormatEncoder) BinaryToWireFormat(avroInput []byte) ([]byte, error)
 	buf := new(bytes.Buffer)
 
 	if err := buf.WriteByte(0x00); err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	if err := binary.Write(buf, binary.BigEndian, int32(e.writerSchemaID)); err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	if _, err := buf.Write(avroInput); err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	return buf.Bytes(), nil

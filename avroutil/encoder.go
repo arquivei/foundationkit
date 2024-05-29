@@ -39,12 +39,12 @@ func NewEncoder(
 
 	encoder, err := NewWireFormatEncoder(ctx, schemaRepository, subject, writerSchemaStr)
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	parsedAvroSchema, err := avro.Parse(writerSchemaStr)
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	return &implEncoder{
@@ -59,12 +59,12 @@ func (e *implEncoder) Encode(input interface{}) ([]byte, error) {
 
 	avroData, err := e.avroAPI.Marshal(e.writerSchema, input)
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	wireFormat, err := e.wireFormatEncoder.BinaryToWireFormat(avroData)
 	if err != nil {
-		return nil, errors.E(op, err)
+		return nil, errors.E(err, op)
 	}
 
 	return wireFormat, nil
