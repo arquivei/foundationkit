@@ -5,21 +5,21 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/arquivei/foundationkit/endpoint"
 	"github.com/arquivei/foundationkit/errors"
 
-	"github.com/go-kit/kit/endpoint"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 )
 
 // MakeHTTPHandler returns a new http handler for endpoint
-func MakeHTTPHandler(e endpoint.Endpoint) http.Handler {
+func MakeHTTPHandler(e endpoint.Endpoint[Request, string]) http.Handler {
 	opts := []kithttp.ServerOption{
 		kithttp.ServerErrorEncoder(encodeError),
 	}
 
 	httpHandler := kithttp.NewServer(
-		e,
+		endpoint.Gokit(e),
 		decodeRequest,
 		encodeResponse,
 		opts...,

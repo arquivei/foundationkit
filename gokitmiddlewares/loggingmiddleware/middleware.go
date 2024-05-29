@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/arquivei/foundationkit/endpoint"
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/arquivei/foundationkit/gokitmiddlewares"
 	logutil "github.com/arquivei/foundationkit/log"
 
-	"github.com/go-kit/kit/endpoint"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 // MustNew calls New and panics in case of error.
-func MustNew(c Config) endpoint.Middleware {
-	return gokitmiddlewares.Must(New(c))
+func MustNew[Request any, Response any](c Config) endpoint.Middleware[Request, Response] {
+	return gokitmiddlewares.Must(New[Request, Response](c))
 }
 
 // New returns a new go-kit logging middleware with the given name and configuration.
@@ -24,7 +24,7 @@ func MustNew(c Config) endpoint.Middleware {
 // Fields Config.Name and Config.Logger are mandatory.
 // Considering that this middleware puts a logger inside the context, this should always
 // be the outter middleware when using endpoint.Chain.
-func New(c Config) (endpoint.Middleware, error) {
+func New[Request any, Response any](c Config) (endpoint.Middleware[Request, Response], error) {
 	if c.Name == "" {
 		return nil, errors.New("endpoint name is empty")
 	}
@@ -33,10 +33,10 @@ func New(c Config) (endpoint.Middleware, error) {
 		return nil, errors.New("logger is nil")
 	}
 
-	return func(next endpoint.Endpoint) endpoint.Endpoint {
+	return func(next endpoint.Endpoint[Request, Response]) endpoint.Endpoint[Request, Response] {
 		log.Debug().Str("config", logutil.Flatten(c)).Msg("New logging endpoint middleware")
 
-		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
+		return func(ctx context.Context, req Request) (resp Response, err error) {
 			begin := time.Now()
 
 			ctx = initLoggerContext(ctx, *c.Logger)

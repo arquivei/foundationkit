@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-kit/kit/endpoint"
+	"github.com/arquivei/foundationkit/endpoint"
 )
 
 // New returns a new stale middleware
@@ -15,13 +15,13 @@ import (
 // If a request is received after being unhealthy,
 // it's not considered stale anymore abd becomes
 // healthy again.
-func New(c Config) endpoint.Middleware {
+func New[Request any, Response any](c Config) endpoint.Middleware[Request, Response] {
 	var lastKnownRequestTime int64
 
 	go backgroundStaleCheck(c, &lastKnownRequestTime)
 
-	return func(next endpoint.Endpoint) endpoint.Endpoint {
-		return func(ctx context.Context, request interface{}) (interface{}, error) {
+	return func(next endpoint.Endpoint[Request, Response]) endpoint.Endpoint[Request, Response] {
+		return func(ctx context.Context, request Request) (Response, error) {
 			lastKnownRequestTime = time.Now().UnixNano()
 			return next(ctx, request)
 		}

@@ -6,29 +6,29 @@ import (
 	"context"
 	"os"
 
-	"github.com/arquivei/foundationkit/gokitmiddlewares/metricsmiddleware/v3"
+	"github.com/arquivei/foundationkit/endpoint"
+	"github.com/arquivei/foundationkit/gokitmiddlewares/metricsmiddleware/v4"
 
-	"github.com/go-kit/kit/endpoint"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-// request is a request to the greeter endpoint
-type request struct {
+// Request is a Request to the greeter endpoint
+type Request struct {
 	Name string
 }
 
-// response is the response of the greeter endpoint
-type response struct {
+// Response is the Response of the greeter endpoint
+type Response struct {
 	Message string
 }
 
 // greeter is an endpoint that takes a name and says hello.
-func greeter(_ context.Context, req interface{}) (interface{}, error) {
-	resp := response{
-		Message: "Hello " + req.(request).Name + "!",
+func greeter(_ context.Context, req Request) (Response, error) {
+	resp := Response{
+		Message: "Hello " + req.Name + "!",
 	}
 
 	return resp, nil
@@ -44,7 +44,7 @@ func (labelsDecoder) Labels() []string {
 }
 
 func (labelsDecoder) Decode(ctx context.Context, req, resp interface{}, err error) map[string]string {
-	if req.(request).Name == "" {
+	if req.(Request).Name == "" {
 		return map[string]string{"greeter_empty_name": "true"}
 	}
 	return map[string]string{"greeter_empty_name": "false"}
@@ -60,7 +60,7 @@ func newExternalMetrics(system, subsystem string) func(ctx context.Context, req,
 	}, nil)
 
 	return func(ctx context.Context, req, resp interface{}, err error) {
-		count.Add((float64(len(req.(request).Name))))
+		count.Add((float64(len(req.(Request).Name))))
 	}
 }
 
@@ -74,7 +74,7 @@ func main() {
 
 	// Chain metrics middleware
 	e = endpoint.Chain(
-		metricsmiddleware.MustNew(
+		metricsmiddleware.MustNew[Request, Response](
 			metricsmiddleware.NewDefaultConfig("endpointTest").
 				WithLabelsDecoder(labelsDecoder{}).
 				WithExternalMetrics(newExternalMetrics("system", "subsystem")),
@@ -83,10 +83,10 @@ func main() {
 
 	// Let's just run the example for fun.
 	ctx := context.Background()
-	req := request{Name: "World"}
+	req := Request{Name: "World"}
 	resp, err := e(ctx, req)
 	if err != nil {
 		log.Fatal().Err(err).Msg("")
 	}
-	log.Info().Msg(resp.(response).Message)
+	log.Info().Msg(resp.Message)
 }

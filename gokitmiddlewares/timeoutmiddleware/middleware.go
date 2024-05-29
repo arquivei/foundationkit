@@ -3,8 +3,8 @@ package timeoutmiddleware
 import (
 	"context"
 
+	"github.com/arquivei/foundationkit/endpoint"
 	"github.com/arquivei/foundationkit/errors"
-	"github.com/go-kit/kit/endpoint"
 )
 
 // New returns a new timeout middleware.
@@ -13,14 +13,14 @@ import (
 // it will just cancel the context and wait for next endpoint to return.
 // But if the middleware is configured to not wait, it will run the next endpoint
 // inside a go-routine and return error as soon as the context is canceled.
-func New(c Config) (endpoint.Middleware, error) {
-	return func(next endpoint.Endpoint) endpoint.Endpoint {
+func New[Request any, Response any](c Config) (endpoint.Middleware[Request, Response], error) {
+	return func(next endpoint.Endpoint[Request, Response]) endpoint.Endpoint[Request, Response] {
 		// Timeout is disabled
 		if c.Timeout <= 0 {
 			return next
 		}
 
-		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		return func(ctx context.Context, request Request) (response Response, err error) {
 			ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 			defer cancel()
 
@@ -40,7 +40,7 @@ func New(c Config) (endpoint.Middleware, error) {
 }
 
 // nextNoWait runs next but don't wait for a response in case of canceled context
-func nextNoWait(ctx context.Context, next endpoint.Endpoint, request interface{}) (interface{}, error) {
+func nextNoWait[Request any, Response any](ctx context.Context, next endpoint.Endpoint[Request, Response], request Request) (Response, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -55,7 +55,7 @@ type asyncResult struct {
 }
 
 // runNextAsync executes next inside a go-routine and returns the result in a channel.
-func runNextAsync(ctx context.Context, next endpoint.Endpoint, request interface{}) <-chan asyncResult {
+func runNextAsync[Request any, Response any](ctx context.Context, next endpoint.Endpoint[Request, Response], request Request) <-chan asyncResult {
 	c := make(chan asyncResult)
 
 	go func() {

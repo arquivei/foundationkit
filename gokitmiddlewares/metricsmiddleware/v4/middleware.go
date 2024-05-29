@@ -3,30 +3,30 @@ package metricsmiddleware
 import (
 	"context"
 
+	"github.com/arquivei/foundationkit/endpoint"
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/arquivei/foundationkit/gokitmiddlewares"
 	logutil "github.com/arquivei/foundationkit/log"
 	"github.com/arquivei/foundationkit/metrifier"
-	"github.com/go-kit/kit/endpoint"
 	"github.com/rs/zerolog/log"
 )
 
 // MustNew returns a new metrics middleware but panics in case of error.
-func MustNew(c Config) endpoint.Middleware {
-	return gokitmiddlewares.Must(New(c))
+func MustNew[Request any, Response any](c Config) endpoint.Middleware[Request, Response] {
+	return gokitmiddlewares.Must(New[Request, Response](c))
 }
 
 // New returns a new metrics middleware.
-func New(c Config) (endpoint.Middleware, error) {
+func New[Request any, Response any](c Config) (endpoint.Middleware[Request, Response], error) {
 	m, err := metrifier.New(c.Metrifier)
 	if err != nil {
 		return nil, err
 	}
 
-	return func(next endpoint.Endpoint) endpoint.Endpoint {
+	return func(next endpoint.Endpoint[Request, Response]) endpoint.Endpoint[Request, Response] {
 		log.Debug().Str("config", logutil.Flatten(c)).Msg("[metricsmiddleware] New metrics endpoint middleware")
 
-		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
+		return func(ctx context.Context, req Request) (resp Response, err error) {
 			defer func(s metrifier.Span) {
 				var r interface{}
 				// Panics are handled as errors and re-raised

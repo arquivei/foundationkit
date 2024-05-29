@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/arquivei/foundationkit/app"
+	"github.com/arquivei/foundationkit/endpoint"
 	"github.com/arquivei/foundationkit/gokitmiddlewares/loggingmiddleware"
 	"github.com/arquivei/foundationkit/httpmiddlewares/enrichloggingmiddleware"
 	"github.com/arquivei/foundationkit/request"
@@ -14,7 +15,6 @@ import (
 	"github.com/arquivei/foundationkit/trace/v2/examples/services/ping/apiping"
 	"github.com/arquivei/foundationkit/trace/v2/examples/services/ping/implping"
 
-	"github.com/go-kit/kit/endpoint"
 	"github.com/gorilla/mux"
 )
 
@@ -33,7 +33,7 @@ func setupTrace() {
 		})
 }
 
-func getEndpoint() endpoint.Endpoint {
+func getEndpoint() endpoint.Endpoint[apiping.Request, string] {
 	loggingConfig := loggingmiddleware.NewDefaultConfig("ping")
 
 	pongAdapter := implping.NewHTTPPongAdapter(
@@ -41,9 +41,9 @@ func getEndpoint() endpoint.Endpoint {
 		config.Pong.HTTP.URL,
 	)
 
-	pingEndpoint := endpoint.Chain(
-		trace.EndpointMiddleware("ping-pong-endpoint"),
-		loggingmiddleware.MustNew(loggingConfig),
+	pingEndpoint := endpoint.Chain[apiping.Request, string](
+		trace.EndpointMiddleware[apiping.Request, string]("ping-pong-endpoint"),
+		loggingmiddleware.MustNew[apiping.Request, string](loggingConfig),
 	)(apiping.MakeAPIPingEndpoint(
 		ping.NewService(pongAdapter),
 	))

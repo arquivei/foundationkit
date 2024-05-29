@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/arquivei/foundationkit/endpoint"
 	"github.com/arquivei/foundationkit/errors"
-	"github.com/go-kit/kit/endpoint"
 )
 
 // Config contains the config for the exponential backoff retrier
@@ -49,41 +49,41 @@ func NewDefaultConfig() Config {
 
 // New tries to execute @next.Process() until it succeeds. Each failure is
 // followed by an exponentially increasing delay.
-func New(config Config) endpoint.Middleware {
-	return func(next endpoint.Endpoint) endpoint.Endpoint {
-		return func(ctx context.Context, request interface{}) (interface{}, error) {
+func New[Request any, Response any](config Config) endpoint.Middleware[Request, Response] {
+	return func(next endpoint.Endpoint[Request, Response]) endpoint.Endpoint[Request, Response] {
+		return func(ctx context.Context, request Request) (Response, error) {
 			return runWithBackoff(ctx, config, next, request)
 		}
 	}
 }
 
-func runWithBackoff(
+func runWithBackoff[Request any, Response any](
 	ctx context.Context,
 	config Config,
-	next endpoint.Endpoint,
-	request interface{},
-) (interface{}, error) {
+	next endpoint.Endpoint[Request, Response],
+	request Request,
+) (Response, error) {
 	delay := config.InitialDelay
 	retries := 0
 
 	response, err := next(ctx, request)
 	for err != nil {
 		if ctx.Err() != nil {
-			return nil, ctx.Err()
+			return response, ctx.Err()
 		}
 
 		switch errors.GetSeverity(err) {
 		case errors.SeverityInput:
-			return nil, err
+			return response, err
 		case errors.SeverityFatal:
-			return nil, err
+			return response, err
 		case errors.SeverityRuntime:
 			// always retry
 		default:
 			retries++
 			if config.MaxRetries != MaxRetriesInfinite &&
 				retries > config.MaxRetries {
-				return nil, err
+				return response, err
 			}
 		}
 
@@ -95,7 +95,7 @@ func runWithBackoff(
 		select {
 		case <-waitCtx.Done():
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return response, ctx.Err()
 		}
 
 		delay = time.Duration(float64(delay) * config.Factor)
