@@ -67,7 +67,11 @@ func splitAvroWireFormatMessage(msg []byte) (schemaregistry.ID, []byte, error) {
 	if msg[0] != 0x00 {
 		return 0, nil, errors.E(op, "invalid magic byte")
 	}
+	// Disabling gosec due to false positive about out of bounds
+	//nolint:gosec
 	schemaID := schemaregistry.ID(binary.BigEndian.Uint32(msg[1:5]))
+
+	//nolint:gosec
 	data := msg[5:]
 	return schemaID, data, nil
 }
