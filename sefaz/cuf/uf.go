@@ -2,7 +2,6 @@ package cuf
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/arquivei/foundationkit/errors"
@@ -87,8 +86,10 @@ func parseUF(cUF string) (uint8, error) {
 	switch ufInt64 {
 	case 11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32,
 		33, 35, 41, 42, 43, 50, 51, 52, 53:
+		// Disabling gosec as we put 8 as bitsize in uint
+		//nolint:gosec
 		return uint8(ufInt64), nil
 	default:
-		return 0, errors.Errorf(fmt.Sprintf("invalid cUF code: %s", cUF))
+		return uint8(0), errors.Errorf("invalid cUF code: %s", cUF)
 	}
 }

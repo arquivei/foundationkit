@@ -121,7 +121,7 @@ func TestShutdownHandlerExecute_Timeout(t *testing.T) {
 		Name: "my_failed_shutdown_handler",
 		Handler: func(ctx context.Context) error {
 			select {
-			case <-time.After(2 * time.Nanosecond):
+			case <-time.After(2 * time.Second):
 				return nil
 			case <-ctx.Done():
 				return errors.New("custom handler error on deadline exceeded")
