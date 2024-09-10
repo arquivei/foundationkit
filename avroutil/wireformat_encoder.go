@@ -60,7 +60,7 @@ func (e *wireFormatEncoder) BinaryToWireFormat(avroInput []byte) ([]byte, error)
 		return nil, errors.E(op, err)
 	}
 
-	if err := binary.Write(buf, binary.BigEndian, int32(e.writerSchemaID)); err != nil {
+	if err := binary.Write(buf, binary.BigEndian, uint32(e.writerSchemaID)); err != nil {
 		return nil, errors.E(op, err)
 	}
 

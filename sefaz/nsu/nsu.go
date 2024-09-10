@@ -86,7 +86,7 @@ func MustParse(s string) NSU {
 
 // ParseUint64 parses an integer into an NSU
 func ParseUint64(nsu uint64) (NSU, error) {
-	return Parse(strconv.FormatInt(int64(nsu), 10))
+	return Parse(strconv.FormatUint(nsu, 10))
 }
 
 // MustParseUint64 parses an integer into an NSU

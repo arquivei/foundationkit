@@ -60,14 +60,18 @@ func (i *implDecoder) Decode(
 // The header is a 5-byte slice, where the first byte is equal to x00, and
 // the last four represent the ID in a 32-bit big endian integer encoding.
 func splitAvroWireFormatMessage(msg []byte) (schemaregistry.ID, []byte, error) {
-	const op = errors.Op("avroutil.SplitAvroWireFormatMessage")
+	const op = errors.Op("avroutil.splitAvroWireFormatMessage")
 	if len(msg) < 5 {
 		return 0, nil, errors.E(op, "invalid message length")
 	}
 	if msg[0] != 0x00 {
 		return 0, nil, errors.E(op, "invalid magic byte")
 	}
+	// Disabling gosec due to false positive about out of bounds
+	//nolint:gosec
 	schemaID := schemaregistry.ID(binary.BigEndian.Uint32(msg[1:5]))
+
+	//nolint:gosec
 	data := msg[5:]
 	return schemaID, data, nil
 }

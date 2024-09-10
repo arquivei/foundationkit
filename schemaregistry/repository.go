@@ -9,7 +9,7 @@ import (
 )
 
 // ID is the schema registry's schema ID
-type ID int
+type ID uint32
 
 // MarshalZerologObject implements the zerolog marshaler so it can be logged
 // using: log.With().EmbedObject(id).Msg("Some message")
