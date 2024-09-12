@@ -84,7 +84,7 @@ func translateTraceV1ToTraceV2Headers(tv1 trace.Trace, r *http.Request) {
 func hasValidTraceV2Header(r *http.Request) bool {
 	header := r.Header.Get("traceparent")
 	traceInfo := getTraceInfoFromTraceV2Header(header)
-	return header != "" && traceInfo.traceID != ""
+	return traceInfo.traceID != ""
 }
 
 type traceInfo struct {
@@ -96,7 +96,7 @@ type traceInfo struct {
 func getTraceInfoFromTraceV2Header(header string) traceInfo {
 	// 00-TRACEID-SPANID-PROBABILITYSAMPLE
 	s := strings.Split(header, "-")
-	if len(s) < 4 {
+	if len(s) != 4 {
 		return traceInfo{}
 	}
 
