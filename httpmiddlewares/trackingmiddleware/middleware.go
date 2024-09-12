@@ -53,7 +53,7 @@ func translateTraceV2ToTraceV1(r *http.Request) trace.Trace {
 	ps, _ := strconv.ParseFloat(traceInfo.probabilitySample, 64)
 
 	return trace.Trace{
-		ID:                trace.Parse(traceInfo.traceId),
+		ID:                trace.Parse(traceInfo.traceID),
 		ProbabilitySample: ref.Float64(ps),
 	}
 }
@@ -84,12 +84,12 @@ func translateTraceV1ToTraceV2Headers(tv1 trace.Trace, r *http.Request) {
 func hasValidTraceV2Header(r *http.Request) bool {
 	header := r.Header.Get("traceparent")
 	traceInfo := getTraceInfoFromTraceV2Header(header)
-	return header != "" && traceInfo.traceId != ""
+	return header != "" && traceInfo.traceID != ""
 }
 
 type traceInfo struct {
-	traceId           string
-	spanId            string
+	traceID           string
+	spanID            string
 	probabilitySample string
 }
 
@@ -101,8 +101,8 @@ func getTraceInfoFromTraceV2Header(header string) traceInfo {
 	}
 
 	return traceInfo{
-		traceId:           s[1],
-		spanId:            s[2],
+		traceID:           s[1],
+		spanID:            s[2],
 		probabilitySample: s[3],
 	}
 }
