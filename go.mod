@@ -2,7 +2,7 @@ module github.com/arquivei/foundationkit
 
 go 1.22
 
-toolchain go1.23.1
+toolchain go1.23.2
 
 require (
 	cloud.google.com/go/logging v1.11.0
@@ -11,10 +11,10 @@ require (
 	github.com/go-kit/log v0.2.1
 	github.com/go-logr/zerologr v1.2.3
 	github.com/gorilla/mux v1.8.1
-	github.com/hamba/avro/v2 v2.25.2
+	github.com/hamba/avro/v2 v2.26.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/omeid/uconfig v1.2.1
-	github.com/prometheus/client_golang v1.20.3
+	github.com/prometheus/client_golang v1.20.4
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
 	go.opencensus.io v0.24.0
