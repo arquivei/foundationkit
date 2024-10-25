@@ -40,3 +40,37 @@ func TestUInt64(t *testing.T) {
 	value := uint64(1)
 	assert.Equal(t, UInt64(value), &value)
 }
+
+func TestOf_Str(t *testing.T) {
+	value := "abcde"
+	assert.Equal(t, Of(value), &value)
+}
+
+func TestOf_Bool(t *testing.T) {
+	valueTrue := true
+	assert.Equal(t, Of(valueTrue), &valueTrue)
+
+	valueFalse := false
+	assert.Equal(t, Of(valueFalse), &valueFalse)
+}
+
+func TestOf_Float64(t *testing.T) {
+	value := 1.2
+	assert.Equal(t, Of(value), &value)
+}
+
+func TestValue(t *testing.T) {
+	assert.Equal(t, Value(Of("")), "")
+	assert.Equal(t, Value(Of("bla")), "bla")
+	assert.Equal(t, Value[string](nil), "")
+}
+
+func TestOf_Time(t *testing.T) {
+	value := time.Now()
+	assert.Equal(t, Of(value), &value)
+}
+
+func TestOf_UInt64(t *testing.T) {
+	value := uint64(1)
+	assert.Equal(t, Of(value), &value)
+}
