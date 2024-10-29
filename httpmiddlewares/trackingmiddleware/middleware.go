@@ -54,7 +54,7 @@ func translateTraceV2ToTraceV1(r *http.Request) trace.Trace {
 
 	return trace.Trace{
 		ID:                trace.Parse(traceInfo.traceID),
-		ProbabilitySample: ref.Float64(ps),
+		ProbabilitySample: ref.Of(ps),
 	}
 }
 
