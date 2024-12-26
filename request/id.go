@@ -58,13 +58,13 @@ func Parse(id string) (ID, error) {
 		return ID{}, errors.New("wrong format for request id")
 	}
 
-	timestamp, err := strconv.Atoi(slices[0])
+	timestamp, err := strconv.ParseUint(slices[0], 10, 64)
 	if err != nil {
 		return ID{}, err
 	}
 
 	return ID{
-		timestamp: uint64(timestamp),
+		timestamp: timestamp,
 		randomID:  slices[1],
 	}, nil
 }
