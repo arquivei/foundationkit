@@ -61,7 +61,7 @@ func TestIDParse(t *testing.T) {
 		{
 			name:          "Without timestamp and with random ID",
 			input:         "-random",
-			expectedError: "strconv.Atoi: parsing \"\": invalid syntax",
+			expectedError: "strconv.ParseUint: parsing \"\": invalid syntax",
 		},
 		{
 			name:  "With timestamp and without random ID",
@@ -158,7 +158,7 @@ func TestIDUnmarshall(t *testing.T) {
 		{
 			name:          "Atoi failed",
 			json:          `{"ID":"a-01DVTM1P53ZVBRCCM4F9SCRK09"}`,
-			expectedError: `strconv.Atoi: parsing "a": invalid syntax`,
+			expectedError: `strconv.ParseUint: parsing "a": invalid syntax`,
 		},
 	}
 
