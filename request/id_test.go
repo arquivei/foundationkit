@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIDString(t *testing.T) {
@@ -39,6 +40,53 @@ func TestIDString(t *testing.T) {
 	for _, test := range tests {
 		id := ID{test.timestamp, test.randomID}
 		assert.Equal(t, test.expected, id.String(), test.name)
+	}
+}
+
+func TestIDParse(t *testing.T) {
+	tests := []struct {
+		name          string
+		input         string
+		expected      ID
+		expectedError string
+	}{
+		{
+			name:  "With timestamp and random ID",
+			input: "19-random",
+			expected: ID{
+				timestamp: 19,
+				randomID:  "random",
+			},
+		},
+		{
+			name:          "Without timestamp and with random ID",
+			input:         "-random",
+			expectedError: "strconv.Atoi: parsing \"\": invalid syntax",
+		},
+		{
+			name:  "With timestamp and without random ID",
+			input: "19-",
+			expected: ID{
+				timestamp: 19,
+				randomID:  "",
+			},
+		},
+		{
+			name:          "Without timestamp and random ID",
+			input:         "",
+			expectedError: "wrong format for request id",
+		},
+	}
+
+	for _, test := range tests {
+		result, err := Parse(test.input)
+
+		if test.expectedError == "" {
+			require.NoError(t, err, test.name)
+			assert.Equal(t, test.expected, result, test.name)
+		} else {
+			assert.EqualError(t, err, test.expectedError, test.name)
+		}
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -64,7 +65,7 @@ func Parse(id string) (ID, error) {
 	}
 
 	return ID{
-		timestamp: uint64(timestamp),
+		timestamp: uint64(math.Abs(float64(timestamp))),
 		randomID:  slices[1],
 	}, nil
 }
