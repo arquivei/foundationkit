@@ -1,6 +1,9 @@
 /*
 Package app provides an application framework that manages the live cycle of a running application.
 
+Deprecated: This package was superseeded by https://github.com/arquivei/go-app.
+// Please use the new go-app package instead of this package for new projects.
+
 An app could be an HTTP server (or any kind of server), a worker or a simple program. Independently of the kind of the app, it always exposes an admin port at 9000 by default which serves metrics, debug information and kubernetes probes. It also is capable of graceful shutdown on receiving signals of terminating by itself.
 
 The recommended way to use the `app` package is to rely on the 'default app'. The 'default app' is a global app that can be accessed by public functions on the app package (the app package can be seen as the application)
