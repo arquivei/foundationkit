@@ -5,7 +5,7 @@ go 1.22.7
 toolchain go1.23.4
 
 require (
-	cloud.google.com/go/logging v1.12.0
+	cloud.google.com/go/logging v1.13.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/go-kit/kit v0.13.0
 	github.com/go-kit/log v0.2.1
