@@ -32,19 +32,17 @@ func MakeHTTPHandler(e endpoint.Endpoint) http.Handler {
 	return r
 }
 
-func decodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
+func decodeRequest(_ context.Context, r *http.Request) (any, error) {
 	var body Request
-
 	defer r.Body.Close()
-	json.NewDecoder(r.Body).Decode(&body)
 
-	return body, nil
+	return body, json.NewDecoder(r.Body).Decode(&body)
 }
 
 func encodeResponse(
 	ctx context.Context,
 	w http.ResponseWriter,
-	r interface{},
+	r any,
 ) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	return json.NewEncoder(w).Encode(r)
@@ -56,12 +54,12 @@ func encodeError(ctx context.Context, err error, w http.ResponseWriter) {
 		Error: err.Error(),
 	}
 	w.WriteHeader(getHTTPStatus(err))
+	// nolint: errcheck
 	json.NewEncoder(w).Encode(r)
 }
 
 func getHTTPStatus(err error) (s int) {
-	switch errors.GetSeverity(err) {
-	case errors.SeverityInput:
+	if errors.GetSeverity(err) == errors.SeverityInput {
 		return http.StatusBadRequest
 	}
 

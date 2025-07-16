@@ -9,6 +9,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/arquivei/foundationkit/app"
 	"github.com/arquivei/foundationkit/log"
@@ -29,12 +30,18 @@ func main() {
 	ctx := log.SetupLoggerWithContext(context.Background(), config.Log, version)
 
 	// New app
-	app.NewDefaultApp(ctx)
+	if err := app.NewDefaultApp(ctx); err != nil {
+		panic(err)
+	}
 
 	// Some inicialization, could take a while.
 	// It's a good practice to initialize everything before calling RunAndWait because
 	// readiness probe is already up and reporting the app is not ready yet.
-	httpServer := &http.Server{Addr: ":" + config.HTTP.Port, Handler: http.FileServer(http.Dir(config.Dir))}
+	httpServer := &http.Server{
+		Addr:              ":" + config.HTTP.Port,
+		ReadHeaderTimeout: time.Second,
+		Handler:           http.FileServer(http.Dir(config.Dir)),
+	}
 
 	// You can register the shutdown handlers at any order, but do it before starting the app
 	app.RegisterShutdownHandler(

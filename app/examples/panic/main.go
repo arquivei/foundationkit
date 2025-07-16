@@ -1,6 +1,6 @@
 package main
 
-// This example shows how panics are captured and gracefuly printed
+// This example shows how panics are captured and gracefully printed
 // by the app.Recover() function.
 //
 // To run this program in the commandline you could use:
@@ -26,7 +26,9 @@ func main() {
 	ctx := log.SetupLoggerWithContext(context.Background(), config.Log, version)
 
 	// New app
-	app.NewDefaultApp(ctx)
+	if err := app.NewDefaultApp(ctx); err != nil {
+		panic(err)
+	}
 
 	// Comment this next line to see the other panic
 	// thisWillPanic()
@@ -36,6 +38,7 @@ func main() {
 	})
 }
 
+// nolint: unused
 func thisWillPanic() {
 	panic("panics outside RunAndWait should be caught by app.Recover()")
 }

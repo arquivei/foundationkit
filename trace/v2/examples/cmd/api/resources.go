@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/arquivei/foundationkit/app"
 	"github.com/arquivei/foundationkit/gokitmiddlewares/loggingmiddleware"
@@ -27,7 +28,7 @@ func setupTrace() {
 	app.RegisterShutdownHandler(
 		&app.ShutdownHandler{
 			Name:     "opentelemetry_trace",
-			Priority: app.ShutdownPriority(shutdownPriorityTrace),
+			Priority: shutdownPriorityTrace,
 			Handler:  traceShutdown,
 			Policy:   app.ErrorPolicyAbort,
 		})
@@ -66,7 +67,10 @@ func getHTTPServer() *http.Server {
 	r.PathPrefix("/ping/").Handler(apiping.MakeHTTPHandler(getEndpoint()))
 
 	httpAddr := ":" + config.HTTP.Port
-	httpServer := &http.Server{Addr: httpAddr, Handler: r}
+	httpServer := &http.Server{
+		Addr:              httpAddr,
+		ReadHeaderTimeout: time.Second,
+		Handler:           r}
 
 	app.RegisterShutdownHandler(
 		&app.ShutdownHandler{
