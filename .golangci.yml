@@ -1,39 +1,46 @@
-# Full list on https://golangci-lint.run/usage/linters/
+version: "2"
 run:
-  timeout: 5m
   allow-parallel-runners: true
 linters:
-  disable-all: true
+  default: none
   enable:
-    #- exhaustive    # check exhaustiveness of enum switch statements
-    #- funlen        # Tool for detection of long functions
-    #- gocognit      # Computes and checks the cognitive complexity of functions
-    #- godot         # Check if comments end in a period
-    #- golint        # Golint differs from gofmt. Gofmt reformats Go source code, whereas golint prints out style mistakes
-    #- lll           # Reports long lines
-    #- scopelint     # Scopelint checks for unpinned variables in go programs
-    - bodyclose # checks whether HTTP response body is closed successfully
-    - dupl # Tool for code clone detection
-    - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases
-    - exportloopref # checks for pointers to enclosing loop variables
-    - goconst # Finds repeated strings that could be replaced by a constant
-    - gocritic # The most opinionated Go source code linter
-    - gocyclo # Computes and checks the cyclomatic complexity of functions
-    - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
-    - goimports # Goimports does everything that gofmt does. Additionally it checks unused imports
-    - gosec # Inspects source code for security problems
-    - gosimple # Linter for Go source code that specializes in simplifying a code
-    - govet # Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string
-    - ineffassign # Detects when assignments to existing variables are not used
-    - misspell # Finds commonly misspelled English words in comments
-    - nakedret # Finds naked returns in functions greater than a specified function length
-    - noctx # noctx finds sending http request without context.Context
-    - prealloc # Finds slice declarations that could potentially be preallocated
-    - rowserrcheck # checks whether Err of rows is checked successfully
-    - staticcheck # Staticcheck is a go vet on steroids, applying a ton of static analysis checks
-    - stylecheck # Stylecheck is a replacement for golint
-    - typecheck # Like the front-end of a Go compiler, parses and type-checks Go code
-    - unconvert # Remove unnecessary type conversions
-    - unparam # Reports unused function parameters
-    - unused # Checks Go code for unused constants, variables, functions and types
-    - whitespace # Tool for detection of leading and trailing whitespace
+    - bodyclose
+    - dupl
+    - errcheck
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - noctx
+    - prealloc
+    - rowserrcheck
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

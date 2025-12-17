@@ -52,103 +52,45 @@ func dumpMemStats(w http.ResponseWriter, r *http.Request) {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
-	var b bytes.Buffer
-	bufferWriter := bufio.NewWriter(&b)
+	bw := bufio.NewWriter(w)
 
-	bufferWriter.WriteString("*** General statistics ***\n\n")
-	bufferWriter.WriteString(
-		fmt.Sprintf("Alloc (Alloc): %d bytes [%d mb]\n", memStats.Alloc, bytesToMegabytes(memStats.Alloc)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Cumulative Alloc (TotalAlloc): %d bytes [%d mb]\n", memStats.TotalAlloc, bytesToMegabytes(memStats.TotalAlloc)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Obtained from OS (Sys): %d bytes [%d mb]\n", memStats.Sys, bytesToMegabytes(memStats.Sys)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Pointer Lookups (Lookups): %d times\n", memStats.Lookups),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Cumulative Objects Allocated (Mallocs): %d times\n", memStats.Mallocs),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Cumulative Objects Freed (Frees): %d times\n", memStats.Frees),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("\tLive Objects (Mallocs - Frees): %d \n", (memStats.Mallocs - memStats.Frees)),
-	)
+	fmt.Fprint(bw, "*** General statistics ***\n\n")
+	fmt.Fprintf(bw, "Alloc (Alloc): %d bytes [%d mb]\n", memStats.Alloc, bytesToMegabytes(memStats.Alloc))
+	fmt.Fprintf(bw, "Cumulative Alloc (TotalAlloc): %d bytes [%d mb]\n", memStats.TotalAlloc, bytesToMegabytes(memStats.TotalAlloc))
+	fmt.Fprintf(bw, "Obtained from OS (Sys): %d bytes [%d mb]\n", memStats.Sys, bytesToMegabytes(memStats.Sys))
+	fmt.Fprintf(bw, "Pointer Lookups (Lookups): %d times\n", memStats.Lookups)
+	fmt.Fprintf(bw, "Cumulative Objects Allocated (Mallocs): %d times\n", memStats.Mallocs)
+	fmt.Fprintf(bw, "Cumulative Objects Freed (Frees): %d times\n", memStats.Frees)
+	fmt.Fprintf(bw, "\tLive Objects (Mallocs - Frees): %d \n", (memStats.Mallocs - memStats.Frees))
 
-	bufferWriter.WriteString("\n\n*** Heap Memory statistics ***\n\n")
-	bufferWriter.WriteString(
-		fmt.Sprintf("Heap Allocation (HeapAlloc): %d bytes [%d mb]\n", memStats.HeapAlloc, bytesToMegabytes(memStats.HeapAlloc)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Largest Heap Memory Size from OS (HeapSys): %d bytes [%d mb]\n", memStats.HeapSys, bytesToMegabytes(memStats.HeapSys)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Idle Heap Spans (HeapIdle): %d bytes [%d mb]\n", memStats.HeapIdle, bytesToMegabytes(memStats.HeapIdle)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("In-use Heap Spans (HeapInuse): %d bytes [%d mb]\n", memStats.HeapInuse, bytesToMegabytes(memStats.HeapInuse)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Heap Released (HeapReleased): %d bytes [%d mb]\n", memStats.HeapReleased, bytesToMegabytes(memStats.HeapReleased)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Heap Objects (HeapObjects): %d \n", memStats.HeapObjects),
-	)
+	fmt.Fprint(bw, "\n\n*** Heap Memory statistics ***\n\n")
+	fmt.Fprintf(bw, "Heap Allocation (HeapAlloc): %d bytes [%d mb]\n", memStats.HeapAlloc, bytesToMegabytes(memStats.HeapAlloc))
+	fmt.Fprintf(bw, "Largest Heap Memory Size from OS (HeapSys): %d bytes [%d mb]\n", memStats.HeapSys, bytesToMegabytes(memStats.HeapSys))
+	fmt.Fprintf(bw, "Idle Heap Spans (HeapIdle): %d bytes [%d mb]\n", memStats.HeapIdle, bytesToMegabytes(memStats.HeapIdle))
+	fmt.Fprintf(bw, "In-use Heap Spans (HeapInuse): %d bytes [%d mb]\n", memStats.HeapInuse, bytesToMegabytes(memStats.HeapInuse))
+	fmt.Fprintf(bw, "Heap Released (HeapReleased): %d bytes [%d mb]\n", memStats.HeapReleased, bytesToMegabytes(memStats.HeapReleased))
+	fmt.Fprintf(bw, "Heap Objects (HeapObjects): %d \n", memStats.HeapObjects)
 
-	bufferWriter.WriteString("\n\n*** Stack Memory statistics ***\n\n")
-	bufferWriter.WriteString(
-		fmt.Sprintf("Stack in Use (StackInuse): %d bytes [%d mb]\n", memStats.StackInuse, bytesToMegabytes(memStats.StackInuse)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Stack from OS (StackSys): %d bytes [%d mb]\n", memStats.StackSys, bytesToMegabytes(memStats.StackSys)),
-	)
+	fmt.Fprint(bw, "\n\n*** Stack Memory statistics ***\n\n")
+	fmt.Fprintf(bw, "Stack in Use (StackInuse): %d bytes [%d mb]\n", memStats.StackInuse, bytesToMegabytes(memStats.StackInuse))
+	fmt.Fprintf(bw, "Stack from OS (StackSys): %d bytes [%d mb]\n", memStats.StackSys, bytesToMegabytes(memStats.StackSys))
 
-	bufferWriter.WriteString("\n\n*** Off-heap Memory statistics ***\n\n")
-	bufferWriter.WriteString(
-		fmt.Sprintf("Mspan structures memory (MSpanInuse): %d bytes [%d mb]\n", memStats.MSpanInuse, bytesToMegabytes(memStats.MSpanInuse)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Mspan structures memory from OS (MSpanSys): %d bytes [%d mb]\n", memStats.MSpanSys, bytesToMegabytes(memStats.MSpanSys)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("MCache structures memory (MCacheInuse): %d bytes [%d mb]\n", memStats.MCacheInuse, bytesToMegabytes(memStats.MCacheInuse)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("MCache structures memory from OS (MCacheSys): %d bytes [%d mb]\n", memStats.MCacheSys, bytesToMegabytes(memStats.MCacheSys)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Profiling bucket hash tables size (BuckHashSys): %d bytes [%d mb]\n", memStats.BuckHashSys, bytesToMegabytes(memStats.BuckHashSys)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("GC metadata size (GCSys): %d bytes [%d mb]\n", memStats.GCSys, bytesToMegabytes(memStats.GCSys)),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Miscellaneous (OtherSys): %d bytes [%d mb]\n", memStats.OtherSys, bytesToMegabytes(memStats.OtherSys)),
-	)
+	fmt.Fprint(bw, "\n\n*** Off-heap Memory statistics ***\n\n")
+	fmt.Fprintf(bw, "Mspan structures memory (MSpanInuse): %d bytes [%d mb]\n", memStats.MSpanInuse, bytesToMegabytes(memStats.MSpanInuse))
+	fmt.Fprintf(bw, "Mspan structures memory from OS (MSpanSys): %d bytes [%d mb]\n", memStats.MSpanSys, bytesToMegabytes(memStats.MSpanSys))
+	fmt.Fprintf(bw, "MCache structures memory (MCacheInuse): %d bytes [%d mb]\n", memStats.MCacheInuse, bytesToMegabytes(memStats.MCacheInuse))
+	fmt.Fprintf(bw, "MCache structures memory from OS (MCacheSys): %d bytes [%d mb]\n", memStats.MCacheSys, bytesToMegabytes(memStats.MCacheSys))
+	fmt.Fprintf(bw, "Profiling bucket hash tables size (BuckHashSys): %d bytes [%d mb]\n", memStats.BuckHashSys, bytesToMegabytes(memStats.BuckHashSys))
+	fmt.Fprintf(bw, "GC metadata size (GCSys): %d bytes [%d mb]\n", memStats.GCSys, bytesToMegabytes(memStats.GCSys))
+	fmt.Fprintf(bw, "Miscellaneous (OtherSys): %d bytes [%d mb]\n", memStats.OtherSys, bytesToMegabytes(memStats.OtherSys))
 
-	bufferWriter.WriteString("\n\n*** Garbage Collector statistics ***\n\n")
-	bufferWriter.WriteString(
-		fmt.Sprintf("Next GC Target (NextGC): %d \n", memStats.NextGC),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Last GC in UNIX epoch (LastGC): %d \n", memStats.LastGC),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Cumulative ns in GC stop-the-world (PauseTotalNs): %d \n", memStats.PauseTotalNs),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Completed Cycles (NumGC): %d \n", memStats.NumGC),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("Forced Cycles (NumForcedGC): %d \n", memStats.NumForcedGC),
-	)
-	bufferWriter.WriteString(
-		fmt.Sprintf("CPU Fraction (GCCPUFraction): %f \n", memStats.GCCPUFraction),
-	)
+	fmt.Fprint(bw, "\n\n*** Garbage Collector statistics ***\n\n")
+	fmt.Fprintf(bw, "Next GC Target (NextGC): %d \n", memStats.NextGC)
+	fmt.Fprintf(bw, "Last GC in UNIX epoch (LastGC): %d \n", memStats.LastGC)
+	fmt.Fprintf(bw, "Cumulative ns in GC stop-the-world (PauseTotalNs): %d \n", memStats.PauseTotalNs)
+	fmt.Fprintf(bw, "Completed Cycles (NumGC): %d \n", memStats.NumGC)
+	fmt.Fprintf(bw, "Forced Cycles (NumForcedGC): %d \n", memStats.NumForcedGC)
+	fmt.Fprintf(bw, "CPU Fraction (GCCPUFraction): %f \n", memStats.GCCPUFraction)
 
-	bufferWriter.Flush()
-	w.Write(b.Bytes())
+	bw.Flush()
 }
