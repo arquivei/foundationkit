@@ -4,7 +4,7 @@ import "strconv"
 
 func isDigitOnly(accesskey string) bool {
 	for _, token := range accesskey {
-		if !(token >= '0' && token <= '9') {
+		if token < '0' || token > '9' {
 			return false
 		}
 	}

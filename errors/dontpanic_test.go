@@ -25,6 +25,7 @@ func TestDontPanic(t *testing.T) {
 			expected: "panic: runtime error: index out of range [1] with length 0",
 			panicFunc: func() {
 				var s []string
+				//nolint
 				ss := s[1]
 				fmt.Println(ss)
 			},

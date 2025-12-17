@@ -97,16 +97,16 @@ func validateNFF(accessKey AccessKey) error {
 		return errors.E(op, ErrInvalidNumeroForNFF, ErrCodeInvalidNumeroForNFF)
 	}
 
-	if accessKey[29] == '1' {
+	switch accessKey[29] {
+	case '1':
 		err := stakeholder.CheckCNPJ(accessKey[6:20].String())
 		if err != nil {
 			return errors.E(op, err, ErrCodeInvalidCNPJForNFF)
 		}
-	} else if accessKey[29] == '2' {
+	case '2':
 		if accessKey[6:9] != "000" {
 			return errors.E(op, "cpf is not padded with 0", ErrCodeInvalidCPFForNFF)
 		}
-
 		err := stakeholder.CheckCPF(accessKey[9:20].String())
 		if err != nil {
 			return errors.E(op, err, ErrCodeInvalidCPFForNFF)
@@ -118,7 +118,7 @@ func validateNFF(accessKey AccessKey) error {
 
 func isDigitOnly(accesskey AccessKey) bool {
 	for _, token := range accesskey {
-		if !(token >= '0' && token <= '9') {
+		if token < '0' || token > '9' {
 			return false
 		}
 	}
