@@ -9,7 +9,7 @@ require (
 	github.com/go-kit/log v0.2.1
 	github.com/go-logr/zerologr v1.2.3
 	github.com/gorilla/mux v1.8.1
-	github.com/hamba/avro/v2 v2.30.0
+	github.com/hamba/avro/v2 v2.31.0
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/omeid/uconfig v1.2.1
 	github.com/prometheus/client_golang v1.23.2
