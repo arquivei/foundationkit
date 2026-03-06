@@ -22,7 +22,7 @@ func Flatten(value interface{}) string {
 	for k, v := range m {
 		sb.WriteString(k)
 		sb.WriteString(": ")
-		sb.WriteString(fmt.Sprintf("'%v'", v))
+		fmt.Fprintf(&sb, "'%v'", v)
 		sb.WriteString(", ")
 	}
 
