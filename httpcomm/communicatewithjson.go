@@ -253,6 +253,7 @@ func communicateWithHTTPRequest(
 	maxAcceptedBodySize int64,
 	httpRequest *http.Request,
 ) (ResponseDetails, []byte, error) {
+	//nolint:gosec // The caller is responsible for checking the URL.
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
 		if isHTTPTimeoutError(err) {
