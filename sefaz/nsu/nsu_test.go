@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	testNameValidNSU   = "Valid NSU"
+	testNameInvalidNSU = "Invalid NSU"
+)
+
 func TestNSUStringMethod(t *testing.T) {
 	assert.Equal(t, "000000000000000", NSU("0").String())
 	assert.Equal(t, "000000000000123", NSU("123").String())
@@ -27,7 +32,7 @@ func TestNSUJSONUnmarshaler(t *testing.T) {
 		Err      string
 	}{
 		{
-			Test:     "Valid NSU",
+			Test:     testNameValidNSU,
 			Input:    []byte(`"123"`),
 			Expected: NSU("000000000000123"),
 			Err:      "",
@@ -39,7 +44,7 @@ func TestNSUJSONUnmarshaler(t *testing.T) {
 			Err:      "nsu.UnmarshalJSON: unexpected end of JSON input",
 		},
 		{
-			Test:     "Invalid NSU",
+			Test:     testNameInvalidNSU,
 			Input:    []byte(`"abc"`),
 			Expected: NSU(""),
 			Err:      "nsu.UnmarshalJSON: nsu.Parse: failed to parse nsu from string",
@@ -66,7 +71,7 @@ func TestParse(t *testing.T) {
 		Err      string
 	}{
 		{
-			Test:     "Valid NSU",
+			Test:     testNameValidNSU,
 			Input:    "123",
 			Expected: NSU("000000000000123"),
 			Err:      "",
@@ -84,7 +89,7 @@ func TestParse(t *testing.T) {
 			Err:      "nsu.Parse: nsu has more than 15 digits",
 		},
 		{
-			Test:     "Invalid NSU",
+			Test:     testNameInvalidNSU,
 			Input:    "abc",
 			Expected: "",
 			Err:      "nsu.Parse: failed to parse nsu from string",
@@ -116,7 +121,7 @@ func TestAsInt(t *testing.T) {
 		Panics   bool
 	}{
 		{
-			Test:     "Valid NSU",
+			Test:     testNameValidNSU,
 			Input:    "00123",
 			Expected: 123,
 		},
@@ -127,7 +132,7 @@ func TestAsInt(t *testing.T) {
 			Panics:   true,
 		},
 		{
-			Test:     "Invalid NSU",
+			Test:     testNameInvalidNSU,
 			Input:    "abc",
 			Expected: 0,
 			Panics:   true,

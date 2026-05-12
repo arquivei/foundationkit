@@ -33,7 +33,7 @@ func TestDecode(t *testing.T) {
 		expectedError  string
 	}{
 		{
-			name:  "Success",
+			name:  testCaseSuccess,
 			input: []byte{0, 0, 0, 0, 1, 5, 12, 2, 97, 2, 98, 2, 99, 0},
 			expectedResult: tagsType{
 				Tags: []string{"a", "b", "c"},

@@ -9,6 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	testLabelKey   = "key"
+	testLabelValue = "value"
+)
+
 type testSpan struct {
 	name                     string
 	defaultProbabilitySample float64
@@ -115,7 +120,7 @@ func assertResponse(ctx context.Context, s Span, test testSpan, t *testing.T) {
 	}
 
 	ctx = WithLabels(ctx, map[string]string{
-		"key": "value",
+		testLabelKey: testLabelValue,
 	})
 
 	assert.NotPanics(t, func() { s.End(errors.New("error label")) })
@@ -139,7 +144,7 @@ func TestSpanName(t *testing.T) {
 
 func TestSetSpanLabels(t *testing.T) {
 	ctx := WithLabels(context.Background(), map[string]string{
-		"key": "value",
+		testLabelKey: testLabelValue,
 	})
 	var s Span
 	ctx, s = StartSpan(ctx, "test")
@@ -148,7 +153,7 @@ func TestSetSpanLabels(t *testing.T) {
 
 func TestEnd(t *testing.T) {
 	ctx := WithLabels(context.Background(), map[string]string{
-		"key": "value",
+		testLabelKey: testLabelValue,
 	})
 	var s Span
 	_, s = StartSpan(ctx, "test")
@@ -159,7 +164,7 @@ func TestGetID(t *testing.T) {
 	var s Span
 	assert.Empty(t, s.GetID(), "Returned span id should be empty")
 
-	ctx := WithLabels(context.Background(), map[string]string{"key": "value"})
+	ctx := WithLabels(context.Background(), map[string]string{testLabelKey: testLabelValue})
 	_, s = StartSpan(ctx, "test")
 	assert.NotEmpty(t, s.GetID(), "Returned span id should not be empty")
 }

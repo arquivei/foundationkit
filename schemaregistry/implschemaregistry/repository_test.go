@@ -13,6 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	keySchema  = "schema"
+	keySubject = "subject"
+	keyVersion = "version"
+)
+
 var (
 	tagsSchemaStr = `{"name":"simple","type":"record","fields":[{"name":"a","type":"long"},{"name":"b","type":"string"}]}`
 	tagsSchema    = avro.MustParse(tagsSchemaStr)
@@ -27,20 +33,20 @@ func TestGetSchemaByID(t *testing.T) {
 		{
 			name: "Success",
 			httpResponse: map[string]interface{}{
-				"schema": tagsSchemaStr,
+				keySchema: tagsSchemaStr,
 			},
 		},
 		{
 			name: "Error - Decode Response",
 			httpResponse: map[string]interface{}{
-				"schema": 1,
+				keySchema: 1,
 			},
 			expectedError: "implschemaregistry.repository.GetSchemaByID: json: cannot unmarshal number into Go struct field getSchemaByIDResponse.schema of type string",
 		},
 		{
 			name: "Error - Empty Schema",
 			httpResponse: map[string]interface{}{
-				"schema": "",
+				keySchema: "",
 			},
 			expectedError: "implschemaregistry.repository.GetSchemaByID: avro: unknown type:  [schema=]",
 		},
@@ -87,10 +93,10 @@ func TestGetIDBySchema(t *testing.T) {
 			schemaID: schemaregistry.ID(10),
 			subject:  schemaregistry.Subject("mysubject"),
 			httpResponse: map[string]interface{}{
-				"id":      schemaregistry.ID(10),
-				"subject": schemaregistry.Subject("mysubject"),
-				"version": 1,
-				"schema":  tagsSchemaStr,
+				"id":       schemaregistry.ID(10),
+				keySubject: schemaregistry.Subject("mysubject"),
+				keyVersion: 1,
+				keySchema:  tagsSchemaStr,
 			},
 			statusCode: 200,
 		},
@@ -100,10 +106,10 @@ func TestGetIDBySchema(t *testing.T) {
 			schemaID: schemaregistry.ID(10),
 			subject:  schemaregistry.Subject("mysubject"),
 			httpResponse: map[string]interface{}{
-				"id":      schemaregistry.ID(10),
-				"subject": schemaregistry.Subject("mysubject"),
-				"version": 1,
-				"schema":  tagsSchemaStr,
+				"id":       schemaregistry.ID(10),
+				keySubject: schemaregistry.Subject("mysubject"),
+				keyVersion: 1,
+				keySchema:  tagsSchemaStr,
 			},
 			statusCode:    404,
 			expectedError: "implschemaregistry.repository.GetIDBySchema: schema registry returned 404 - subject or schema not found",
@@ -114,10 +120,10 @@ func TestGetIDBySchema(t *testing.T) {
 			schemaID: schemaregistry.ID(10),
 			subject:  schemaregistry.Subject("mysubject"),
 			httpResponse: map[string]interface{}{
-				"id":      schemaregistry.ID(10),
-				"subject": schemaregistry.Subject("mysubject"),
-				"version": 1,
-				"schema":  tagsSchemaStr,
+				"id":       schemaregistry.ID(10),
+				keySubject: schemaregistry.Subject("mysubject"),
+				keyVersion: 1,
+				keySchema:  tagsSchemaStr,
 			},
 			statusCode:    500,
 			expectedError: "implschemaregistry.repository.GetIDBySchema: internal server error",
@@ -128,10 +134,10 @@ func TestGetIDBySchema(t *testing.T) {
 			schemaID: schemaregistry.ID(10),
 			subject:  schemaregistry.Subject("mysubject"),
 			httpResponse: map[string]interface{}{
-				"id":      schemaregistry.ID(10),
-				"subject": schemaregistry.Subject("mysubject"),
-				"version": 1,
-				"schema":  tagsSchemaStr,
+				"id":       schemaregistry.ID(10),
+				keySubject: schemaregistry.Subject("mysubject"),
+				keyVersion: 1,
+				keySchema:  tagsSchemaStr,
 			},
 			statusCode:    666,
 			expectedError: "implschemaregistry.repository.GetIDBySchema: unexpected status code returned [statusCode=666]",
@@ -158,10 +164,10 @@ func TestGetIDBySchema(t *testing.T) {
 			schemaID: schemaregistry.ID(10),
 			subject:  schemaregistry.Subject("mysubject"),
 			httpResponse: map[string]interface{}{
-				"id":      schemaregistry.ID(10),
-				"subject": schemaregistry.Subject("mysubject"),
-				"version": 1,
-				"schema":  "",
+				"id":       schemaregistry.ID(10),
+				keySubject: schemaregistry.Subject("mysubject"),
+				keyVersion: 1,
+				keySchema:  "",
 			},
 			statusCode:    200,
 			expectedError: "implschemaregistry.repository.GetIDBySchema: avro: unknown type: ",
@@ -178,7 +184,7 @@ func TestGetIDBySchema(t *testing.T) {
 				var body map[string]interface{}
 				err := json.NewDecoder(req.Body).Decode(&body)
 				assert.NoError(t, err)
-				assert.Equal(t, body["schema"], test.schema)
+				assert.Equal(t, body[keySchema], test.schema)
 				rw.WriteHeader(test.statusCode)
 				out, _ := json.Marshal(test.httpResponse)
 				_, _ = rw.Write(out)

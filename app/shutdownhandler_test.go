@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const testHandlerName = "my_failed_shutdown_handler"
+
 func TestShutdownhandlerHeap(t *testing.T) {
 	h := shutdownHeap{}
 	heap.Init(&h)
@@ -85,7 +87,7 @@ func TestShutdownHandlerExecute(t *testing.T) {
 	assert.True(t, sh.executed)
 
 	sh = &ShutdownHandler{
-		Name: "my_failed_shutdown_handler",
+		Name: testHandlerName,
 		Handler: func(context.Context) error {
 			return errors.New("my error")
 		},
@@ -104,7 +106,7 @@ func TestShutdownHandlerExecute_CanceledContext(t *testing.T) {
 	cancel()
 
 	sh := &ShutdownHandler{
-		Name: "my_failed_shutdown_handler",
+		Name: testHandlerName,
 		Handler: func(context.Context) error {
 			return errors.New("my error")
 		},
@@ -118,7 +120,7 @@ func TestShutdownHandlerExecute_CanceledContext(t *testing.T) {
 
 func TestShutdownHandlerExecute_Timeout(t *testing.T) {
 	sh := &ShutdownHandler{
-		Name: "my_failed_shutdown_handler",
+		Name: testHandlerName,
 		Handler: func(ctx context.Context) error {
 			select {
 			case <-time.After(2 * time.Second):

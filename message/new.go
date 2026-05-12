@@ -17,7 +17,7 @@ import (
 func getTypeName(data interface{}) string {
 	valueOf := reflect.ValueOf(data)
 
-	if valueOf.Type().Kind() == reflect.Ptr {
+	if valueOf.Type().Kind() == reflect.Pointer {
 		return reflect.Indirect(valueOf).Type().Name()
 	}
 	return valueOf.Type().Name()
