@@ -22,7 +22,7 @@ func TestEncoder(t *testing.T) {
 		expectedEncodeError string
 	}{
 		{
-			name: "Success",
+			name: testCaseSuccess,
 			input: tagsType{
 				Tags: []string{"a", "b", "c"},
 			},

@@ -21,7 +21,7 @@ func Test_BinaryToWireFormat(t *testing.T) {
 		expectedEncodeError string
 	}{
 		{
-			name:            "Success",
+			name:            testCaseSuccess,
 			input:           []byte{5, 12, 2, 97, 2, 98, 2, 99, 0},
 			writerSchemaStr: tagsSchemaStr,
 			schemaRepository: implschemaregistry.MustNewMock(map[schemaregistry.ID]string{

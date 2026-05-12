@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const testCaseSuccess = "Success"
+
 type myStruct struct {
 	X int
 }

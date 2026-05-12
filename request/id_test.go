@@ -8,6 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testNameWithTimestampAndRandomID     = "With timestamp and random ID"
+	testNameWithoutTimestampWithRandomID = "Without timestamp and with random ID"
+	testNameWithTimestampWithoutRandomID = "With timestamp and without random ID"
+	testNameWithoutTimestampAndRandomID  = "Without timestamp and random ID"
+	testRandomID                         = "random"
+)
+
 func TestIDString(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -16,23 +24,23 @@ func TestIDString(t *testing.T) {
 		expected  string
 	}{
 		{
-			name:      "With timestamp and random ID",
+			name:      testNameWithTimestampAndRandomID,
 			timestamp: 19,
-			randomID:  "random",
+			randomID:  testRandomID,
 			expected:  "19-random",
 		},
 		{
-			name:     "Without timestamp and with random ID",
-			randomID: "random",
+			name:     testNameWithoutTimestampWithRandomID,
+			randomID: testRandomID,
 			expected: "0-random",
 		},
 		{
-			name:      "With timestamp and without random ID",
+			name:      testNameWithTimestampWithoutRandomID,
 			timestamp: 19,
 			expected:  "19-",
 		},
 		{
-			name:     "Without timestamp and random ID",
+			name:     testNameWithoutTimestampAndRandomID,
 			expected: "",
 		},
 	}
@@ -51,20 +59,20 @@ func TestIDParse(t *testing.T) {
 		expectedError string
 	}{
 		{
-			name:  "With timestamp and random ID",
+			name:  testNameWithTimestampAndRandomID,
 			input: "19-random",
 			expected: ID{
 				timestamp: 19,
-				randomID:  "random",
+				randomID:  testRandomID,
 			},
 		},
 		{
-			name:          "Without timestamp and with random ID",
+			name:          testNameWithoutTimestampWithRandomID,
 			input:         "-random",
 			expectedError: "strconv.ParseUint: parsing \"\": invalid syntax",
 		},
 		{
-			name:  "With timestamp and without random ID",
+			name:  testNameWithTimestampWithoutRandomID,
 			input: "19-",
 			expected: ID{
 				timestamp: 19,
@@ -72,7 +80,7 @@ func TestIDParse(t *testing.T) {
 			},
 		},
 		{
-			name:          "Without timestamp and random ID",
+			name:          testNameWithoutTimestampAndRandomID,
 			input:         "",
 			expectedError: "wrong format for request id",
 		},
@@ -98,23 +106,23 @@ func TestIsEmpty(t *testing.T) {
 		expected  bool
 	}{
 		{
-			name:      "With timestamp and random ID",
+			name:      testNameWithTimestampAndRandomID,
 			timestamp: 19,
-			randomID:  "random",
+			randomID:  testRandomID,
 			expected:  false,
 		},
 		{
-			name:     "Without timestamp and with random ID",
-			randomID: "random",
+			name:     testNameWithoutTimestampWithRandomID,
+			randomID: testRandomID,
 			expected: false,
 		},
 		{
-			name:      "With timestamp and without random ID",
+			name:      testNameWithTimestampWithoutRandomID,
 			timestamp: 19,
 			expected:  false,
 		},
 		{
-			name:     "Without timestamp and random ID",
+			name:     testNameWithoutTimestampAndRandomID,
 			expected: true,
 		},
 	}

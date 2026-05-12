@@ -39,15 +39,17 @@ func greeter(_ context.Context, req interface{}) (interface{}, error) {
 // prefix them with a system-specific name
 type labelsDecoder struct{}
 
+const labelEmptyName = "greeter_empty_name"
+
 func (labelsDecoder) Labels() []string {
-	return []string{"greeter_empty_name"}
+	return []string{labelEmptyName}
 }
 
 func (labelsDecoder) Decode(ctx context.Context, req, resp interface{}, err error) map[string]string {
 	if req.(request).Name == "" {
-		return map[string]string{"greeter_empty_name": "true"}
+		return map[string]string{labelEmptyName: "true"}
 	}
-	return map[string]string{"greeter_empty_name": "false"}
+	return map[string]string{labelEmptyName: "false"}
 }
 
 // newExternalMetrics is an example on how to implement external metrics.

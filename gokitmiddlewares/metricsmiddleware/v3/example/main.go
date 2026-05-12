@@ -34,18 +34,20 @@ func greeter(_ context.Context, req interface{}) (interface{}, error) {
 	return resp, nil
 }
 
+const labelEmptyName = "empty_name"
+
 // labelsDecoder is an example that creates labels for the greeter endpoint.
 type labelsDecoder struct{}
 
 func (labelsDecoder) Labels() []string {
-	return []string{"empty_name"}
+	return []string{labelEmptyName}
 }
 
 func (labelsDecoder) Decode(ctx context.Context, req, resp interface{}, err error) map[string]string {
 	if req.(request).Name == "" {
-		return map[string]string{"empty_name": "true"}
+		return map[string]string{labelEmptyName: "true"}
 	}
-	return map[string]string{"empty_name": "false"}
+	return map[string]string{labelEmptyName: "false"}
 }
 
 // newExternalMetrics is an example on how to implement external metrics.

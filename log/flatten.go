@@ -47,7 +47,7 @@ func flattenPrefixedToResult(value interface{}, prefix string, m map[string]inte
 
 	original := reflect.ValueOf(value)
 	kind := original.Kind()
-	if kind == reflect.Ptr || kind == reflect.Interface {
+	if kind == reflect.Pointer || kind == reflect.Interface {
 		original = reflect.Indirect(original)
 		kind = original.Kind()
 	}

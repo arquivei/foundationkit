@@ -40,7 +40,7 @@ func (i *MockDecoder) handleOutput(args mock.Arguments, output interface{}) {
 
 func (i *MockDecoder) setMockToOutput(output, mocked interface{}) {
 	rv1 := reflect.ValueOf(output)
-	if rv1.Kind() != reflect.Ptr || rv1.IsNil() {
+	if rv1.Kind() != reflect.Pointer || rv1.IsNil() {
 		panic("invalid output type")
 	}
 	rv2 := reflect.ValueOf(mocked)
