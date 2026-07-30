@@ -1,6 +1,6 @@
 package avroutil
 
-import "github.com/hamba/avro/v2"
+import "github.com/arquivei/avro/v2"
 
 type option func(*avro.Config)
 

@@ -7,7 +7,7 @@ import (
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/arquivei/foundationkit/schemaregistry"
 
-	"github.com/hamba/avro/v2"
+	"github.com/arquivei/avro/v2"
 )
 
 type cacheRepository struct {
