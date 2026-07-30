@@ -12,7 +12,7 @@ import (
 	"github.com/arquivei/foundationkit/schemaregistry"
 	"github.com/arquivei/foundationkit/trace"
 
-	"github.com/hamba/avro/v2"
+	"github.com/arquivei/avro/v2"
 )
 
 type repository struct {
