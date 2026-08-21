@@ -4,9 +4,10 @@ import (
 	"strings"
 	"time"
 
-	"contrib.go.opencensus.io/exporter/stackdriver"
+	gcptrace "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	"github.com/rs/zerolog/log"
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel/bridge/opencensus"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 var defaultProbabilitySample float64
@@ -26,14 +27,12 @@ func SetupTrace(c Config) {
 	switch exporter := strings.ToLower(c.Exporter); exporter {
 	case "stackdriver":
 		start := time.Now()
-		stackdriverExporter, err := stackdriver.NewExporter(stackdriver.Options{
-			ProjectID:            c.Stackdriver.ProjectID,
-			BundleCountThreshold: 100,
-		})
+		gcpExporter, err := gcptrace.New(gcptrace.WithProjectID(c.Stackdriver.ProjectID))
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to create stackdriver trace exporter")
 		}
-		trace.RegisterExporter(stackdriverExporter)
+		tp := sdktrace.NewTracerProvider(sdktrace.WithBatcher(gcpExporter))
+		opencensus.InstallTraceBridge(opencensus.WithTracerProvider(tp))
 		log.Info().Dur("took", time.Since(start)).Msg("Stackdriver loaded")
 	case "":
 	default:
