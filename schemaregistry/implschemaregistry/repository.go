@@ -54,7 +54,12 @@ func (r repository) GetSchemaByID(ctx context.Context, id schemaregistry.ID) (av
 	// variable url" in this line, but the URL must be built from a config
 	httpResponse, err := http.Get(fullURL)
 	if err != nil {
-		return nil, errors.E(op, err, errors.SeverityRuntime)
+		return nil, errors.E(
+			op,
+			err,
+			errors.SeverityRuntime,
+			ErrCodeNetworkError,
+		)
 	}
 	defer httpResponse.Body.Close()
 
@@ -63,7 +68,12 @@ func (r repository) GetSchemaByID(ctx context.Context, id schemaregistry.ID) (av
 
 	err = decoder.Decode(&response)
 	if err != nil {
-		return nil, errors.E(op, err, errors.SeverityInput)
+		return nil, errors.E(
+			op,
+			err,
+			errors.SeverityInput,
+			ErrCodeDecodeResponseError,
+		)
 	}
 	schema, err := avro.Parse(response.Schema)
 	if err != nil {
@@ -72,6 +82,7 @@ func (r repository) GetSchemaByID(ctx context.Context, id schemaregistry.ID) (av
 			err,
 			errors.SeverityInput,
 			errors.KV("schema", truncateStr(response.Schema, 50)),
+			ErrCodeParseSchemaError,
 		)
 	}
 	return schema, nil
@@ -85,7 +96,7 @@ type getIDFromSchemaResponse struct {
 }
 
 // GetIDBySchema returns the avro schema ID by using @subject and @schema.
-// DO REALLY NOTE that schema is not avro.Schema, but a string instad. The reason
+// DO REALLY NOTE that schema is not avro.Schema, but a string instead. The reason
 // is that avro.Schema.String() returns the schema in it's canonical form, which may
 // unexpectedly not be recognized by the schema registry (code 40403 schema not found)
 //
@@ -99,7 +110,12 @@ func (r repository) GetIDBySchema(
 
 	requestBody, err := makeGetIDBySchemaRequestBody(schema)
 	if err != nil {
-		return 0, nil, errors.E(op, errors.SeverityFatal, err)
+		return 0, nil, errors.E(
+			op,
+			errors.SeverityFatal,
+			err,
+			ErrCodeMakeRequestBodyError,
+		)
 	}
 
 	fullURL := fmt.Sprintf(r.getIDBySchemaURL, subject)
@@ -112,7 +128,12 @@ func (r repository) GetIDBySchema(
 		strings.NewReader(requestBody),
 	)
 	if err != nil {
-		return 0, nil, errors.E(op, errors.SeverityRuntime, err)
+		return 0, nil, errors.E(
+			op,
+			errors.SeverityRuntime,
+			err,
+			ErrCodeNetworkError,
+		)
 	}
 	defer httpResponse.Body.Close()
 
@@ -125,12 +146,14 @@ func (r repository) GetIDBySchema(
 			op,
 			errors.SeverityInput,
 			"schema registry returned 404 - subject or schema not found",
+			ErrCodeNotFound,
 		)
 	case 500:
 		return 0, nil, errors.E(
 			op,
 			errors.SeverityRuntime,
 			"internal server error",
+			ErrCodeServerError,
 		)
 	default:
 		return 0, nil, errors.E(
@@ -138,17 +161,27 @@ func (r repository) GetIDBySchema(
 			errors.SeverityRuntime,
 			"unexpected status code returned",
 			errors.KV("statusCode", httpResponse.StatusCode),
+			ErrCodeUnexpectedResponseCodeError,
 		)
 	}
 
 	var getResponse getIDFromSchemaResponse
 	if err = json.NewDecoder(httpResponse.Body).Decode(&getResponse); err != nil {
-		return 0, nil, errors.E(op, errors.SeverityInput, err)
+		return 0, nil, errors.E(
+			op,
+			errors.SeverityInput,
+			err,
+			ErrCodeDecodeResponseError,
+		)
 	}
 
 	returnedSchema, err := avro.Parse(getResponse.Schema)
 	if err != nil {
-		return 0, nil, errors.E(op, err)
+		return 0, nil, errors.E(
+			op,
+			err,
+			ErrCodeParseSchemaError,
+		)
 	}
 
 	return getResponse.ID, returnedSchema, nil
