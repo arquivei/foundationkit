@@ -185,7 +185,7 @@ func Test_communicateWithJSON_CommunicationErrors(t *testing.T) {
 				nil,
 				100,
 				20,
-				/*out*/ response,
+				/*out*/ &response,
 			)
 
 			assert.Error(tt, err, "Error expected")
@@ -217,7 +217,7 @@ func Test_communicateWithJSON_Timeout(t *testing.T) {
 		nil,
 		2*(1<<10), // 2KB
 		20,
-		/*out*/ response,
+		/*out*/ &response,
 	)
 
 	assert.Error(t, err, "Error expected")
@@ -250,7 +250,7 @@ func Test_communicateWithJSON_ExpiredContext(t *testing.T) {
 		nil,
 		2*(1<<10), // 2KB
 		20,
-		/*out*/ response,
+		/*out*/ &response,
 	)
 
 	assert.Error(t, err, "Error expected")
