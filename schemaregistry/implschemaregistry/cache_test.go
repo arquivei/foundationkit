@@ -2,7 +2,9 @@ package implschemaregistry
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
+	"testing/synctest"
 
 	"github.com/arquivei/foundationkit/errors"
 	"github.com/arquivei/foundationkit/schemaregistry"
@@ -82,6 +84,88 @@ func TestCacheGetIDBySchema(t *testing.T) {
 	mock.AssertExpectations(t)
 }
 
+var cacheLookups = []struct {
+	name   string
+	lookup func(context.Context, schemaregistry.Repository) error
+}{
+	{
+		name: "GetSchemaByID",
+		lookup: func(ctx context.Context, r schemaregistry.Repository) error {
+			_, err := r.GetSchemaByID(ctx, 10)
+
+			return err
+		},
+	},
+	{
+		name: "GetIDBySchema",
+		lookup: func(ctx context.Context, r schemaregistry.Repository) error {
+			_, _, err := r.GetIDBySchema(ctx, schemaregistry.Subject("mysubject"), tagsSchemaStr)
+
+			return err
+		},
+	},
+}
+
+func TestCacheConcurrentMissesFetchOnce(t *testing.T) {
+	for _, tc := range cacheLookups {
+		t.Run(tc.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				next := newBlockingTestRepository()
+				repository := WrapWithCache(next)
+
+				const callers = 50
+
+				errs := make(chan error, callers)
+
+				for range callers {
+					go func() { errs <- tc.lookup(context.Background(), repository) }()
+				}
+
+				synctest.Wait()
+				close(next.release)
+
+				for range callers {
+					assert.NoError(t, <-errs)
+				}
+
+				assert.Equal(t, int32(1), next.calls.Load())
+			})
+		})
+	}
+}
+
+func TestCacheCanceledCallerDoesNotFailWaiters(t *testing.T) {
+	for _, tc := range cacheLookups {
+		t.Run(tc.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				next := newBlockingTestRepository()
+				repository := WrapWithCache(next)
+
+				firstCtx, cancelFirst := context.WithCancel(context.Background())
+				firstDone := make(chan struct{})
+				go func() {
+					_ = tc.lookup(firstCtx, repository)
+					close(firstDone)
+				}()
+				synctest.Wait()
+
+				waiterErr := make(chan error, 1)
+				go func() { waiterErr <- tc.lookup(context.Background(), repository) }()
+				synctest.Wait()
+
+				cancelFirst()
+				synctest.Wait()
+				close(next.release)
+
+				<-firstDone
+
+				assert.NoError(t, <-waiterErr)
+				assert.Equal(t, int32(1), next.calls.Load())
+			})
+		})
+	}
+}
+
 type mockTestRepository struct {
 	mock.Mock
 }
@@ -101,4 +185,42 @@ func (m *mockTestRepository) GetIDBySchema(
 	args := m.Called(subject, schema)
 	return args.Get(0).(schemaregistry.ID),
 		args.Get(1).(avro.Schema), args.Error(2)
+}
+
+type blockingTestRepository struct {
+	release chan struct{}
+	calls   atomic.Int32
+}
+
+func newBlockingTestRepository() *blockingTestRepository {
+	return &blockingTestRepository{release: make(chan struct{})}
+}
+
+func (r *blockingTestRepository) GetSchemaByID(
+	ctx context.Context,
+	_ schemaregistry.ID,
+) (avro.Schema, error) {
+	r.calls.Add(1)
+
+	select {
+	case <-r.release:
+		return tagsSchema, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
+
+func (r *blockingTestRepository) GetIDBySchema(
+	ctx context.Context,
+	_ schemaregistry.Subject,
+	_ string,
+) (schemaregistry.ID, avro.Schema, error) {
+	r.calls.Add(1)
+
+	select {
+	case <-r.release:
+		return 10, tagsSchema, nil
+	case <-ctx.Done():
+		return 0, nil, ctx.Err()
+	}
 }
