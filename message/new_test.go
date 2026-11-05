@@ -175,7 +175,7 @@ func TestNewWithAutoType(t *testing.T) {
 		{
 			name:        "Unmarshable message",
 			input:       myMessageMockV1{Msg: "hello", err: errors.New("my err")},
-			expectedErr: "message.New: json: error calling MarshalJSON for type message.myMessageMockV1: my err",
+			expectedErr: "message.New: json: error calling MarshalJSON for type *message.myMessageMockV1: my err",
 		},
 		{
 			name:        "With bad message type",
