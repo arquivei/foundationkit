@@ -56,7 +56,12 @@ type asyncResult struct {
 
 // runNextAsync executes next inside a go-routine and returns the result in a channel.
 func runNextAsync(ctx context.Context, next endpoint.Endpoint, request interface{}) <-chan asyncResult {
-	c := make(chan asyncResult)
+	// The buffer of size 1 guarantees the send below never blocks: if the
+	// caller already gave up due to timeout and will never receive, the
+	// go-routine still completes and everything becomes garbage collectable.
+	// An unbuffered channel would leak the go-routine (and the response it
+	// holds) forever on every timed-out request.
+	c := make(chan asyncResult, 1)
 
 	go func() {
 		defer close(c)
